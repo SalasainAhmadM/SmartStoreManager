@@ -8,7 +8,7 @@
     <link rel="icon" href="./assets/logo.png">
 
 
-    <?php include 'components/head_cdn.php' ?>
+    <?php include 'components/head_cdn_homepage.php' ?>
 </head>
 
 <body>
@@ -75,6 +75,7 @@
     <?php include 'components/footer.php' ?>
 
     <script src="./js/sweetalert.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
