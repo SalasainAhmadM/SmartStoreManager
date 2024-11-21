@@ -15,17 +15,34 @@
 
     <?php include 'components/homepage_nav.php' ?>
 
-    <div class="homepage">
+    <div class="homepage ">
 
-        <div class="container-fluid">
+        <div class="title">
+            <p>MEMBERS</p>
+        </div>
+
+        <div class="container-fluid page-body">
             <div class="row">
-                <div class="col-md-12">
-
+                <div class="col-md-4 card">
                     <p class="card-body">
-                        Track and manage your business expenses with ease. Our system provides tools to
-                        categorize and analyze spending, helping you stay on top of your finances.
+                        <img src="../SmartStoreManager/assets/profile.png">
+                    <h4>Marquez, Dion Cedrick L.</h4>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                     </p>
-
+                </div>
+                <div class="col-md-4 card">
+                    <p class="card-body">
+                        <img src="../SmartStoreManager/assets/profile.png">
+                    <h4>Rampola, Novelyn</h4>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+                <div class="col-md-4 card">
+                    <p class="card-body">
+                        <img src="../SmartStoreManager/assets/profile.png">
+                    <h4>Santinlo, William Bryan</h4>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
                 </div>
             </div>
         </div>

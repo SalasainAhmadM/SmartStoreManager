@@ -13,7 +13,8 @@ body a {
 
 body a:hover {
   color: #ffeb3b !important;
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  transition: transform 0.3s ease; 
 }
 
 body {
@@ -60,7 +61,6 @@ footer {
 
 .navbar-nav .nav-link:hover {
   color: #ffeb3b !important;
-  transform: scale(1.1);
 }
 
 .navbar-toggler {
@@ -81,7 +81,7 @@ footer {
   border-bottom: 2px solid #ffffff;
 }
 
-.homepage-body {
+.page-body {
   transform: scale(0.9);
 }
 
@@ -137,6 +137,12 @@ footer {
   margin: 1rem auto;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.card img{
+  width: 10rem;
+  width: 10rem;
 }
 
 .card:hover {

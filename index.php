@@ -25,7 +25,7 @@
             Our platform offers a range of features designed to streamline operations and enhance productivity.</p>
 
 
-        <div class="container-fluid homepage-body">
+        <div class="container-fluid page-body">
             <div class="row">
                 <div class="col-md-12">
                     <div class="row">

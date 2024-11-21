@@ -16,12 +16,15 @@
 
     <div class="homepage">
 
-        <div class="container-fluid">
+    <div class="title">
+        <p>Terms of Service</p>
+    </div>
+
+        <div class="container-fluid page-body">
             <div class="row">
                 <div class="col-md-12">
 
                     <div class="card-body">
-                        <h2>Terms of Service</h2>
                         <p><strong>Effective Date:</strong> [Insert Date]</p>
 
                         <p>Welcome to [Your Company Name]. By using our website and services, you agree to the following terms and conditions. Please read them carefully. If you do not agree with any part of these terms, you should not use our website or services.</p>
