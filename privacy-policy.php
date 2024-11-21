@@ -12,7 +12,7 @@
 
 <body>
 
-    <?php include 'components/head_cdn_homepage.php' ?>
+    <?php include 'components/homepage_nav.php' ?>
 
     <div class="homepage">
 

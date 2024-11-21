@@ -7,7 +7,7 @@
     <title>Terms of Service</title>
     <link rel="icon" href="./assets/logo.png">
 
-    <?php include 'components/head_cdn_homepage.php' ?>
+    <?php include 'components/head_cdn.php' ?>
 </head>
 
 <body>
