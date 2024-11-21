@@ -11,6 +11,9 @@ function showLoginModal() {
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
                 </div>
+                <div class="mt-2 text-center">
+                    <a href="#" id="forgotPasswordLink" style="font-size: 0.9rem;">Forgot Password?</a>
+                </div>
             </form>
         `,
         showCancelButton: true,
@@ -42,7 +45,55 @@ function showLoginModal() {
                 });
         }
     });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showForgotPasswordModal();
+    });
 }
+
+
+function showForgotPasswordModal() {
+    Swal.fire({
+        title: 'Forgot Password',
+        html: `
+            <form id="forgotPasswordForm">
+                <div class="mb-3">
+                    <label for="resetEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="resetEmail" placeholder="Enter your registered email" required>
+                </div>
+            </form>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Reset Password',
+        preConfirm: () => {
+            const resetEmail = document.getElementById('resetEmail').value;
+
+            if (!resetEmail) {
+                Swal.showValidationMessage('Please enter your email');
+            }
+
+            return { resetEmail };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('./endpoints/forgot-password.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `action=forgot_password&email=${result.value.resetEmail}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire('Success', data.message, 'success');
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+        }
+    });
+}
+
 
 function showRegisterModal() {
     Swal.fire({
