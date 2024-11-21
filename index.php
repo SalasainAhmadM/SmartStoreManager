@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Smart Store Manager</title>
+    <link rel="icon" href="./assets/logo.png">
+
+
     <?php include 'components/head_cdn.php' ?>
 </head>
 
@@ -14,9 +17,12 @@
 
     <div class="homepage">
 
-        <div class="title"><p>WELCOME TO</p><h1><b>SMART STORE MANAGER</b></h1></div>
-        <p class="welcome-content">SmartStoreManager is your go-to solution for managing your business efficiently. 
-        Our platform offers a range of features designed to streamline operations and enhance productivity.</p>
+        <div class="title">
+            <p>WELCOME TO</p>
+            <h1><b>SMART STORE MANAGER</b></h1>
+        </div>
+        <p class="welcome-content">SmartStoreManager is your go-to solution for managing your business efficiently.
+            Our platform offers a range of features designed to streamline operations and enhance productivity.</p>
 
 
         <div class="container-fluid">
@@ -26,34 +32,37 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-12 card">
-                                <h3 class="card-header"><i class="fa-solid fa-list-check"></i> Expense Management</h3>
-                                <p class="card-body">
-                                Track and manage your business expenses with ease. Our system provides tools to 
-                                categorize and analyze spending, helping you stay on top of your finances.
-                                </p>
+                                    <h3 class="card-header"><i class="fa-solid fa-list-check"></i> Expense Management
+                                    </h3>
+                                    <p class="card-body">
+                                        Track and manage your business expenses with ease. Our system provides tools to
+                                        categorize and analyze spending, helping you stay on top of your finances.
+                                    </p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-12 card">
-                                <h3 class="card-header"><i class="fa-solid fa-chart-line"></i> Sales Tracking</h3>
-                                <p class="card-body">
-                                Monitor your sales performance with detailed reports and analytics. Understand trends, 
-                                track sales metrics, and make data-driven decisions to boost your revenue.
-                                </p>
+                                    <h3 class="card-header"><i class="fa-solid fa-chart-line"></i> Sales Tracking</h3>
+                                    <p class="card-body">
+                                        Monitor your sales performance with detailed reports and analytics. Understand
+                                        trends,
+                                        track sales metrics, and make data-driven decisions to boost your revenue.
+                                    </p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-12 card">
-                                <h3 class="card-header"><i class="fa-solid fa-chart-simple"></i> Valuable Insights</h3>
-                                <p class="card-body">
-                                Gain insights into your business operations with our advanced reporting tools. 
-                                Get actionable insights to improve efficiency and drive growth.
-                                </p>
+                                    <h3 class="card-header"><i class="fa-solid fa-chart-simple"></i> Valuable Insights
+                                    </h3>
+                                    <p class="card-body">
+                                        Gain insights into your business operations with our advanced reporting tools.
+                                        Get actionable insights to improve efficiency and drive growth.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                        <img src="../SmartStoreManager/assets/ww.png" class="homepage_img" >
+                            <img src="../SmartStoreManager/assets/ww.png" class="homepage_img">
                         </div>
                     </div>
                 </div>
@@ -65,28 +74,32 @@
     <!-- Footer -->
     <footer class="text-white text-center py-5">
         <div class="footer-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-4">
-                <p>&copy; 2024 Smart Store Manager. All rights reserved.</p>
-                </div>
-                <div class="col-md-4">
-                <a href="about-us.php" class="text-white">About</a> | 
-                <a href="privacy-policy.php" class="text-white">Privacy Policy</a> | 
-                <a href="terms-of-service.php" class="text-white">Terms of Service</a>
-                </div>
-                <div class="col-md-4">
-                <p>Contact Us: support@smartstoremanager.com</p>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>&copy; 2024 Smart Store Manager. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="about-us.php" class="text-white">About</a> |
+                        <a href="privacy-policy.php" class="text-white">Privacy Policy</a> |
+                        <a href="terms-of-service.php" class="text-white">Terms of Service</a>
+                    </div>
+                    <div class="col-md-4">
+                        <p>Contact Us: support@smartstoremanager.com</p>
+                    </div>
                 </div>
             </div>
-        </div>     
 
         </div>
 
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src=""></script>
+    <script src="./js/sweetalert.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 
 </html>
