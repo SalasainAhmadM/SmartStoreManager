@@ -12,7 +12,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#"><i class="fa-solid fa-house"></i> Home</a>
+          <a class="nav-link active" aria-current="page" href="../SmartStoreManager/"><i class="fa-solid fa-house"></i> Home</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#" onclick="showLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Login</a>

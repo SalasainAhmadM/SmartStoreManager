@@ -4,7 +4,6 @@
   font-family: "Inclusive Sans", sans-serif;
   font-weight: 400;
   font-style: normal;
-  text-align: center;
 }
 
 body a {
@@ -71,7 +70,7 @@ footer {
   justify-content: center;
   align-items: center;
   margin: auto;
-  margin-bottom: 7rem;
+  margin-bottom: 20rem;
   margin-top: 7rem;
   border-bottom: 2px solid #ffffff;
 }
@@ -98,16 +97,12 @@ footer {
   padding: 5rem;
   border-bottom: 2px solid #ffffff;
   color: #ffffff;
+  text-align: center;
 }
 
 .title h1 {
   font-size: 5rem;
-  background-color: rgba(
-    26,
-    26,
-    26,
-    0.5
-  ); 
+  background-color: rgba(12, 12, 12, 0.5); 
   border-radius: 0.2rem;
   opacity: 1; 
 }
