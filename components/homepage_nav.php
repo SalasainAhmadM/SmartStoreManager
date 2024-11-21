@@ -1,5 +1,5 @@
 <!-- Homepage Navigation -->
-<nav class="navbar navbar-expand-lg">
+<nav class="navbar bg-dark navbar-expand-lg">
   <div class="container">
     <a class="navbar-brand" href="#">
       <img src="../SmartStoreManager/assets/logo.png" style="height: 50px; margin-right: 10px;">

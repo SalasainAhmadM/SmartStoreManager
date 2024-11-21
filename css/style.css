@@ -18,17 +18,22 @@ body {
   }
 
 
+  footer {
+    background: linear-gradient(90deg, #242424, #1a1a1a);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
 .footer-content {
     font-style: normal;
     text-align: center;
 }
 
 .navbar {
-  background: linear-gradient(90deg, #191919, #525252);
+  background: linear-gradient(90deg, #242424, #1a1a1a);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
   margin-bottom: 1rem;
   margin: 0.3rem;
+  border-radius: 0.2rem;
 }
 
 .navbar-brand {
@@ -78,20 +83,42 @@ body {
   .homepage {
     width: 100%; /* Full width for phones */
   }
+  .homepage_img {
+    display:none;
+  }
 }
 
-.welcome-h {
-    border-bottom: 2px solid #ffffff; 
-    padding-bottom: 1rem;
+.title {
+    background-image: url('../assets/0.jpg'); /* Add your image URL here */
+    background-size: cover; /* Ensure the image covers the entire background */
+    background-position: center; /* Center the image */
+    padding: 5rem;
+    border-bottom: 2px solid #ffffff;
+    color:#ffffff;
+
+}
+
+
+
+.title h1 { 
+    font-size: 5rem;
+    background-color: rgba(26, 26, 26, 0.5); /* Use rgba for transparency on background only */
+    border-radius: 0.2rem;
+    opacity: 1; /* Keep text fully opaque */
+}
+
+
+.title p{
+    font-size: 1.5rem;
+    background-color: #1a1a1a;
+    border-radius: 0.2rem;
 }
 
 .welcome-content {
+    margin-top:1rem;
     margin-bottom: 10rem;
 }
 
-.title p{
-    font-size: 5rem;
-}
 
 .card {
     background-color: #fff;

@@ -14,7 +14,7 @@
 
     <div class="homepage">
 
-        <p class="title">WELCOME TO</p><h1 class="welcome-h"><b>SMART STORE MANAGER</b></h1>
+        <div class="title"><p>WELCOME TO</p><h1><b>SMART STORE MANAGER</b></h1></div>
         <p class="welcome-content">SmartStoreManager is your go-to solution for managing your business efficiently. 
         Our platform offers a range of features designed to streamline operations and enhance productivity.</p>
 
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-5">
+    <footer class="text-white text-center py-5">
         <div class="footer-content">
         <div class="container-fluid">
             <div class="row">
