@@ -1,25 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital@0;1&display=swap'); 
+@import url("https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital@0;1&display=swap");
 
 * {
-    font-family: "Inclusive Sans", sans-serif;
-    font-weight: 400;
+  font-family: "Inclusive Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  text-align: center;
+}
+
+body a {
+    text-decoration: none;
+}
+
+body {
+    background-size: cover;
+    background-position: center;
+    background-image: url("../assets/1.jpg");
+  }
+
+
+.footer-content {
     font-style: normal;
     text-align: center;
 }
 
-body {
-    margin:1rem;
-}
-
-
 .navbar {
-  background: linear-gradient(
-    90deg,
-    #191919,
-    #525252
-  ); 
+  background: linear-gradient(90deg, #191919, #525252);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  margin: 0.3rem;
 }
 
 .navbar-brand {
@@ -28,6 +37,13 @@ body {
   color: #ffffff !important;
 }
 
+.navbar-brand img {
+    width: 4rem;
+    border-right: 2px solid #ffffff; 
+    padding-right: 8px;
+}
+
+
 .navbar-nav .nav-link {
   font-size: 1rem;
   color: #ffffff !important;
@@ -35,8 +51,8 @@ body {
 }
 
 .navbar-nav .nav-link:hover {
-  color: #ffeb3b !important; 
-  transform: scale(1.1); 
+  color: #ffeb3b !important;
+  transform: scale(1.1);
 }
 
 .navbar-toggler {
@@ -46,3 +62,75 @@ body {
 .navbar-toggler-icon {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+
+.homepage {
+  width: 70%; /* Default width for PC */
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  margin-bottom: 7rem;
+  margin-top: 7rem;
+  border-bottom: 2px solid #ffffff; 
+}
+
+@media (max-width: 768px) {
+  /* Adjust the max-width as needed for your phone breakpoint */
+  .homepage {
+    width: 100%; /* Full width for phones */
+  }
+}
+
+.welcome-h {
+    border-bottom: 2px solid #ffffff; 
+    padding-bottom: 1rem;
+}
+
+.welcome-content {
+    margin-bottom: 10rem;
+}
+
+.title p{
+    font-size: 5rem;
+}
+
+.card {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 1rem auto;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  
+  .card h2, .card p {
+    margin: 0.5rem 0;
+  }
+  
+  .card .card-header {
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  
+  .card .card-body {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  
+  .homepage_img {
+    width: 50rem;
+    width: 50rem;
+    margin-left: -10rem;
+  }
