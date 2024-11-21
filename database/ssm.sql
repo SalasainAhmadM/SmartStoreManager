@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 21, 2024 at 02:04 PM
+-- Generation Time: Nov 21, 2024 at 05:59 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,6 +47,7 @@ CREATE TABLE `business` (
 
 CREATE TABLE `employee` (
   `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `first_name` varchar(255) NOT NULL,
   `middle_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
@@ -66,6 +67,8 @@ CREATE TABLE `employee` (
 
 CREATE TABLE `manager` (
   `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `user_name` varchar(255) NOT NULL,
   `first_name` varchar(255) NOT NULL,
   `middle_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
@@ -75,7 +78,8 @@ CREATE TABLE `manager` (
   `address` varchar(255) NOT NULL,
   `contact_number` varchar(15) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `owner_id` int(11) NOT NULL
+  `owner_id` int(11) NOT NULL,
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -86,6 +90,8 @@ CREATE TABLE `manager` (
 
 CREATE TABLE `owner` (
   `id` int(11) NOT NULL,
+  `user_name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `first_name` varchar(255) NOT NULL,
   `middle_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
@@ -94,19 +100,8 @@ CREATE TABLE `owner` (
   `address` varchar(255) NOT NULL,
   `contact_number` varchar(15) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `image` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `password_reset_tokens`
---
-
-CREATE TABLE `password_reset_tokens` (
-  `email` varchar(255) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `expires_at` datetime NOT NULL
+  `image` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
