@@ -8,6 +8,12 @@
 
 body a {
   text-decoration: none;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+body a:hover {
+  color: #ffeb3b !important;
+  transform: scale(1.1);
 }
 
 body {
@@ -73,6 +79,10 @@ footer {
   margin-bottom: 20rem;
   margin-top: 7rem;
   border-bottom: 2px solid #ffffff;
+}
+
+.homepage-body {
+  transform: scale(0.9);
 }
 
 @media (max-width: 768px) {

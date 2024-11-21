@@ -1,8 +1,8 @@
 <!-- Homepage Navigation -->
 <nav class="navbar bg-dark navbar-expand-lg">
   <div class="container">
-    <a class="navbar-brand" href="#">
-      <img src="../SmartStoreManager/assets/logo.png" style="height: 30px; margin-right: 10px;">
+    <a class="navbar-brand" href="../SmartStoreManager/">
+      <img src="../SmartStoreManager/assets/logo.png" style="height: 25px; margin-right: 10px;">
       Smart Store Manager
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
