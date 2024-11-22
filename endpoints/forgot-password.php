@@ -10,6 +10,9 @@ use PHPMailer\PHPMailer\Exception;
 
 header('Content-Type: application/json');
 
+// Set the timezone to Asia/Manila
+date_default_timezone_set('Asia/Manila');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
 
@@ -56,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Generate token
         $token = bin2hex(random_bytes(32));
-        $expiresAt = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+30 minutes')); // Asia/Manila time
 
         // Insert or overwrite token
         $insertTokenQuery = "

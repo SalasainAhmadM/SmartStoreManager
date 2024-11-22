@@ -25,7 +25,7 @@
             };
         </script>
         ";
-        unset($_SESSION['login_success']); // Clear the session variable
+        unset($_SESSION['login_success']);
     }
     ?>
     <h1>Welcome to the Owner Dashboard</h1>
