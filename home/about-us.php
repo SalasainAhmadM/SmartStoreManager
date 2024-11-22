@@ -25,21 +25,21 @@
             <div class="row">
                 <div class="col-md-4 card">
                     <p class="card-body">
-                        <img src="../SmartStoreManager/assets/profile.png">
+                        <img src="../assets/profile.png">
                     <h4>Marquez, Dion Cedrick L.</h4>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                     </p>
                 </div>
                 <div class="col-md-4 card">
                     <p class="card-body">
-                        <img src="../SmartStoreManager/assets/profile.png">
+                        <img src="../assets/profile.png">
                     <h4>Rampola, Novelyn</h4>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                     </p>
                 </div>
                 <div class="col-md-4 card">
                     <p class="card-body">
-                        <img src="../SmartStoreManager/assets/profile.png">
+                        <img src="../assets/profile.png">
                     <h4>Santinlo, William Bryan</h4>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                     </p>
