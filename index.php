@@ -13,6 +13,7 @@
 
 <body>
 
+
     <?php include 'components/homepage_nav.php' ?>
 
     <div class="homepage">

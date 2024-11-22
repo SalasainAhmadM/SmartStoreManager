@@ -38,7 +38,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
+        // Check for a recent token
+        $tokenCheckQuery = "
+            SELECT expires_at 
+            FROM password_reset_tokens 
+            WHERE email = ? AND expires_at > NOW()";
+        $tokenStmt = $conn->prepare($tokenCheckQuery);
+        $tokenStmt->bind_param("s", $email);
+        $tokenStmt->execute();
+        $tokenResult = $tokenStmt->get_result();
+
+        if ($tokenResult->num_rows > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Password reset email already sent. Please check your inbox.']);
+            http_response_code(429); // Too Many Requests
+            exit;
+        }
 
         // Generate token
         $token = bin2hex(random_bytes(32));
@@ -75,12 +89,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->isHTML(true);
             $mail->Subject = 'Reset your password';
             $mail->Body = "
-                <h3>Password Reset Request</h3>
-                <p>Click the link below to reset your password:</p>
-                <a href='http://localhost/reset-password.php?token=$token'>Reset Password</a>
-                <p>If you did not request this, please ignore this email.</p>
-            ";
-
+            <h3>Password Reset Request</h3>
+            <p>Click the link below to reset your password:</p>
+            <a href='http://localhost/smartstoremanager/index.php?reset_token=$token'>Reset Password</a>
+            <p>If you did not request this, please ignore this email.</p>
+        ";
             $mail->send();
             echo json_encode(['status' => 'success', 'message' => 'Password reset email sent successfully. Please check your inbox.']);
         } catch (Exception $e) {

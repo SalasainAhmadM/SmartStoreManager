@@ -181,3 +181,62 @@ function showRegisterModal() {
     });
 }
 
+     
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('reset_token');
+
+    if (resetToken) {
+        Swal.fire({
+            title: 'Reset Password',
+            input: 'password',
+            inputLabel: 'Enter your new password',
+            inputAttributes: {
+                maxlength: 50,
+                autocapitalize: 'off',
+                autocorrect: 'off',
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Reset Password',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Password cannot be empty!';
+                }
+                if (value.length < 6) {
+                    return 'Password must be at least 6 characters long.';
+                }
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const newPassword = result.value;
+
+                // Send the reset request to the server
+                fetch('./endpoints/reset-password.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: resetToken,
+                        new_password: newPassword,
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.status === 'success') {
+                            Swal.fire('Success', data.message, 'success').then(() => {
+                                window.location.href = 'http://localhost/smartstoremanager/';
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Something went wrong. Please try again later.', 'error');
+                    });
+            }
+        });
+    }
+});
