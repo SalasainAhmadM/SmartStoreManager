@@ -72,7 +72,6 @@
 
     </div>
 
-
     <?php include '../components/footer.php' ?>
 
     <script src="../js/sweetalert.js"></script>
