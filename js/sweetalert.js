@@ -33,15 +33,18 @@ function showLoginModal() {
             fetch('./endpoints/sign.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=login&email=${result.value.email}&password=${result.value.password}`
+                body: `action=login&email=${encodeURIComponent(result.value.email)}&password=${encodeURIComponent(result.value.password)}`
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        Swal.fire('Success', data.message, 'success');
+                        window.location.href = './admin/index.php'; // Redirect to the admin page
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred. Please try again later.', 'error');
                 });
         }
     });
@@ -51,7 +54,6 @@ function showLoginModal() {
         showForgotPasswordModal();
     });
 }
-
 
 function showForgotPasswordModal() {
     Swal.fire({
@@ -67,28 +69,54 @@ function showForgotPasswordModal() {
         showCancelButton: true,
         confirmButtonText: 'Reset Password',
         preConfirm: () => {
-            const resetEmail = document.getElementById('resetEmail').value;
+            const resetEmail = document.getElementById('resetEmail').value.trim();
 
             if (!resetEmail) {
                 Swal.showValidationMessage('Please enter your email');
+                return false;
             }
 
             return { resetEmail };
         }
     }).then((result) => {
-        if (result.isConfirmed) {
+        if (result.isConfirmed && result.value) {
+            console.log("Sending reset email for:", result.value.resetEmail); // Log for debugging
+
+            // Show a loading spinner
+            Swal.fire({
+                title: 'Sending Email...',
+                html: 'Please wait while we process your request.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             fetch('./endpoints/forgot-password.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=forgot_password&email=${result.value.resetEmail}`
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `action=forgot_password&email=${encodeURIComponent(result.value.resetEmail)}`
             })
-                .then(response => response.json())
+                .then(response => {
+                    console.log(response); // Log the response
+                    return response.json();
+                })
                 .then(data => {
+                    console.log(data); // Log the parsed data
                     if (data.status === 'success') {
-                        Swal.fire('Success', data.message, 'success');
+                        Swal.fire('Success', data.message, 'success').then(() => {
+                            // Reload the page after success confirmation
+                            location.reload();
+                        });
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error); // Log network errors
+                    Swal.fire('Error', 'An error occurred while processing your request. Please try again.', 'error');
                 });
         }
     });
@@ -152,3 +180,4 @@ function showRegisterModal() {
         }
     });
 }
+

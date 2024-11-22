@@ -30,6 +30,7 @@ $conn->close();
 
 function handleLogin($conn)
 {
+    session_start(); // Start the session
     $email = $_POST['email'] ?? null;
     $password = $_POST['password'] ?? null;
 
@@ -55,8 +56,13 @@ function handleLogin($conn)
         return;
     }
 
+    // Set a session variable for successful login
+    $_SESSION['login_success'] = true;
+
+    // Respond with success
     echo json_encode(['status' => 'success', 'message' => 'Login successful']);
 }
+
 
 function handleRegister($conn)
 {
@@ -70,7 +76,7 @@ function handleRegister($conn)
     }
 
     // Check if the user already exists
-    $stmt = $conn->prepare("SELECT * FROM owner WHERE user_name = ?");
+    $stmt = $conn->prepare("SELECT * FROM owner WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
