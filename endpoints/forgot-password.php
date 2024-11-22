@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->Body = "
             <h3>Password Reset Request</h3>
             <p>Click the link below to reset your password:</p>
-            <a href='http://localhost/smartstoremanager/index.php?reset_token=$token'>Reset Password</a>
+            <a href='http://localhost/smartstoremanager/home/index.php?reset_token=$token'>Reset Password</a>
             <p>If you did not request this, please ignore this email.</p>
         ";
             $mail->send();
