@@ -38,7 +38,7 @@ function showLoginModal() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        window.location.href = './admin/index.php'; // Redirect to the admin page
+                        window.location.href = '../admin/index.php'; // Redirect to the admin page
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
