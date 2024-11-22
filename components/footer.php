@@ -21,4 +21,4 @@
 </footer>
 
 <button id="scrollToTopBtn"><i class="fa-solid fa-angle-up"></i></button>
-<script src="./js/scrollup.js"></script>
+<script src="../js/scrollup.js"></script>
