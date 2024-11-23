@@ -12,37 +12,37 @@
     <hr>
     <ul class="nav nav-pills flex-column mb-auto" id="sidebarMenu">
         <li class="nav-item">
-            <a href="#" class="nav-link active" aria-current="page">
+            <a href="../owner/" class="nav-link active" aria-current="page">
                 <i class="fas fa-tachometer-alt me-2"></i> <span>Dashboard Overview</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="managebusiness.php" class="nav-link link-dark">
                 <i class="fas fa-cogs me-2"></i> <span>Manage Business</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="manageexpenses.php" class="nav-link link-dark">
                 <i class="fas fa-wallet me-2"></i> <span>Manage Expenses</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="tracksales.php" class="nav-link link-dark">
                 <i class="fas fa-chart-line me-2"></i> <span>Track Sales</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="viewreports.php" class="nav-link link-dark">
                 <i class="fas fa-file-alt me-2"></i> <span>View Reports</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="supervisemanagers.php" class="nav-link link-dark">
                 <i class="fas fa-users me-2"></i> <span>Supervise Managers</span>
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link link-dark">
+            <a href="settings.php" class="nav-link link-dark">
                 <i class="fas fa-cog me-2"></i> <span>Settings</span>
             </a>
         </li>
