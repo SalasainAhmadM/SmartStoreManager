@@ -40,9 +40,9 @@ function showLoginModal() {
                     if (data.status === 'success') {
                         // Redirect based on role
                         if (data.role === 'owner') {
-                            window.location.href = './owner/index.php';
+                            window.location.href = '../owner/index.php';
                         } else if (data.role === 'manager') {
-                            window.location.href = './manager/index.php';
+                            window.location.href = '../manager/index.php';
                         }
                     } else {
                         Swal.fire('Error', data.message, 'error');

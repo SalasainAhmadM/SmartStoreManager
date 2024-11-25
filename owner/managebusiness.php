@@ -57,7 +57,7 @@ $conn->close();
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-cogs me-2"></i> Manage Business</b></h1>
+                    <h1><b><i class="fas fa-cogs me-2"></i> Manage Business </b></h1>
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
