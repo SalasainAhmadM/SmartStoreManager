@@ -9,6 +9,26 @@
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
+<?php
+session_start();
+if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+    echo "
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            };
+        </script>
+    ";
+    unset($_SESSION['login_success']);
+}
+?>
+
 <body class="d-flex">
 
     <?php include '../components/owner_sidebar.php'; ?>
@@ -23,17 +43,18 @@
                     <div class="mt-5 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
-                                <label style="margin-right: 2rem;">
+
+                                <label style="margin-right: 2rem;" onclick="window.location.href='manageexpenses.php'">
                                     <input type="radio" name="selection" value="business" id="businessRadio" checked>
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
                                 </label>
 
-                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'">
+                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'" checked>
                                     <input type="radio" name="selection" value="branch" id="branchRadio">
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
                                 </label>
                             </div>
-
+                            
                             <?php include '../components/add_expenses.php'; ?>
 
                         </h5>
@@ -52,8 +73,16 @@
                         </select>
                     </div>
 
+                    <div class="form-group" id="branchGroup" style="display:none;">
+                        <label for="branchSelect">Select Branch</label>
+                        <select id="branchSelect" class="form-control">
+                            <option value="">Select Branch</option>
+                            <!-- Branch options will be populated dynamically -->
+                        </select>
+                    </div>
+
                     <div id="expensesPanel" class="collapse mt-3">
-                        <h4>Expenses List for Business <span id="businessName"></span></h4>
+                        <h4>Expenses List for Branch <span id="branchName"></span></h4>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -63,67 +92,20 @@
                             </thead>
                             <tbody id="expensesList">
                                 <!-- Expenses will be dynamically populated here -->
-                                <script src="../js/business_expenses.js"></script>
+                                <script src="../js/branch_expenses.js"></script>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
 
-                <script>
-                    document.getElementById('businessRadio').addEventListener('click', function() {
-                        document.getElementById('businessPanel').classList.add('show');
-                    });
-                    document.getElementById('branchRadio').addEventListener('click', function() {
-                        document.getElementById('businessPanel').classList.remove('show');
-                    });
-
-                    document.getElementById('businessSelect').addEventListener('change', function() {
-                        var businessName = this.value === 'A' ? 'A' : this.value === 'B' ? 'B' : '';
-                        document.getElementById('businessName').textContent = businessName;
-
-                        var expenses = businessName === 'A' ? [{
-                                description: 'Rent',
-                                amount: '$5000'
-                            },
-                            {
-                                description: 'Utilities',
-                                amount: '$300'
-                            }
-                        ] : businessName === 'B' ? [{
-                                description: 'Marketing',
-                                amount: '$2000'
-                            },
-                            {
-                                description: 'Salaries',
-                                amount: '$12000'
-                            }
-                        ] : [];
-
-                        var expensesList = document.getElementById('expensesList');
-                        expensesList.innerHTML = '';
-                        expenses.forEach(function(expense) {
-                            var row = document.createElement('tr');
-                            row.innerHTML = `<td>${expense.description}</td><td>${expense.amount}</td>`;
-                            expensesList.appendChild(row);
-                        });
-
-                        if (businessName) {
-                            document.getElementById('expensesPanel').classList.add('show');
-                        } else {
-                            document.getElementById('expensesPanel').classList.remove('show');
-                        }
-                    });
-                </script>
             </div>
         </div>
     </div>
 
 
 
-
     <script src="../js/sidebar.js"></script>
-
 
 </body>
 

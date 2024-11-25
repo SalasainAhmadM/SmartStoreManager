@@ -46,17 +46,17 @@ $owner_id = $_SESSION['user_id'];
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
-                                <i class="fas fa-list me-2"></i> Business List
+                                <i class="fas fa-list me-2"></i> <h5><b>Business List</b></h5>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-tab="branchlist">
-                                <i class="fas fa-building me-2"></i> Branch List
+                                <i class="fas fa-building me-2"></i> <h5><b>Branch List</b></h5>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-tab="manageproduct">
-                                <i class="fas fa-box-open me-2"></i> Manage Product
+                                <i class="fas fa-box-open me-2"></i> <h5><b>Manage Product</b></h5>
                             </a>
                         </li>
                     </ul>
@@ -141,6 +141,7 @@ $owner_id = $_SESSION['user_id'];
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessA')">
                                     <i class="fa-solid fa-building"></i>
                                     Business A
+                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessA" class="business-details card-one"
@@ -209,6 +210,7 @@ $owner_id = $_SESSION['user_id'];
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessB')">
                                     <i class="fa-solid fa-building"></i>
                                     Business B
+                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessB" class="business-details card-one"
@@ -287,6 +289,7 @@ $owner_id = $_SESSION['user_id'];
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessC')">
                                     <i class="fa-solid fa-building"></i>
                                     Business A
+                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessC" class="business-details card-one"
@@ -367,6 +370,7 @@ $owner_id = $_SESSION['user_id'];
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessD')">
                                     <i class="fa-solid fa-building"></i>
                                     Business B
+                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessD" class="business-details card-one"
