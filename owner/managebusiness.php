@@ -96,7 +96,20 @@ $conn->close();
                             </button>
                         </div>
 
+                        <script>
+                            document.getElementById('search-business').addEventListener('input', function () {
+                                const filter = this.value.toLowerCase();
+                                const rows = document.querySelectorAll('#business-table-body tr');
 
+                                rows.forEach(row => {
+                                    const nameCell = row.querySelector('.business-name');
+                                    if (nameCell) {
+                                        const name = nameCell.textContent.toLowerCase();
+                                        row.style.display = name.includes(filter) ? '' : 'none';
+                                    }
+                                });
+                            });
+                        </script>
                         <div class="col-md-12 mt-5">
                             <table class="table table-striped table-hover mt-4">
                                 <thead class="table-dark">
@@ -110,10 +123,11 @@ $conn->close();
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="business-table-body">
                                     <?php foreach ($businesses as $business): ?>
                                         <tr data-id="<?php echo $business['id']; ?>">
-                                            <td><?php echo htmlspecialchars($business['name']); ?></td>
+                                            <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
+                                            </td>
                                             <td><?php echo htmlspecialchars($business['description']); ?></td>
                                             <td><?php echo htmlspecialchars($business['asset']); ?></td>
                                             <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
@@ -133,7 +147,6 @@ $conn->close();
                             </table>
                         </div>
                     </div>
-
 
                     <div id="branchlist" class="tab-content">
                         <h1 class="mt-5"><b>Branch List Section</b></h1>
