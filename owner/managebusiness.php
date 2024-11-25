@@ -1,3 +1,12 @@
+<?php
+session_start();
+require_once '../conn/auth.php';
+
+validateSession('owner');
+
+$owner_id = $_SESSION['user_id'];
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -74,12 +83,14 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
                         <!-- Search Bar -->
                         <div class="mt-4 mb-4 position-relative">
-                            <form class="d-flex" role="search">
-                                <input class="form-control me-2 w-50" type="search" placeholder="Search business.."
-                                    aria-label="Search">
+                            <form class="d-flex" role="search" id="search-form">
+                                <input class="form-control me-2 w-50" id="search-business" type="search"
+                                    placeholder="Search business..." aria-label="Search">
+                                <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                             </form>
                             <!-- Add Business Button -->
-                            <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                            <button id="add-business-btn"
+                                class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
                                 <i class="fas fa-plus me-2"></i> Add Business
                             </button>
                         </div>
@@ -91,6 +102,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <tr>
                                         <th scope="col">Name</th>
                                         <th scope="col">Description</th>
+                                        <th scope="col">Asset Size</th>
+                                        <th scope="col">Employee Count</th>
                                         <th scope="col">Created At</th>
                                         <th scope="col">Updated At</th>
                                         <th scope="col">Action</th>
@@ -100,6 +113,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <tr>
                                         <td>Business A</td>
                                         <td>Example Description</td>
+                                        <td>1,000,000php</td>
+                                        <td>69</td>
                                         <td>2024-11-25</td>
                                         <td>2024-11-26</td>
                                         <td>
@@ -114,6 +129,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <tr>
                                         <td>Business B</td>
                                         <td>Example Description</td>
+                                        <td>1,000,000php</td>
+                                        <td>69</td>
                                         <td>2024-11-25</td>
                                         <td>2024-11-26</td>
                                         <td>
@@ -455,6 +472,68 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     </div>
 
     <script src="../js/sidebar.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Search Bar Suggestions
+            $('#search-business').on('input', function () {
+                const query = $(this).val();
+                if (query.length > 1) {
+                    $.get('search_business.php', { search: query }, function (response) {
+                        const suggestions = JSON.parse(response).map(b => `<li class="list-group-item">${b.name}</li>`).join('');
+                        $('#suggestion-box').html(suggestions).toggle(suggestions.length > 0);
+                    });
+                } else {
+                    $('#suggestion-box').hide();
+                }
+            });
+
+            // Add Business
+            $('#add-business-btn').click(function () {
+                Swal.fire({
+                    title: 'Add New Business',
+                    html: `
+                    <div>
+                    <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                    <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
+                    <input type="text" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                    <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+                    </div>
+
+                `,
+                    confirmButtonText: 'Add Business',
+                    showCancelButton: true,
+                    preConfirm: () => {
+                        const data = {
+                            name: $('#business-name').val(),
+                            branch: $('#business-branch').val(),
+                            asset: $('#business-asset').val(),
+                            employeeCount: $('#employee-count').val(),
+
+                        };
+                        if (Object.values(data).includes(undefined) || Object.values(data).includes('')) {
+                            Swal.showValidationMessage('All fields are required');
+                            return false;
+                        }
+                        const formData = new FormData();
+                        Object.entries(data).forEach(([key, value]) => formData.append(key, value));
+                        return $.ajax({
+                            url: 'add_business.php',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                        });
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) Swal.fire('Success!', 'Business added successfully.', 'success');
+                });
+            });
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');

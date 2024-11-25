@@ -31,6 +31,8 @@ CREATE TABLE `business` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `branch` varchar(255) NOT NULL,
+  `asset` varchar(255) NOT NULL,
+  `employee_count` varchar(255) NOT NULL,
   `expense_type` varchar(255) NOT NULL,
   `expenses` varchar(255) NOT NULL,
   `image` varchar(255) NOT NULL,
