@@ -1,16 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Dashboard</title>
-    <link rel="icon" href="../assets/logo.png">
-    <?php include '../components/head_cdn.php'; ?>
-</head>
-
 <?php
 session_start();
+require_once '../conn/conn.php';
+require_once '../conn/auth.php';
+
+validateSession('owner');
+
+$owner_id = $_SESSION['user_id'];
+
+// Check if the owner is new
+$query = "SELECT is_new_owner FROM owner WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $isNewOwner = $row['is_new_owner'] == 1;
+}
+
 if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     echo "
         <script>
@@ -21,6 +28,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                     text: 'Welcome!',
                     timer: 2000,
                     showConfirmButton: false
+                }).then(() => {
+                    " . ($isNewOwner ? "triggerAddBusinessModal();" : "") . "
                 });
             };
         </script>
@@ -28,6 +37,50 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     unset($_SESSION['login_success']);
 }
 ?>
+<script>
+    function triggerAddBusinessModal() {
+        Swal.fire({
+            title: 'Add New Business',
+            html: `
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
+                <input type="text" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+            </div>
+        `,
+            confirmButtonText: 'Add Business',
+            showCancelButton: true,
+            cancelButtonText: 'Skip'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const businessName = document.getElementById('business-name').value;
+                const businessBranch = document.getElementById('business-branch').value;
+                const businessAsset = document.getElementById('business-asset').value;
+                const employeeCount = document.getElementById('employee-count').value;
+
+                console.log({
+                    businessName,
+                    businessBranch,
+                    businessAsset,
+                    employeeCount
+                });
+
+            }
+        });
+    }
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <link rel="icon" href="../assets/logo.png">
+    <?php include '../components/head_cdn.php'; ?>
+</head>
 
 <body class="d-flex">
 
@@ -112,76 +165,88 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                 <div class="col-md-12 dashboard-content">
                                     <div>
                                         <h5>Predicted Growth:</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus porttitor. Vestibulum pretium auctor condimentum.</p>
+                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
+                                            tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
+                                            tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
+                                            felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum
+                                            dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus
+                                            porttitor. Vestibulum pretium auctor condimentum.</p>
                                     </div>
                                     <div>
                                         <h5>Actionable Advice:</h5>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus porttitor. Vestibulum pretium auctor condimentum.</p>
+                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
+                                            tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
+                                            tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
+                                            felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum
+                                            dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus
+                                            porttitor. Vestibulum pretium auctor condimentum.</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-12 mt-5">
-                                <h1 class="section-title"><b><i class="fas fa-boxes icon"></i> Popular Products/Services</b></h1>
+                                <h1 class="section-title"><b><i class="fas fa-boxes icon"></i> Popular
+                                        Products/Services</b></h1>
                                 <div class="col-md-12 dashboard-content">
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>Product/Service</th>
-                                        <th>Category</th>
-                                        <th>Popularity</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="fas fa-laptop icon"></i> Laptop Repair</td>
-                                        <td>Services</td>
-                                        <td><i class="fas fa-fire icon"></i> High</td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="fas fa-tshirt icon"></i> Custom T-Shirts</td>
-                                        <td>Products</td>
-                                        <td><i class="fas fa-chart-line icon"></i> Moderate</td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="fas fa-coffee icon"></i> Coffee Beans</td>
-                                        <td>Products</td>
-                                        <td><i class="fas fa-arrow-up icon"></i> Trending</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Product/Service</th>
+                                                <th>Category</th>
+                                                <th>Popularity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><i class="fas fa-laptop icon"></i> Laptop Repair</td>
+                                                <td>Services</td>
+                                                <td><i class="fas fa-fire icon"></i> High</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-tshirt icon"></i> Custom T-Shirts</td>
+                                                <td>Products</td>
+                                                <td><i class="fas fa-chart-line icon"></i> Moderate</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-coffee icon"></i> Coffee Beans</td>
+                                                <td>Products</td>
+                                                <td><i class="fas fa-arrow-up icon"></i> Trending</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
                             <div class="col-md-12 mt-5">
-                                <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b></h1>
+                                <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b>
+                                </h1>
                                 <div class="col-md-12 dashboard-content">
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>Activity</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="fas fa-user-plus icon"></i> New User Registered</td>
-                                        <td>2024-11-20</td>
-                                        <td><i class="fas fa-check-circle icon"></i> Completed</td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="fas fa-file-alt icon"></i> Report Generated</td>
-                                        <td>2024-11-21</td>
-                                        <td><i class="fas fa-spinner icon"></i> In Progress</td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="fas fa-shopping-cart icon"></i> Product Ordered</td>
-                                        <td>2024-11-22</td>
-                                        <td><i class="fas fa-times-circle icon"></i> Failed</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Activity</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><i class="fas fa-user-plus icon"></i> New User Registered</td>
+                                                <td>2024-11-20</td>
+                                                <td><i class="fas fa-check-circle icon"></i> Completed</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-file-alt icon"></i> Report Generated</td>
+                                                <td>2024-11-21</td>
+                                                <td><i class="fas fa-spinner icon"></i> In Progress</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-shopping-cart icon"></i> Product Ordered</td>
+                                                <td>2024-11-22</td>
+                                                <td><i class="fas fa-times-circle icon"></i> Failed</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
@@ -198,7 +263,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

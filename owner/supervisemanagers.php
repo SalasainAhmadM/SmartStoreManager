@@ -1,3 +1,13 @@
+<?php
+session_start();
+require_once '../conn/auth.php';
+
+validateSession('owner');
+
+$owner_id = $_SESSION['user_id'];
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,26 +19,6 @@
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
-<?php
-session_start();
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
-?>
-
 <body class="d-flex">
 
     <?php include '../components/owner_sidebar.php'; ?>
@@ -39,7 +29,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-users me-2"></i> Supervise Managers</b></h1>
 
-    
+
 
                 </div>
             </div>

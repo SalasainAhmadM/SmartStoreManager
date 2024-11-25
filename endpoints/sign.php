@@ -30,7 +30,7 @@ $conn->close();
 
 function handleLogin($conn)
 {
-    session_start(); // Start the session
+    session_start();
     $email = $_POST['email'] ?? null;
     $password = $_POST['password'] ?? null;
 
@@ -39,14 +39,22 @@ function handleLogin($conn)
         return;
     }
 
-    $stmt = $conn->prepare("SELECT * FROM owner WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, password, 'owner' AS role FROM owner WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
-        return;
+
+        $stmt = $conn->prepare("SELECT id, password, 'manager' AS role FROM manager WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
+            return;
+        }
     }
 
     $user = $result->fetch_assoc();
@@ -56,11 +64,11 @@ function handleLogin($conn)
         return;
     }
 
-    // Set a session variable for successful login
     $_SESSION['login_success'] = true;
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_role'] = $user['role'];
 
-    // Respond with success
-    echo json_encode(['status' => 'success', 'message' => 'Login successful']);
+    echo json_encode(['status' => 'success', 'role' => $user['role']]);
 }
 
 
