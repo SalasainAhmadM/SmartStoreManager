@@ -98,11 +98,12 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                             <div class="col-md-5">
 
                                 <h5 class="mt-5"><b>Select Business:</b></h5>
+                                
                                 <div class="scroll-container" style="height: 450px; overflow-y: auto;">
                                     <button class="col-md-12 card">
                                         <h5>Business A</h5>
-                                        <table>
-                                            <thead>
+                                        <table class="table table-striped table-hover mt-4">
+                                        <thead class="table-dark">
                                                 <tr>
                                                     <th>Branch</th>
                                                     <th>Sales (₱)</th>
@@ -126,8 +127,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     </button>
                                     <button class="col-md-12 card">
                                         <h5>Business B</h5>
-                                        <table>
-                                            <thead>
+                                        <table class="table table-striped table-hover mt-4">
+                                        <thead class="table-dark">
                                                 <tr>
                                                     <th>Branch</th>
                                                     <th>Sales (₱)</th>
@@ -263,7 +264,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 
 </html>

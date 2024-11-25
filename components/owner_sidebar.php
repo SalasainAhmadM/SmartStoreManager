@@ -1,8 +1,8 @@
 <?php
 function isActive($link)
 {
-    $current_page = basename($_SERVER['PHP_SELF']); 
-    return $current_page === $link ? 'active' : 'link-dark'; 
+    $current_page = basename($_SERVER['PHP_SELF']);
+    return $current_page === $link ? 'active' : 'link-dark';
 }
 ?>
 
@@ -65,8 +65,17 @@ function isActive($link)
             <li><a class="dropdown-item" href="#">New project...</a></li>
             <li><a class="dropdown-item" href="#">Settings</a></li>
             <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
             <li><a class="dropdown-item" href="#">Sign out</a></li>
         </ul>
     </div>
 </div>
+
+
+<!-- Bootstrap JS for collapse functionality -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SweetAlert! -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

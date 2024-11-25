@@ -351,7 +351,6 @@ main {
 
 canvas {
   max-width: 100vw;
-  margin: auto;
 }
 
 #financialChart {
@@ -386,4 +385,18 @@ tr:hover {
 
 #branchPanel{
   margin: 3rem;
+}
+
+
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.nav-link {
+  cursor: pointer;
 }

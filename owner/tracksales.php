@@ -54,14 +54,14 @@ $today = date("F j, Y");
                         </button>
                     </div>
 
-                    <h1>
+                    <h1 class="mt-5">
                         <i class="fa-solid fa-dollar-sign" style="margin-right: 10px;"></i>
                         <b>Today Sales for Business A (<?php echo $today; ?>)</b>
                     </h1>
 
                     <div class="mt-4">
-                        <table class="table table-bordered">
-                            <thead>
+                    <table class="table table-striped table-hover mt-4">
+                    <thead class="table-dark">
                                 <tr>
                                     <th>Product</th>
                                     <th>Amount Sold</th>
@@ -108,8 +108,8 @@ $today = date("F j, Y");
 
                     <div class="collapse mt-3" id="previousSalesTable">
                         <h3><b>Sales Log</b></h3>
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-striped table-hover mt-4">
+                        <thead class="table-dark">
                                 <tr>
                                     <th>Product</th>
                                     <th>Amount Sold</th>
@@ -148,8 +148,6 @@ $today = date("F j, Y");
     </div>
 
     <script src="../js/sidebar.js"></script>
-    <!-- Bootstrap JS for collapse functionality -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

@@ -19,19 +19,6 @@ $owner_id = $_SESSION['user_id'];
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
-    <style>
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .nav-link {
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body class="d-flex">
@@ -43,6 +30,7 @@ $owner_id = $_SESSION['user_id'];
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-cogs me-2"></i> Manage Business</b></h1>
+
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
@@ -460,7 +448,6 @@ $owner_id = $_SESSION['user_id'];
 
     <script src="../js/sidebar.js"></script>
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {

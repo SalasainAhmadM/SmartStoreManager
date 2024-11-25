@@ -1,3 +1,14 @@
+<?php
+session_start();
+require_once '../conn/conn.php';
+require_once '../conn/auth.php';
+
+validateSession('owner');
+
+$owner_id = $_SESSION['user_id'];
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
