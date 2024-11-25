@@ -30,15 +30,16 @@ SET time_zone = "+00:00";
 CREATE TABLE `business` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `branch` varchar(255) NOT NULL,
+  `branch` varchar(255) DEFAULT NULL,
   `asset` varchar(255) NOT NULL,
   `employee_count` varchar(255) NOT NULL,
-  `expense_type` varchar(255) NOT NULL,
-  `expenses` varchar(255) NOT NULL,
-  `image` varchar(255) NOT NULL,
+  `expense_type` varchar(255) DEFAULT NULL,
+  `expenses` varchar(255) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
   `owner_id` int(11) NOT NULL,
-  `manager_id` int(11) NOT NULL
+  `manager_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
@@ -148,7 +149,7 @@ CREATE TABLE `products` (
   `price` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT,
+  `updated_at` datetime DEFAULT NULL,
   `business_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 

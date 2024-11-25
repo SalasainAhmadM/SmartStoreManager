@@ -7,7 +7,22 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
+// Fetch business data for the logged-in owner
+$query = "SELECT * FROM business WHERE owner_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$businesses = [];
+while ($row = $result->fetch_assoc()) {
+    $businesses[] = $row;
+}
+
+$stmt->close();
+$conn->close();
 ?>
+
 
 
 <!DOCTYPE html>
@@ -46,17 +61,20 @@ $owner_id = $_SESSION['user_id'];
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
-                                <i class="fas fa-list me-2"></i> <h5><b>Business List</b></h5>
+                                <i class="fas fa-list me-2"></i>
+                                <h5><b>Business List</b></h5>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-tab="branchlist">
-                                <i class="fas fa-building me-2"></i> <h5><b>Branch List</b></h5>
+                                <i class="fas fa-building me-2"></i>
+                                <h5><b>Branch List</b></h5>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-tab="manageproduct">
-                                <i class="fas fa-box-open me-2"></i> <h5><b>Manage Product</b></h5>
+                                <i class="fas fa-box-open me-2"></i>
+                                <h5><b>Manage Product</b></h5>
                             </a>
                         </li>
                     </ul>
@@ -93,38 +111,24 @@ $owner_id = $_SESSION['user_id'];
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Business A</td>
-                                        <td>Example Description</td>
-                                        <td>1,000,000php</td>
-                                        <td>69</td>
-                                        <td>2024-11-25</td>
-                                        <td>2024-11-26</td>
-                                        <td>
-                                            <a href="#" class="text-primary me-3" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="#" class="text-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Business B</td>
-                                        <td>Example Description</td>
-                                        <td>1,000,000php</td>
-                                        <td>69</td>
-                                        <td>2024-11-25</td>
-                                        <td>2024-11-26</td>
-                                        <td>
-                                            <a href="#" class="text-primary me-3" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="#" class="text-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                    <?php foreach ($businesses as $business): ?>
+                                        <tr data-id="<?php echo $business['id']; ?>">
+                                            <td><?php echo htmlspecialchars($business['name']); ?></td>
+                                            <td><?php echo htmlspecialchars($business['description']); ?></td>
+                                            <td><?php echo htmlspecialchars($business['asset']); ?></td>
+                                            <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
+                                            <td><?php echo htmlspecialchars($business['created_at']); ?></td>
+                                            <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
+                                            <td>
+                                                <a href="#" class="text-primary me-3 edit-btn" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="#" class="text-danger delete-btn" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -463,62 +467,130 @@ $owner_id = $_SESSION['user_id'];
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function () {
-            // Search Bar Suggestions
-            $('#search-business').on('input', function () {
-                const query = $(this).val();
-                if (query.length > 1) {
-                    $.get('search_business.php', { search: query }, function (response) {
-                        const suggestions = JSON.parse(response).map(b => `<li class="list-group-item">${b.name}</li>`).join('');
-                        $('#suggestion-box').html(suggestions).toggle(suggestions.length > 0);
+        const ownerId = <?php echo json_encode($owner_id); ?>;
+
+        //  <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
+        // Add Business
+        $('#add-business-btn').click(function () {
+            Swal.fire({
+                title: 'Add New Business',
+                html: `
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+            </div>
+        `,
+                confirmButtonText: 'Add Business',
+                showCancelButton: true,
+                preConfirm: () => {
+                    const data = {
+                        name: $('#business-name').val(),
+                        description: $('#business-description').val(),
+                        asset: $('#business-asset').val(),
+                        employeeCount: $('#employee-count').val(),
+                        owner_id: ownerId,
+                    };
+
+                    if (Object.values(data).some(value => !value)) {
+                        Swal.showValidationMessage('All fields are required');
+                        return false;
+                    }
+
+                    return $.ajax({
+                        url: '../endpoints/add_business.php',
+                        type: 'POST',
+                        data: data, // Send data as a plain object
+                    }).fail(() => {
+                        Swal.showValidationMessage('Failed to add business. Please try again.');
                     });
-                } else {
-                    $('#suggestion-box').hide();
+                },
+            }).then(result => {
+                if (result.isConfirmed) {
+                    Swal.fire('Success!', 'Business added successfully.', 'success')
+                        .then(() => location.reload());
                 }
             });
+        });
 
-            // Add Business
-            $('#add-business-btn').click(function () {
+        $(document).ready(function () {
+            // Edit Button
+            $('.edit-btn').click(function (e) {
+                e.preventDefault();
+                const row = $(this).closest('tr');
+                const businessId = row.data('id');
+                const name = row.find('td:eq(0)').text();
+                const description = row.find('td:eq(1)').text();
+                const asset = row.find('td:eq(2)').text();
+                const employees = row.find('td:eq(3)').text();
+
                 Swal.fire({
-                    title: 'Add New Business',
+                    title: 'Edit Business',
                     html: `
-                    <div>
-                    <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-                    <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
-                    <input type="text" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-                    <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-                    </div>
-
-                `,
-                    confirmButtonText: 'Add Business',
+                <input type="text" id="edit-name" class="form-control mb-2" placeholder="Name" value="${name}">
+                <input type="text" id="edit-description" class="form-control mb-2" placeholder="Description" value="${description}">
+                <input type="text" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
+                <input type="text" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
+            `,
+                    confirmButtonText: 'Save Changes',
                     showCancelButton: true,
                     preConfirm: () => {
-                        const data = {
-                            name: $('#business-name').val(),
-                            branch: $('#business-branch').val(),
-                            asset: $('#business-asset').val(),
-                            employeeCount: $('#employee-count').val(),
-
-                        };
-                        if (Object.values(data).includes(undefined) || Object.values(data).includes('')) {
-                            Swal.showValidationMessage('All fields are required');
-                            return false;
-                        }
-                        const formData = new FormData();
-                        Object.entries(data).forEach(([key, value]) => formData.append(key, value));
                         return $.ajax({
-                            url: 'add_business.php',
+                            url: '../endpoints/edit_business.php',
                             type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
+                            data: {
+                                id: businessId,
+                                name: $('#edit-name').val(),
+                                description: $('#edit-description').val(),
+                                asset: $('#edit-asset').val(),
+                                employeeCount: $('#edit-employees').val(),
+                            },
+                        }).fail(() => {
+                            Swal.showValidationMessage('Failed to save changes. Please try again.');
+                        });
+                    },
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Updated!', 'Business details updated successfully.', 'success')
+                            .then(() => location.reload());
+                    }
+                });
+            });
+
+            // Delete Button
+            $('.delete-btn').click(function (e) {
+                e.preventDefault();
+                const row = $(this).closest('tr');
+                const businessId = row.data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '../endpoints/delete_business.php',
+                            type: 'POST',
+                            data: { id: businessId },
+                            success: () => {
+                                Swal.fire('Deleted!', 'Your business has been deleted.', 'success')
+                                    .then(() => location.reload());
+                            },
+                            error: () => {
+                                Swal.fire('Error!', 'Failed to delete business. Please try again.', 'error');
+                            },
                         });
                     }
-                }).then(result => {
-                    if (result.isConfirmed) Swal.fire('Success!', 'Business added successfully.', 'success');
                 });
             });
         });
+
     </script>
 
     <script>
