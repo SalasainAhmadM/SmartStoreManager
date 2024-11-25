@@ -59,7 +59,6 @@ $today = date("F j, Y");
                         <b>Today Sales for Business A (<?php echo $today; ?>)</b>
                     </h1>
 
-                    <!-- Sales Table -->
                     <div class="mt-4">
                         <table class="table table-bordered">
                             <thead>
@@ -100,17 +99,15 @@ $today = date("F j, Y");
                         </table>
                     </div>
 
-                    <!-- Button to View Previous Sales (Collapsible) -->
                     <div class="mt-5">
                         <button class="btn btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#previousSalesTable" aria-expanded="false" aria-controls="previousSalesTable">
-                            <i class="fas fa-calendar-day me-2"></i>View Previous Sales <i class="fas fa-plus me-2"></i>
+                            <i class="fas fa-calendar-day me-2"></i><b>View Sales Log</b> <i class="fas fa-plus me-2"></i>
 
                         </button>
                     </div>
 
-                    <!-- Collapsible Previous Sales Table -->
                     <div class="collapse mt-3" id="previousSalesTable">
-                        <h3><b>Previous Day Sales</b></h3>
+                        <h3><b>Sales Log</b></h3>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
