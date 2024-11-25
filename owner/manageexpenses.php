@@ -68,53 +68,6 @@
                         </table>
                     </div>
                 </div>
-
-
-                <script>
-                    document.getElementById('businessRadio').addEventListener('click', function() {
-                        document.getElementById('businessPanel').classList.add('show');
-                    });
-                    document.getElementById('branchRadio').addEventListener('click', function() {
-                        document.getElementById('businessPanel').classList.remove('show');
-                    });
-
-                    document.getElementById('businessSelect').addEventListener('change', function() {
-                        var businessName = this.value === 'A' ? 'A' : this.value === 'B' ? 'B' : '';
-                        document.getElementById('businessName').textContent = businessName;
-
-                        var expenses = businessName === 'A' ? [{
-                                description: 'Rent',
-                                amount: '$5000'
-                            },
-                            {
-                                description: 'Utilities',
-                                amount: '$300'
-                            }
-                        ] : businessName === 'B' ? [{
-                                description: 'Marketing',
-                                amount: '$2000'
-                            },
-                            {
-                                description: 'Salaries',
-                                amount: '$12000'
-                            }
-                        ] : [];
-
-                        var expensesList = document.getElementById('expensesList');
-                        expensesList.innerHTML = '';
-                        expenses.forEach(function(expense) {
-                            var row = document.createElement('tr');
-                            row.innerHTML = `<td>${expense.description}</td><td>${expense.amount}</td>`;
-                            expensesList.appendChild(row);
-                        });
-
-                        if (businessName) {
-                            document.getElementById('expensesPanel').classList.add('show');
-                        } else {
-                            document.getElementById('expensesPanel').classList.remove('show');
-                        }
-                    });
-                </script>
             </div>
         </div>
     </div>
