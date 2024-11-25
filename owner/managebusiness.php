@@ -75,7 +75,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         <!-- Search Bar -->
                         <div class="mt-4 mb-4 position-relative">
                             <form class="d-flex" role="search">
-                                <input class="form-control me-2 w-50" type="search" placeholder="Search business.." aria-label="Search">
+                                <input class="form-control me-2 w-50" type="search" placeholder="Search business.."
+                                    aria-label="Search">
                             </form>
                             <!-- Add Business Button -->
                             <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
@@ -142,7 +143,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business A
                                 </a>
 
-                                <div id="businessA" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessA" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 5</p>
                                     <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
 
@@ -150,10 +152,12 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <!-- Search Bar -->
                                     <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search" placeholder="Search branch.." aria-label="Search">
+                                            <input class="form-control me-2 w-50" type="search"
+                                                placeholder="Search branch.." aria-label="Search">
                                         </form>
                                         <!-- Add Branch Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                            type="button">
                                             <i class="fas fa-plus me-2"></i> Add Branch
                                         </button>
                                     </div>
@@ -207,17 +211,20 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business B
                                 </a>
 
-                                <div id="businessB" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessB" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 6</p>
                                     <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
 
                                     <!-- Search Bar -->
                                     <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search" placeholder="Search branch.." aria-label="Search">
+                                            <input class="form-control me-2 w-50" type="search"
+                                                placeholder="Search branch.." aria-label="Search">
                                         </form>
                                         <!-- Add Branch Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                            type="button">
                                             <i class="fas fa-plus me-2"></i> Add Branch
                                         </button>
                                     </div>
@@ -282,16 +289,19 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business A
                                 </a>
 
-                                <div id="businessC" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessC" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 5</p>
 
                                     <!-- Search Bar -->
                                     <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
+                                            <input class="form-control me-2 w-50" type="search"
+                                                placeholder="Search product.." aria-label="Search">
                                         </form>
                                         <!-- Add Product Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                            type="button">
                                             <i class="fas fa-plus me-2"></i> Add Product
                                         </button>
                                     </div>
@@ -359,16 +369,19 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business B
                                 </a>
 
-                                <div id="businessD" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessD" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 6</p>
 
                                     <!-- Search Bar -->
                                     <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
+                                            <input class="form-control me-2 w-50" type="search"
+                                                placeholder="Search product.." aria-label="Search">
                                         </form>
                                         <!-- Add Product Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                            type="button">
                                             <i class="fas fa-plus me-2"></i> Add Product
                                         </button>
                                     </div>
