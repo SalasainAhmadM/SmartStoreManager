@@ -34,6 +34,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     <?php include '../components/owner_sidebar.php'; ?>
 
     <div class="container-fluid page-body">
+
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
@@ -45,8 +46,6 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
             </div>
 
         </div>
-
-
     </div>
 
     <script src="../js/sidebar.js"></script>

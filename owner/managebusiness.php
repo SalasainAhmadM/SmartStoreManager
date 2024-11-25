@@ -73,14 +73,16 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         <h2 class="mt-5">Business List Section</h2>
 
                         <!-- Search Bar -->
-                        <div class="mt-4">
+                        <div class="mt-4 mb-4 position-relative">
                             <form class="d-flex" role="search">
-                                <input class="form-control me-2" type="search" placeholder="Search businesses" aria-label="Search">
-                                <button class="btn btn-outline-primary" type="submit">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                                <input class="form-control me-2 w-50" type="search" placeholder="Search business.." aria-label="Search">
                             </form>
+                            <!-- Add Business Button -->
+                            <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                <i class="fas fa-plus me-2"></i> Add Business
+                            </button>
                         </div>
+
 
                         <div class="col-md-12 mt-5">
                             <table class="table table-striped table-hover mt-4">
@@ -144,17 +146,20 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <p><strong>Business ID:</strong> 5</p>
                                     <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
 
-                                    <div class="mt-4 mb-4">
+
+                                    <!-- Search Bar -->
+                                    <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search by Location" aria-label="Search">
-                                            <button class="btn btn-outline-primary" type="submit">
-                                                <i class="fas fa-search"></i>
-                                            </button>
+                                            <input class="form-control me-2 w-50" type="search" placeholder="Search branch.." aria-label="Search">
                                         </form>
+                                        <!-- Add Branch Button -->
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                            <i class="fas fa-plus me-2"></i> Add Branch
+                                        </button>
                                     </div>
 
                                     <table class="table">
-                                        <thead>
+                                        <thead class="table-dark">
                                             <tr>
                                                 <th>Location</th>
                                                 <th>Created At</th>
@@ -202,21 +207,24 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business B
                                 </a>
 
-                                <div id="businessB" class="business-details" style="display: none; margin-top: 10px;">
+                                <div id="businessB" class="business-details card-one" style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 6</p>
                                     <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
 
-                                    <div class="mt-4 mb-4">
+                                    <!-- Search Bar -->
+                                    <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search by Location" aria-label="Search">
-                                            <button class="btn btn-outline-primary" type="submit">
-                                                <i class="fas fa-search"></i>
-                                            </button>
+                                            <input class="form-control me-2 w-50" type="search" placeholder="Search branch.." aria-label="Search">
                                         </form>
+                                        <!-- Add Branch Button -->
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                            <i class="fas fa-plus me-2"></i> Add Branch
+                                        </button>
                                     </div>
 
+
                                     <table class="table">
-                                        <thead>
+                                        <thead class="table-dark">
                                             <tr>
                                                 <th>Location</th>
                                                 <th>Created At</th>
@@ -277,19 +285,20 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                 <div id="businessC" class="business-details card-one" style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 5</p>
 
-                                    <div class="mt-4 mb-4">
+                                    <!-- Search Bar -->
+                                    <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search product.." aria-label="Search">
-                                            <button class="btn btn-outline-primary" type="submit">
-                                                <i class="fas fa-search"></i>
-                                            </button>
+                                            <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
                                         </form>
+                                        <!-- Add Product Button -->
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                            <i class="fas fa-plus me-2"></i> Add Product
+                                        </button>
                                     </div>
 
-                                    <button class="btn btn-success mb-3" onclick="addProduct()">Add Product</button>
 
                                     <table class="table">
-                                        <thead>
+                                        <thead class="table-dark">
                                             <tr>
                                                 <th>Product ID</th>
                                                 <th>Name</th>
@@ -353,19 +362,20 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                 <div id="businessD" class="business-details card-one" style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 6</p>
 
-                                    <div class="mt-4 mb-4">
+                                    <!-- Search Bar -->
+                                    <div class="mt-4 mb-4 position-relative">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search product.." aria-label="Search">
-                                            <button class="btn btn-outline-primary" type="submit">
-                                                <i class="fas fa-search"></i>
-                                            </button>
+                                            <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
                                         </form>
+                                        <!-- Add Product Button -->
+                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
+                                            <i class="fas fa-plus me-2"></i> Add Product
+                                        </button>
                                     </div>
 
-                                    <button class="btn btn-success mb-3" onclick="addProduct()">Add Product</button>
 
                                     <table class="table">
-                                        <thead>
+                                        <thead class="table-dark">
                                             <tr>
                                                 <th>Product ID</th>
                                                 <th>Name</th>
@@ -404,12 +414,12 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                                 <td>2024-02-15</td>
                                                 <td>2024-11-15</td>
                                                 <td>
-                                                <a href="#" class="text-primary me-3" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="#" class="text-danger" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
+                                                    <a href="#" class="text-primary me-3" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="text-danger" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
                                                 </td>
 
                                             </tr>

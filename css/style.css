@@ -137,7 +137,7 @@ footer {
   margin: 1rem auto;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .card-one {
