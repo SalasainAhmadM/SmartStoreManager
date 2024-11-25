@@ -37,7 +37,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-wallet me-2"></i> Manage Business</b></h1>
+                    <h1><b><i class="fas fa-wallet me-2"></i> Manage Expenses</b></h1>
 
     
 
