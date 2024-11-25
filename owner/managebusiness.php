@@ -96,20 +96,6 @@ $conn->close();
                             </button>
                         </div>
 
-                        <script>
-                            document.getElementById('search-business').addEventListener('input', function () {
-                                const filter = this.value.toLowerCase();
-                                const rows = document.querySelectorAll('#business-table-body tr');
-
-                                rows.forEach(row => {
-                                    const nameCell = row.querySelector('.business-name');
-                                    if (nameCell) {
-                                        const name = nameCell.textContent.toLowerCase();
-                                        row.style.display = name.includes(filter) ? '' : 'none';
-                                    }
-                                });
-                            });
-                        </script>
                         <div class="col-md-12 mt-5">
                             <table class="table table-striped table-hover mt-4">
                                 <thead class="table-dark">
@@ -302,166 +288,57 @@ $conn->close();
                         <p class="mb-5">Detailed information on each business's products is available here.</p>
 
                         <div id="businesses">
-                            <div>
-                                <a class="btn btn-primary business card-one" onclick="toggleDetails('businessC')">
-                                    <i class="fa-solid fa-building"></i>
-                                    Business A
-                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
-                                </a>
+                            <?php foreach ($businesses as $business): ?>
+                                <div>
+                                    <a class="btn btn-primary business card-one"
+                                        onclick="toggleDetails('business-<?php echo $business['id']; ?>')">
+                                        <i class="fa-solid fa-building"></i>
+                                        <?php echo htmlspecialchars($business['name']); ?>
+                                        <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
+                                    </a>
 
-                                <div id="businessC" class="business-details card-one"
-                                    style="display: none; margin-top: 10px;">
-                                    <p><strong>Business ID:</strong> 5</p>
+                                    <div id="business-<?php echo $business['id']; ?>" class="business-details card-one"
+                                        style="display: none; margin-top: 10px;">
+                                        <p><strong>Business ID:</strong> <?php echo htmlspecialchars($business['id']); ?>
+                                        </p>
 
-                                    <!-- Search Bar -->
-                                    <div class="mt-4 mb-4 position-relative">
-                                        <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search"
-                                                placeholder="Search product.." aria-label="Search">
-                                        </form>
-                                        <!-- Add Product Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                            type="button">
-                                            <i class="fas fa-plus me-2"></i> Add Product
-                                        </button>
+                                        <div class="mt-4 mb-4 position-relative">
+                                            <form class="d-flex" role="search">
+                                                <input class="form-control me-2 w-50" type="search"
+                                                    placeholder="Search product.." aria-label="Search">
+                                            </form>
+                                            <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                                type="button" onclick="addProduct(<?php echo $business['id']; ?>)">
+                                                <i class="fas fa-plus me-2"></i> Add Product
+                                            </button>
+                                        </div>
+
+                                        <table class="table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Product ID</th>
+                                                    <th>Name</th>
+                                                    <th>Type</th>
+                                                    <th>Price</th>
+                                                    <th>Description</th>
+                                                    <th>Created At</th>
+                                                    <th>Updated At</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="8" class="text-center">No products available for this
+                                                        business yet.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
-
-
-                                    <table class="table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Product ID</th>
-                                                <th>Name</th>
-                                                <th>Type</th>
-                                                <th>Price</th>
-                                                <th>Description</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>Product A</td>
-                                                <td>Type A</td>
-                                                <td>$100</td>
-                                                <td>Description of Product A</td>
-                                                <td>2024-01-10</td>
-                                                <td>2024-11-10</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>Product B</td>
-                                                <td>Type B</td>
-                                                <td>$150</td>
-                                                <td>Description of Product B</td>
-                                                <td>2024-02-15</td>
-                                                <td>2024-11-15</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
 
 
-                        <div id="businesses">
-                            <div>
-                                <a class="btn btn-primary business card-one" onclick="toggleDetails('businessD')">
-                                    <i class="fa-solid fa-building"></i>
-                                    Business B
-                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
-                                </a>
-
-                                <div id="businessD" class="business-details card-one"
-                                    style="display: none; margin-top: 10px;">
-                                    <p><strong>Business ID:</strong> 6</p>
-
-                                    <!-- Search Bar -->
-                                    <div class="mt-4 mb-4 position-relative">
-                                        <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search"
-                                                placeholder="Search product.." aria-label="Search">
-                                        </form>
-                                        <!-- Add Product Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                            type="button">
-                                            <i class="fas fa-plus me-2"></i> Add Product
-                                        </button>
-                                    </div>
-
-
-                                    <table class="table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Product ID</th>
-                                                <th>Name</th>
-                                                <th>Type</th>
-                                                <th>Price</th>
-                                                <th>Description</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>Product A</td>
-                                                <td>Type A</td>
-                                                <td>$100</td>
-                                                <td>Description of Product A</td>
-                                                <td>2024-01-10</td>
-                                                <td>2024-11-10</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>Product B</td>
-                                                <td>Type B</td>
-                                                <td>$150</td>
-                                                <td>Description of Product B</td>
-                                                <td>2024-02-15</td>
-                                                <td>2024-11-15</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
 
 
                     </div>
@@ -490,7 +367,7 @@ $conn->close();
                 html: `
             <div>
                 <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <textarea type="text" id="business-description" class="form-control mb-2" placeholder="Business Description"></textarea>
                 <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
                 <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
             </div>
@@ -501,8 +378,8 @@ $conn->close();
                     const data = {
                         name: $('#business-name').val(),
                         description: $('#business-description').val(),
-                        asset: $('#business-asset').val(),
-                        employeeCount: $('#employee-count').val(),
+                        asset: parseInt($('#business-asset').val(), 10),
+                        employeeCount: parseInt($('#employee-count').val(), 10),
                         owner_id: ownerId,
                     };
 
@@ -511,10 +388,20 @@ $conn->close();
                         return false;
                     }
 
+                    if (data.asset > 15000000) {
+                        Swal.showValidationMessage('Asset size must not exceed 15,000,000');
+                        return false;
+                    }
+
+                    if (data.employeeCount > 99) {
+                        Swal.showValidationMessage('Employee count must not exceed 99');
+                        return false;
+                    }
+
                     return $.ajax({
                         url: '../endpoints/add_business.php',
                         type: 'POST',
-                        data: data, // Send data as a plain object
+                        data: data,
                     }).fail(() => {
                         Swal.showValidationMessage('Failed to add business. Please try again.');
                     });
@@ -542,23 +429,40 @@ $conn->close();
                     title: 'Edit Business',
                     html: `
                 <input type="text" id="edit-name" class="form-control mb-2" placeholder="Name" value="${name}">
-                <input type="text" id="edit-description" class="form-control mb-2" placeholder="Description" value="${description}">
-                <input type="text" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
-                <input type="text" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
+                <textarea type="text" id="edit-description" class="form-control mb-2" placeholder="Description">${description}</textarea>
+                <input type="number" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
+                <input type="number" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
             `,
                     confirmButtonText: 'Save Changes',
                     showCancelButton: true,
                     preConfirm: () => {
+                        const updatedData = {
+                            id: businessId,
+                            name: $('#edit-name').val(),
+                            description: $('#edit-description').val(),
+                            asset: parseInt($('#edit-asset').val(), 10),
+                            employeeCount: parseInt($('#edit-employees').val(), 10),
+                        };
+
+                        if (Object.values(updatedData).some(value => !value)) {
+                            Swal.showValidationMessage('All fields are required');
+                            return false;
+                        }
+
+                        if (updatedData.asset > 15000000) {
+                            Swal.showValidationMessage('Asset size must not exceed 15,000,000');
+                            return false;
+                        }
+
+                        if (updatedData.employeeCount > 99) {
+                            Swal.showValidationMessage('Employee count must not exceed 99');
+                            return false;
+                        }
+
                         return $.ajax({
                             url: '../endpoints/edit_business.php',
                             type: 'POST',
-                            data: {
-                                id: businessId,
-                                name: $('#edit-name').val(),
-                                description: $('#edit-description').val(),
-                                asset: $('#edit-asset').val(),
-                                employeeCount: $('#edit-employees').val(),
-                            },
+                            data: updatedData,
                         }).fail(() => {
                             Swal.showValidationMessage('Failed to save changes. Please try again.');
                         });
@@ -604,9 +508,54 @@ $conn->close();
             });
         });
 
-    </script>
+        // add product
+        function addProduct(businessId) {
+            Swal.fire({
+                title: 'Add Product',
+                html: `
+            <input id="product-name" class="form-control mb-2" placeholder="Product Name">
+            <input id="product-type" class="form-control mb-2" placeholder="Product Type">
+            <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
+            <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
+        `,
+                confirmButtonText: 'Add Product',
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    const name = document.getElementById('product-name').value;
+                    const type = document.getElementById('product-type').value;
+                    const price = document.getElementById('product-price').value;
+                    const description = document.getElementById('product-description').value;
 
-    <script>
+                    if (!name || !type || !price || !description) {
+                        Swal.showValidationMessage('Please fill out all fields');
+                    }
+                    return { name, type, price, description };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { name, type, price, description } = result.value;
+
+                    // Send data to add_product.php
+                    fetch('../endpoints/add_product.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ business_id: businessId, name, type, price, description })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success', 'Product added successfully!', 'success');
+                                // Optionally refresh or update product table
+                            } else {
+                                Swal.fire('Error', data.message, 'error');
+                            }
+                        })
+                        .catch(error => Swal.fire('Error', 'An error occurred.', 'error'));
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -621,9 +570,22 @@ $conn->close();
                 });
             });
         });
-    </script>
 
-    <script>
+        // business filter
+        document.getElementById('search-business').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#business-table-body tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('.business-name');
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+
+
         function toggleDetails(id) {
             const details = document.getElementById(id);
             details.style.display = details.style.display === "none" ? "block" : "none";
