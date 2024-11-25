@@ -75,7 +75,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         <!-- Search Bar -->
                         <div class="mt-4">
                             <form class="d-flex" role="search">
-                                <input class="form-control me-2" type="search" placeholder="Search businesses" aria-label="Search">
+                                <input class="form-control me-2" type="search" placeholder="Search businesses"
+                                    aria-label="Search">
                                 <button class="btn btn-outline-primary" type="submit">
                                     <i class="fas fa-search"></i>
                                 </button>
@@ -140,13 +141,15 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business A
                                 </a>
 
-                                <div id="businessA" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessA" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 5</p>
                                     <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
 
                                     <div class="mt-4 mb-4">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search by Location" aria-label="Search">
+                                            <input class="form-control me-2" type="search"
+                                                placeholder="Search by Location" aria-label="Search">
                                             <button class="btn btn-outline-primary" type="submit">
                                                 <i class="fas fa-search"></i>
                                             </button>
@@ -208,7 +211,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
                                     <div class="mt-4 mb-4">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search by Location" aria-label="Search">
+                                            <input class="form-control me-2" type="search"
+                                                placeholder="Search by Location" aria-label="Search">
                                             <button class="btn btn-outline-primary" type="submit">
                                                 <i class="fas fa-search"></i>
                                             </button>
@@ -274,12 +278,14 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business A
                                 </a>
 
-                                <div id="businessC" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessC" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 5</p>
 
                                     <div class="mt-4 mb-4">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search product.." aria-label="Search">
+                                            <input class="form-control me-2" type="search"
+                                                placeholder="Search product.." aria-label="Search">
                                             <button class="btn btn-outline-primary" type="submit">
                                                 <i class="fas fa-search"></i>
                                             </button>
@@ -350,12 +356,14 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     Business B
                                 </a>
 
-                                <div id="businessD" class="business-details card-one" style="display: none; margin-top: 10px;">
+                                <div id="businessD" class="business-details card-one"
+                                    style="display: none; margin-top: 10px;">
                                     <p><strong>Business ID:</strong> 6</p>
 
                                     <div class="mt-4 mb-4">
                                         <form class="d-flex" role="search">
-                                            <input class="form-control me-2" type="search" placeholder="Search product.." aria-label="Search">
+                                            <input class="form-control me-2" type="search"
+                                                placeholder="Search product.." aria-label="Search">
                                             <button class="btn btn-outline-primary" type="submit">
                                                 <i class="fas fa-search"></i>
                                             </button>
@@ -404,12 +412,12 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                                 <td>2024-02-15</td>
                                                 <td>2024-11-15</td>
                                                 <td>
-                                                <a href="#" class="text-primary me-3" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="#" class="text-danger" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
+                                                    <a href="#" class="text-primary me-3" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="text-danger" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
                                                 </td>
 
                                             </tr>
