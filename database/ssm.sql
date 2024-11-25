@@ -85,6 +85,22 @@ CREATE TABLE `manager` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `messages`
+--
+
+CREATE TABLE `messages` (
+  `message_id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sender_type` enum('owner','manager') NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `owner`
 --
 
@@ -101,7 +117,8 @@ CREATE TABLE `owner` (
   `contact_number` varchar(15) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `image` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL
+  `password` varchar(255) NOT NULL,
+  `is_new_owner` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 
@@ -157,6 +174,14 @@ ALTER TABLE `manager`
   ADD KEY `fk_manager_owner` (`owner_id`);
 
 --
+-- Indexes for table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `sender_id` (`sender_id`),
+  ADD KEY `receiver_id` (`receiver_id`);
+
+--
 -- Indexes for table `owner`
 --
 ALTER TABLE `owner`
@@ -197,6 +222,12 @@ ALTER TABLE `employee`
 --
 ALTER TABLE `manager`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `owner`
