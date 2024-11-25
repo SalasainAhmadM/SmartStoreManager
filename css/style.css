@@ -379,3 +379,7 @@ tr:hover {
 .business {
   width:50vh;
 }
+
+#businessPanel {
+  margin: 3rem;
+}
