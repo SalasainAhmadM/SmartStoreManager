@@ -1,12 +1,75 @@
 <?php
 session_start();
+require_once '../conn/conn.php';
 require_once '../conn/auth.php';
 
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
-?>
 
+// Check if the owner is new
+$query = "SELECT is_new_owner FROM owner WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $isNewOwner = $row['is_new_owner'] == 1;
+}
+
+if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+    echo "
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome!',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    " . ($isNewOwner ? "triggerAddBusinessModal();" : "") . "
+                });
+            };
+        </script>
+    ";
+    unset($_SESSION['login_success']);
+}
+?>
+<script>
+    function triggerAddBusinessModal() {
+        Swal.fire({
+            title: 'Add New Business',
+            html: `
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
+                <input type="text" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+            </div>
+        `,
+            confirmButtonText: 'Add Business',
+            showCancelButton: true,
+            cancelButtonText: 'Skip'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const businessName = document.getElementById('business-name').value;
+                const businessBranch = document.getElementById('business-branch').value;
+                const businessAsset = document.getElementById('business-asset').value;
+                const employeeCount = document.getElementById('employee-count').value;
+
+                console.log({
+                    businessName,
+                    businessBranch,
+                    businessAsset,
+                    employeeCount
+                });
+
+            }
+        });
+    }
+</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,25 +81,6 @@ $owner_id = $_SESSION['user_id'];
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
-
-<?php
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
-?>
 
 <body class="d-flex">
 
@@ -219,7 +263,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

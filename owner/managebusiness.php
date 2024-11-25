@@ -1,11 +1,33 @@
 <?php
 session_start();
+require_once '../conn/conn.php';
 require_once '../conn/auth.php';
 
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
+$isNewOwner = false;
+
+if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+    echo "
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome!',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    " . ($isNewOwner ? "triggerAddBusinessModal();" : "") . "
+                });
+            };
+        </script>
+    ";
+    unset($_SESSION['login_success']);
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
