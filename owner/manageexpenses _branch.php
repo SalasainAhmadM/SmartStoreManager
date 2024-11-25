@@ -43,17 +43,18 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                     <div class="mt-5 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
-                                <label style="margin-right: 2rem;">
+
+                                <label style="margin-right: 2rem;" onclick="window.location.href='manageexpenses.php'">
                                     <input type="radio" name="selection" value="business" id="businessRadio" checked>
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
                                 </label>
 
-                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'">
+                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'" checked>
                                     <input type="radio" name="selection" value="branch" id="branchRadio">
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
                                 </label>
                             </div>
-
+                            
                             <?php include '../components/add_expenses.php'; ?>
 
                         </h5>
@@ -72,8 +73,16 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         </select>
                     </div>
 
+                    <div class="form-group" id="branchGroup" style="display:none;">
+                        <label for="branchSelect">Select Branch</label>
+                        <select id="branchSelect" class="form-control">
+                            <option value="">Select Branch</option>
+                            <!-- Branch options will be populated dynamically -->
+                        </select>
+                    </div>
+
                     <div id="expensesPanel" class="collapse mt-3">
-                        <h4>Expenses List for Business <span id="businessName"></span></h4>
+                        <h4>Expenses List for Branch <span id="branchName"></span></h4>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -83,11 +92,12 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                             </thead>
                             <tbody id="expensesList">
                                 <!-- Expenses will be dynamically populated here -->
-                                <script src="../js/business_expenses.js"></script>
+                                <script src="../js/branch_expenses.js"></script>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
 
             </div>
         </div>
@@ -95,9 +105,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
 
 
-
     <script src="../js/sidebar.js"></script>
-
 
 </body>
 
