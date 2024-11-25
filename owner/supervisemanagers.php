@@ -50,19 +50,22 @@ $owner_id = $_SESSION['user_id'];
                     </ul>
 
                     <div id="managerlist" class="tab-content active">
-                        <div class="mt-5 mb-4 position-relative">
-                            <form class="d-flex" role="search" id="search-form">
-                                <input class="form-control me-2 w-50" id="search-business" type="search"
-                                    placeholder="Search manager..." aria-label="Search">
-                                <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
-                            </form>
-                            <button id="add-business-btn"
-                                class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
-                                <i class="fas fa-plus me-2"></i> Create Manager
-                            </button>
-                        </div>
 
-                        <div class="table-responsive">
+                        <h1 class="mt-5"><b>Manage List Section</b></h1>
+                        <div class="table-responsive mt-5">
+
+                            <div class="position-relative">
+                                <form class="d-flex" role="search" id="search-form">
+                                    <input class="form-control me-2 w-50" id="search-business" type="search"
+                                        placeholder="Search manager..." aria-label="Search">
+                                    <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
+                                </form>
+                                <button id="add-business-btn"
+                                    class="btn btn-success position-absolute top-0 end-0  me-2" type="button">
+                                    <i class="fas fa-plus me-2"></i> Create Manager
+                                </button>
+                            </div>
+
                             <table class="table table-striped table-hover mt-5">
                                 <thead class="table-dark">
                                     <tr>
@@ -108,14 +111,20 @@ $owner_id = $_SESSION['user_id'];
                     </div>
 
                     <div id="assignmanager" class="tab-content">
+
+                        <h1 class="mt-5"><b>Assign Manager Section</b></h1>
+
                         <div class="table-responsive mt-5">
-                            <table class="table table-striped table-hover mt-4">
+                            <table class="table table-striped table-hover mt-5">
+
 
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
                                         placeholder="Search business..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
+
+
 
                                 <thead class="table-dark">
                                     <tr>
@@ -159,7 +168,7 @@ $owner_id = $_SESSION['user_id'];
 
 
                         <div class="table-responsive mt-5">
-                            <table class="table table-striped table-hover mt-4">
+                            <table class="table table-striped table-hover mt-5">
 
 
                                 <form class="d-flex" role="search" id="search-form">
@@ -196,6 +205,7 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="chat" class="tab-content">
 
+                        <h1 class="mt-5"><b>Chat Section</b></h1>
 
 
                     </div>
