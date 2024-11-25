@@ -38,14 +38,16 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 }
 ?>
 <script>
+    const ownerId = <?php echo json_encode($owner_id); ?>;
+
     function triggerAddBusinessModal() {
         Swal.fire({
             title: 'Add New Business',
             html: `
             <div>
                 <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-                <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
-                <input type="text" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
                 <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
             </div>
         `,
@@ -54,21 +56,46 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
             cancelButtonText: 'Skip'
         }).then((result) => {
             if (result.isConfirmed) {
-                const businessName = document.getElementById('business-name').value;
-                const businessBranch = document.getElementById('business-branch').value;
-                const businessAsset = document.getElementById('business-asset').value;
-                const employeeCount = document.getElementById('employee-count').value;
+                const businessName = document.getElementById('business-name').value.trim();
+                const businessDescription = document.getElementById('business-description').value.trim();
+                const businessAsset = document.getElementById('business-asset').value.trim();
+                const employeeCount = document.getElementById('employee-count').value.trim();
 
-                console.log({
-                    businessName,
-                    businessBranch,
-                    businessAsset,
-                    employeeCount
-                });
+                if (!businessName || !businessAsset || !employeeCount) {
+                    Swal.fire('Error', 'Please fill in all required fields.', 'error');
+                    return;
+                }
 
+                const formData = new FormData();
+                formData.append('name', businessName);
+                formData.append('description', businessDescription);
+                formData.append('asset', businessAsset);
+                formData.append('employeeCount', employeeCount);
+                formData.append('owner_id', ownerId);
+
+                fetch('../endpoints/add_business_prompt.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Success', data.message, 'success').then(() => {
+                                location.reload(); // Reload page to reflect the added business
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                        console.error(err);
+                    });
             }
         });
     }
+
+
 </script>
 
 <!DOCTYPE html>
@@ -90,7 +117,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</b></h1>
+                    <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview </b></h1>
 
                     <div class="container-fluid">
                         <div class="row">
