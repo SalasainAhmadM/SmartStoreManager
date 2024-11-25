@@ -81,7 +81,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                     </ul>
 
                     <div id="businesslist" class="tab-content active">
-                        <h2 class="mt-5">Business List Section</h2>
+                        <h1 class="mt-5"><b>Business List Section</b></h1>
 
                         <!-- Search Bar -->
                         <div class="mt-4 mb-4 position-relative">
@@ -151,8 +151,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
 
                     <div id="branchlist" class="tab-content">
-                        <h2 class="mt-5">Branch List Section</h2>
-                        <p>Detailed information about each business and its branches is available here.</p>
+                        <h1 class="mt-5"><b>Branch List Section</b></h1>
+                        <p class="mb-5">Detailed information about each business and its branches is available here.</p>
 
 
                         <div id="businesses">
@@ -300,8 +300,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
 
                     <div id="manageproduct" class="tab-content">
-                        <h2 class="mt-5">Manage Product Section</h2>
-                        <p>Detailed information on each business's products is available here.</p>
+                        <h1 class="mt-5"><b>Manage Product Section</b></h1>
+                        <p class="mb-5">Detailed information on each business's products is available here.</p>
 
                         <div id="businesses">
                             <div>
