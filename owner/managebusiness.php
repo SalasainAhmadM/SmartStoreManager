@@ -53,26 +53,6 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     </style>
 </head>
 
-<?php
-session_start();
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
-?>
-
 <body class="d-flex">
 
     <?php include '../components/owner_sidebar.php'; ?>

@@ -9,26 +9,6 @@
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
-<?php
-session_start();
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
-?>
-
 <body class="d-flex">
 
     <?php include '../components/owner_sidebar.php'; ?>
@@ -96,38 +76,38 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
 
                 <script>
-                    document.getElementById('businessRadio').addEventListener('click', function() {
+                    document.getElementById('businessRadio').addEventListener('click', function () {
                         document.getElementById('businessPanel').classList.add('show');
                     });
-                    document.getElementById('branchRadio').addEventListener('click', function() {
+                    document.getElementById('branchRadio').addEventListener('click', function () {
                         document.getElementById('businessPanel').classList.remove('show');
                     });
 
-                    document.getElementById('businessSelect').addEventListener('change', function() {
+                    document.getElementById('businessSelect').addEventListener('change', function () {
                         var businessName = this.value === 'A' ? 'A' : this.value === 'B' ? 'B' : '';
                         document.getElementById('businessName').textContent = businessName;
 
                         var expenses = businessName === 'A' ? [{
-                                description: 'Rent',
-                                amount: '$5000'
-                            },
-                            {
-                                description: 'Utilities',
-                                amount: '$300'
-                            }
+                            description: 'Rent',
+                            amount: '$5000'
+                        },
+                        {
+                            description: 'Utilities',
+                            amount: '$300'
+                        }
                         ] : businessName === 'B' ? [{
-                                description: 'Marketing',
-                                amount: '$2000'
-                            },
-                            {
-                                description: 'Salaries',
-                                amount: '$12000'
-                            }
+                            description: 'Marketing',
+                            amount: '$2000'
+                        },
+                        {
+                            description: 'Salaries',
+                            amount: '$12000'
+                        }
                         ] : [];
 
                         var expensesList = document.getElementById('expensesList');
                         expensesList.innerHTML = '';
-                        expenses.forEach(function(expense) {
+                        expenses.forEach(function (expense) {
                             var row = document.createElement('tr');
                             row.innerHTML = `<td>${expense.description}</td><td>${expense.amount}</td>`;
                             expensesList.appendChild(row);
