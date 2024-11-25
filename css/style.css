@@ -140,6 +140,15 @@ footer {
   text-align: center;
 }
 
+.card-one {
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 0.25rem auto;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
 .card img{
   width: 10rem;
   width: 10rem;
@@ -289,6 +298,16 @@ main {
 .lh-tight { line-height: 1.25; }
 
 
+#sidebar.collapsed {
+  width: 80px; /* Narrow width */
+}
+
+#sidebar.collapsed .nav-link span,
+#sidebar.collapsed #sidebarLogo,
+#sidebar.collapsed #userName {
+  display: none; /* Hide text and extra elements */
+}
+
 
 #sidebar.collapsed .nav-link {
   padding-left: 10px;  /* Adjust to align the icons nicely */
@@ -355,4 +374,8 @@ th {
 }
 tr:hover {
   background-color: #f1f1f1;
+}
+
+.business {
+  width:50vh;
 }
