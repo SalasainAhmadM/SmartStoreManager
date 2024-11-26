@@ -377,6 +377,9 @@ tr:hover {
 
 .business {
   width:50vh;
+  display: flex;
+  justify-content: space-between; /* Push the content apart */
+  align-items: center;   
 }
 
 #businessPanel {
@@ -399,4 +402,79 @@ tr:hover {
 
 .nav-link {
   cursor: pointer;
+}
+
+
+.profile-container {
+  max-width: 800px; 
+  margin: 30px auto;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 30px; 
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 30px; 
+}
+
+.profile-header h1 {
+  font-size: 2rem; 
+  font-weight: bold;
+}
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; 
+}
+
+.form-group span {
+  display: inline-block;
+  background-color: #f8f9fa;
+  padding: 15px; 
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  flex-grow: 1;
+  margin-right: 15px; 
+}
+
+.form-group .fa {
+  margin-right: 15px;
+}
+
+.edit-btn {
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  padding: 8px 20px; 
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+.business-list {
+  margin-top: 30px; 
+}
+
+.business-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.business-item i {
+  margin-right: 15px;
+  color: #28a745;
+}
+
+.swal2-input {
+  width: 300px !important; 
+  text-align: center;
 }

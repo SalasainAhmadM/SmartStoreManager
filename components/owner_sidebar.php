@@ -49,11 +49,11 @@ function isActive($link)
                 <i class="fas fa-users me-2"></i> <span>Supervise Managers</span>
             </a>
         </li>
-        <li>
+        <!-- <li>
             <a href="settings.php" class="nav-link <?= isActive('settings.php') ?>">
                 <i class="fas fa-cog me-2"></i> <span>Settings</span>
             </a>
-        </li>
+        </li> -->
     </ul>
     <hr>
     <div class="dropdown">
@@ -62,13 +62,11 @@ function isActive($link)
             <strong id="sidebarLogo">mdo</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user-circle"></i> Profile</a></li>
             <li>
                 <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
+            <li><a class="dropdown-item" href="#"> <i class="fas fa-sign-out-alt"></i> Sign out</a></li>
         </ul>
     </div>
 </div>

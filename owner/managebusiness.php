@@ -95,7 +95,7 @@ $conn->close();
                     </ul>
 
                     <div id="businesslist" class="tab-content active">
-                        <h1 class="mt-5"><b>Business List Section</b></h1>
+                        <h1 class="mt-5"></h1>
 
                         <!-- Search Bar -->
                         <div class="mt-4 mb-4 position-relative">
@@ -150,7 +150,7 @@ $conn->close();
                     </div>
 
                     <div id="branchlist" class="tab-content">
-                        <h1 class="mt-5"><b>Branch List Section</b></h1>
+                        <h1 class="mt-5"></h1>
                         <p class="mb-5">Detailed information about each business and its branches is available here.</p>
 
 
@@ -159,7 +159,7 @@ $conn->close();
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessA')">
                                     <i class="fa-solid fa-building"></i>
                                     Business A
-                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
+                                    <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessA" class="business-details card-one"
@@ -228,7 +228,7 @@ $conn->close();
                                 <a class="btn btn-primary business card-one" onclick="toggleDetails('businessB')">
                                     <i class="fa-solid fa-building"></i>
                                     Business B
-                                    <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
+                                    <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                 </a>
 
                                 <div id="businessB" class="business-details card-one"
@@ -299,7 +299,7 @@ $conn->close();
 
 
                     <div id="manageproduct" class="tab-content">
-                        <h1 class="mt-5"><b>Manage Product Section</b></h1>
+                        <h1 class="mt-5"></h1>
                         <p class="mb-5">Detailed information on each business's products is available here.</p>
 
                         <div id="businesses">

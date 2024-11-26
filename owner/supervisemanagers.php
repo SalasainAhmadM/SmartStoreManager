@@ -51,7 +51,7 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="managerlist" class="tab-content active">
 
-                        <h1 class="mt-5"><b>Manage List Section</b></h1>
+                        <h1 class="mt-5"></h1>
                         <div class="table-responsive mt-5">
 
                             <div class="position-relative">
@@ -112,7 +112,7 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="assignmanager" class="tab-content">
 
-                        <h1 class="mt-5"><b>Assign Manager Section</b></h1>
+                        <h1 class="mt-5"></h1>
 
                         <div class="table-responsive mt-5">
                             <table class="table table-striped table-hover mt-5">
@@ -205,7 +205,7 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="chat" class="tab-content">
 
-                        <h1 class="mt-5"><b>Chat Section</b></h1>
+                        <h1 class="mt-5"></h1>
 
 
                     </div>
