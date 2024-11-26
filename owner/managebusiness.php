@@ -18,11 +18,26 @@ $businesses = [];
 while ($row = $result->fetch_assoc()) {
     $businesses[] = $row;
 }
-
 $stmt->close();
+
+// Fetch products for each business
+$products_by_business = [];
+$product_query = "SELECT * FROM products WHERE business_id = ?";
+$product_stmt = $conn->prepare($product_query);
+
+foreach ($businesses as $business) {
+    $product_stmt->bind_param("i", $business['id']);
+    $product_stmt->execute();
+    $product_result = $product_stmt->get_result();
+
+    while ($product_row = $product_result->fetch_assoc()) {
+        $products_by_business[$business['id']][] = $product_row;
+    }
+}
+
+$product_stmt->close();
 $conn->close();
 ?>
-
 
 
 <!DOCTYPE html>
@@ -34,6 +49,19 @@ $conn->close();
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
+    <style>
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .nav-link {
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body class="d-flex">
@@ -44,7 +72,7 @@ $conn->close();
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-cogs me-2"></i> Manage Business</b></h1>
+                    <h1><b><i class="fas fa-cogs me-2"></i> Manage Business </b></h1>
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
@@ -291,7 +319,7 @@ $conn->close();
 
                                         <div class="mt-4 mb-4 position-relative">
                                             <form class="d-flex" role="search">
-                                                <input class="form-control me-2 w-50" type="search"
+                                                <input class="form-control me-2 w-50" type="search" id="search-product"
                                                     placeholder="Search product.." aria-label="Search">
                                             </form>
                                             <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
@@ -300,7 +328,7 @@ $conn->close();
                                             </button>
                                         </div>
 
-                                        <table class="table">
+                                        <table class="table" id="product-table">
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th>Product ID</th>
@@ -314,10 +342,32 @@ $conn->close();
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td colspan="8" class="text-center">No products available for this
-                                                        business yet.</td>
-                                                </tr>
+                                                <?php if (!empty($products_by_business[$business['id']])): ?>
+                                                    <?php foreach ($products_by_business[$business['id']] as $product): ?>
+                                                        <tr>
+                                                            <td><?php echo htmlspecialchars($product['id']); ?></td>
+                                                            <td class="product-name">
+                                                                <?php echo htmlspecialchars($product['name']); ?>
+                                                            </td>
+                                                            <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                            <td><?php echo htmlspecialchars($product['price']); ?></td>
+                                                            <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                            <td><?php echo htmlspecialchars($product['created_at']); ?></td>
+                                                            <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
+                                                            <td>
+                                                                <button class="btn btn-primary btn-sm"
+                                                                    onclick="editProduct(<?php echo $product['id']; ?>)">Edit</button>
+                                                                <button class="btn btn-danger btn-sm"
+                                                                    onclick="deleteProduct(<?php echo $product['id']; ?>)">Delete</button>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">No products available for this
+                                                            business yet.</td>
+                                                    </tr>
+                                                <?php endif; ?>
                                             </tbody>
                                         </table>
                                     </div>
@@ -341,6 +391,7 @@ $conn->close();
 
     <script src="../js/sidebar.js"></script>
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const ownerId = <?php echo json_encode($owner_id); ?>;
@@ -494,16 +545,16 @@ $conn->close();
             });
         });
 
-        // add product
+        // Add Product
         function addProduct(businessId) {
             Swal.fire({
                 title: 'Add Product',
                 html: `
-            <input id="product-name" class="form-control mb-2" placeholder="Product Name">
-            <input id="product-type" class="form-control mb-2" placeholder="Product Type">
-            <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
-            <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
-        `,
+        <input id="product-name" class="form-control mb-2" placeholder="Product Name">
+        <input id="product-type" class="form-control mb-2" placeholder="Product Type">
+        <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
+        <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
+    `,
                 confirmButtonText: 'Add Product',
                 focusConfirm: false,
                 showCancelButton: true,
@@ -531,8 +582,9 @@ $conn->close();
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire('Success', 'Product added successfully!', 'success');
-                                // Optionally refresh or update product table
+                                Swal.fire('Success', 'Product added successfully!', 'success').then(() => {
+                                    location.reload();
+                                });
                             } else {
                                 Swal.fire('Error', data.message, 'error');
                             }
@@ -542,20 +594,136 @@ $conn->close();
             });
         }
 
+        // Edit Product
+        function editProduct(productId) {
+            fetch(`../endpoints/fetch_product.php?id=${productId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire({
+                        title: 'Edit Product',
+                        html: `
+                <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
+                <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
+                <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
+                <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
+            `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Save Changes',
+                        preConfirm: () => {
+                            const name = document.getElementById('product-name').value;
+                            const type = document.getElementById('product-type').value;
+                            const price = document.getElementById('product-price').value;
+                            const description = document.getElementById('product-description').value;
+
+                            if (!name || !type || !price || !description) {
+                                Swal.showValidationMessage('Please fill out all fields');
+                            }
+
+                            return { name, type, price, description };
+                        }
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            fetch('../endpoints/edit_product.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: productId, ...result.value })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Product updated successfully!', 'success').then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire('Error', 'Failed to update product!', 'error');
+                                    }
+                                });
+                        }
+                    });
+                });
+        }
+
+        // Delete Product
+        function deleteProduct(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                cancelButtonText: 'Cancel'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch('../endpoints/delete_product.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: productId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Deleted!', 'The product has been deleted.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', 'Failed to delete product!', 'error');
+                            }
+                        });
+                }
+            });
+        }
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
 
+            const savedTab = localStorage.getItem('activeTab');
+
+            if (savedTab) {
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                const savedNavLink = document.querySelector(`.nav-link[data-tab="${savedTab}"]`);
+                const savedTabContent = document.getElementById(savedTab);
+
+                if (savedNavLink && savedTabContent) {
+                    savedNavLink.classList.add('active');
+                    savedTabContent.classList.add('active');
+                }
+            }
+
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
+
                     navLinks.forEach(nav => nav.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
+
                     link.classList.add('active');
                     const targetTab = document.getElementById(link.getAttribute('data-tab'));
                     targetTab.classList.add('active');
+
+                    localStorage.setItem('activeTab', link.getAttribute('data-tab'));
                 });
             });
         });
+
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     const navLinks = document.querySelectorAll('.nav-link');
+        //     const tabContents = document.querySelectorAll('.tab-content');
+
+        //     navLinks.forEach(link => {
+        //         link.addEventListener('click', () => {
+        //             navLinks.forEach(nav => nav.classList.remove('active'));
+        //             tabContents.forEach(content => content.classList.remove('active'));
+        //             link.classList.add('active');
+        //             const targetTab = document.getElementById(link.getAttribute('data-tab'));
+        //             targetTab.classList.add('active');
+        //         });
+        //     });
+        // });
 
         // business filter
         document.getElementById('search-business').addEventListener('input', function () {
@@ -564,6 +732,19 @@ $conn->close();
 
             rows.forEach(row => {
                 const nameCell = row.querySelector('.business-name');
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+        // product filter
+        document.getElementById('search-product').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#product-table tbody tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('.product-name');
                 if (nameCell) {
                     const name = nameCell.textContent.toLowerCase();
                     row.style.display = name.includes(filter) ? '' : 'none';
