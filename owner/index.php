@@ -36,6 +36,25 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     ";
     unset($_SESSION['login_success']);
 }
+
+
+// SQL query to get the business and branch data
+$sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
+        FROM business b
+        JOIN branch br ON b.id = br.business_id";
+$result = $conn->query($sql);
+
+$businessData = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $businessData[$row['business_name']][] = $row['branch_location'];
+    }
+} else {
+    echo "No data found";
+}
+
+
+
 ?>
 <script>
     const ownerId = <?php echo json_encode($owner_id); ?>;
@@ -74,9 +93,9 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                 formData.append('owner_id', ownerId);
 
                 fetch('../endpoints/add_business_prompt.php', {
-                    method: 'POST',
-                    body: formData
-                })
+                        method: 'POST',
+                        body: formData
+                    })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -94,8 +113,6 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
             }
         });
     }
-
-
 </script>
 
 <!DOCTYPE html>
@@ -123,62 +140,33 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         <div class="row">
 
                             <div class="col-md-5">
-
                                 <h5 class="mt-5"><b>Select Business:</b></h5>
-                                
+
                                 <div class="scroll-container" style="height: 450px; overflow-y: auto;">
-                                    <button class="col-md-12 card">
-                                        <h5>Business A</h5>
-                                        <table class="table table-striped table-hover mt-4">
-                                        <thead class="table-dark">
-                                                <tr>
-                                                    <th>Branch</th>
-                                                    <th>Sales (₱)</th>
-                                                    <th>Expenses (₱)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Branch A1</td>
-                                                    <td>8000</td>
-                                                    <td>4000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Branch A2</td>
-                                                    <td>3000</td>
-                                                    <td>2000</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        </p>
-                                    </button>
-                                    <button class="col-md-12 card">
-                                        <h5>Business B</h5>
-                                        <table class="table table-striped table-hover mt-4">
-                                        <thead class="table-dark">
-                                                <tr>
-                                                    <th>Branch</th>
-                                                    <th>Sales (₱)</th>
-                                                    <th>Expenses (₱)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Branch A1</td>
-                                                    <td>3000</td>
-                                                    <td>8000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Branch A2</td>
-                                                    <td>1000</td>
-                                                    <td>5000</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </button>
+                                    <?php
+                                    foreach ($businessData as $businessName => $branches) {
+                                        // Create a button for each business
+                                        echo '<button class="col-md-12 card" onclick="updateChart(' . json_encode($branches) . ')">';
+                                        echo '<h5>' . $businessName . '</h5>';
+                                        echo '<table class="table table-striped table-hover mt-4">';
+                                        echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
+                                        echo '<tbody>';
 
+                                        // Loop through each branch of the business
+                                        foreach ($branches as $branchLocation) {
+                                            echo '<tr>';
+                                            echo '<td>' . $branchLocation . '</td>';
+                                            echo '<td>8000</td>'; 
+                                            echo '<td>4000</td>'; 
+                                            echo '</tr>';
+                                        }
+
+                                        echo '</tbody>';
+                                        echo '</table>';
+                                        echo '</button>';
+                                    }
+                                    ?>
                                 </div>
-
                             </div>
 
                             <div class="col-md-7">
