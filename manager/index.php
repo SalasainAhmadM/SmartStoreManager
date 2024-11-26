@@ -1,3 +1,28 @@
+<?php
+// require_once '../conn/auth.php';
+
+// validateSession('manager');
+
+// $manager_id = $_SESSION['user_id'];
+// $owner_id = $_SESSION['owner_id'];
+
+// if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+//     echo "
+//         <script>
+//             window.onload = function() {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'Login Successful',
+//                     text: 'Welcome!',
+//                     timer: 2000,
+//                     showConfirmButton: false
+//                 });
+//             };
+//         </script>
+//     ";
+//     unset($_SESSION['login_success']);
+// }
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,34 +49,34 @@
                     <h4 class="mt-5"><b><i class="fas fa-tachometer-alt me-2"></i> Manage Sales</b></h4>
                     <div class="card-one">
 
-                    <h5 class="mt-5"><b>Select Business:</b></h5>
-                    <div class="mt-4 mb-4 position-relative">
-                        <select class="form-select w-50" id="businessSelect">
-                            <option value="">Select Business</option>
-                            <option value="A">Business A</option>
-                            <option value="B">Business B</option>
-                        </select>
-                    </div>
+                        <h5 class="mt-5"><b>Select Business:</b></h5>
+                        <div class="mt-4 mb-4 position-relative">
+                            <select class="form-select w-50" id="businessSelect">
+                                <option value="">Select Business</option>
+                                <option value="A">Business A</option>
+                                <option value="B">Business B</option>
+                            </select>
+                        </div>
 
-                    <div id="salesPanel" class="collapse">
-                        <h4 class="mt-4" id="salesTitle"></h4>
-                        <button class="btn btn-success mt-2" id="addSaleBtn">
-                            <i class="fas fa-plus me-2"></i> Add Sale
-                        </button>
+                        <div id="salesPanel" class="collapse">
+                            <h4 class="mt-4" id="salesTitle"></h4>
+                            <button class="btn btn-success mt-2" id="addSaleBtn">
+                                <i class="fas fa-plus me-2"></i> Add Sale
+                            </button>
 
-                        <table class="table mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Quantity Sold</th>
-                                    <th>Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody id="salesTableBody">
-                                <!-- Sales Data will be dynamically populated here -->
-                            </tbody>
-                        </table>
-                    </div>
+                            <table class="table mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity Sold</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTableBody">
+                                    <!-- Sales Data will be dynamically populated here -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,7 +85,7 @@
 
     <script src="../js/sidebar_manager.js"></script>
     <script>
-        document.getElementById('businessSelect').addEventListener('change', function() {
+        document.getElementById('businessSelect').addEventListener('change', function () {
             var selectedBusiness = this.value;
             var salesPanel = document.getElementById('salesPanel');
             var salesTitle = document.getElementById('salesTitle');
@@ -91,7 +116,7 @@
             }
         });
 
-        document.getElementById('addSaleBtn').addEventListener('click', function() {
+        document.getElementById('addSaleBtn').addEventListener('click', function () {
             // SweetAlert for adding a sale
             Swal.fire({
                 title: 'Add New Sale',
