@@ -20,6 +20,23 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+// Fetch branches for each business
+$branches_by_business = [];
+$branch_query = "SELECT * FROM branch WHERE business_id = ?";
+$branch_stmt = $conn->prepare($branch_query);
+
+foreach ($businesses as $business) {
+    $branch_stmt->bind_param("i", $business['id']);
+    $branch_stmt->execute();
+    $branch_result = $branch_stmt->get_result();
+
+    while ($branch_row = $branch_result->fetch_assoc()) {
+        $branches_by_business[$business['id']][] = $branch_row;
+    }
+}
+
+$branch_stmt->close();
+
 // Fetch products for each business
 $products_by_business = [];
 $product_query = "SELECT * FROM products WHERE business_id = ?";
@@ -155,142 +172,77 @@ $conn->close();
 
 
                         <div id="businesses">
-                            <div>
-                                <a class="btn btn-primary business card-one" onclick="toggleDetails('businessA')">
-                                    <i class="fa-solid fa-building"></i>
-                                    Business A
-                                    <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
-                                </a>
+                            <?php foreach ($businesses as $business): ?>
+                                <div>
+                                    <a class="btn btn-primary business card-one"
+                                        onclick="toggleDetails('business<?php echo $business['id']; ?>')">
+                                        <i class="fa-solid fa-building"></i>
+                                        <?php echo htmlspecialchars($business['name']); ?>
+                                        <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
+                                    </a>
 
-                                <div id="businessA" class="business-details card-one"
-                                    style="display: none; margin-top: 10px;">
-                                    <p><strong>Business ID:</strong> 5</p>
-                                    <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
+                                    <div id="business<?php echo $business['id']; ?>" class="business-details card-one"
+                                        style="display: none; margin-top: 10px;">
+                                        <p><strong>Business ID:</strong> <?php echo $business['id']; ?></p>
+                                        <p><strong>Updated At:</strong> <?php echo $business['updated_at']; ?></p>
 
 
-                                    <!-- Search Bar -->
-                                    <div class="mt-4 mb-4 position-relative">
-                                        <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search"
-                                                placeholder="Search branch.." aria-label="Search">
-                                        </form>
-                                        <!-- Add Branch Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                            type="button">
-                                            <i class="fas fa-plus me-2"></i> Add Branch
-                                        </button>
+                                        <!-- Search Bar -->
+                                        <div class="mt-4 mb-4 position-relative">
+                                            <form class="d-flex" role="search">
+                                                <input id="search-branch" class="form-control me-2 w-50" type="search"
+                                                    placeholder="Search branch.." aria-label="Search">
+                                            </form>
+
+                                            <!-- Add Branch Button -->
+                                            <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
+                                                type="button" onclick="addBranch(<?php echo $business['id']; ?>)">
+                                                <i class="fas fa-plus me-2"></i> Add Branch
+                                            </button>
+
+                                        </div>
+
+                                        <table class="table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Location</th>
+                                                    <th>Created At</th>
+                                                    <th>Updated At</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (isset($branches_by_business[$business['id']])): ?>
+                                                    <?php foreach ($branches_by_business[$business['id']] as $branch): ?>
+                                                        <tr>
+                                                            <td><?php echo htmlspecialchars($branch['location']); ?></td>
+                                                            <td><?php echo $branch['created_at']; ?></td>
+                                                            <td><?php echo $branch['updated_at']; ?></td>
+                                                            <td>
+                                                                <a href="#" class="text-primary me-3" title="Edit"
+                                                                    onclick="editBranch(<?php echo $branch['id']; ?>)">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="#" class="text-danger" title="Delete"
+                                                                    onclick="deleteBranch(<?php echo $branch['id']; ?>)">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="4">No branches available</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <table class="table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Location</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Location 1</td>
-                                                <td>2024-01-10</td>
-                                                <td>2024-11-10</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Location 2</td>
-                                                <td>2024-02-15</td>
-                                                <td>2024-11-15</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
 
-                        <div id="businesses">
-                            <div>
-                                <a class="btn btn-primary business card-one" onclick="toggleDetails('businessB')">
-                                    <i class="fa-solid fa-building"></i>
-                                    Business B
-                                    <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
-                                </a>
 
-                                <div id="businessB" class="business-details card-one"
-                                    style="display: none; margin-top: 10px;">
-                                    <p><strong>Business ID:</strong> 6</p>
-                                    <p><strong>Updated At:</strong> 2024-11-25, 2:46 AM</p>
-
-                                    <!-- Search Bar -->
-                                    <div class="mt-4 mb-4 position-relative">
-                                        <form class="d-flex" role="search">
-                                            <input class="form-control me-2 w-50" type="search"
-                                                placeholder="Search branch.." aria-label="Search">
-                                        </form>
-                                        <!-- Add Branch Button -->
-                                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                            type="button">
-                                            <i class="fas fa-plus me-2"></i> Add Branch
-                                        </button>
-                                    </div>
-
-
-                                    <table class="table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Location</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Location 1</td>
-                                                <td>2024-01-10</td>
-                                                <td>2024-11-10</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Location 2</td>
-                                                <td>2024-02-15</td>
-                                                <td>2024-11-15</td>
-                                                <td>
-                                                    <a href="#" class="text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
 
 
                     </div>
@@ -545,6 +497,134 @@ $conn->close();
             });
         });
 
+        // Branch 
+        function addBranch(businessId) {
+            Swal.fire({
+                title: 'Add Branch',
+                html: `
+            <input id="branch-location" class="form-control mb-2" placeholder="Branch Location">
+        `,
+                confirmButtonText: 'Add Branch',
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    const location = document.getElementById('branch-location').value;
+
+                    if (!location) {
+                        Swal.showValidationMessage('Please enter a branch location');
+                    }
+                    return { location };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { location } = result.value;
+
+                    // Send data to add_branch.php
+                    fetch('../endpoints/add_branch.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ business_id: businessId, location })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success', 'Branch added successfully!', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.message, 'error');
+                            }
+                        })
+                        .catch(error => Swal.fire('Error', 'An error occurred.', 'error'));
+                }
+            });
+        }
+        function editBranch(branchId) {
+            fetch(`../endpoints/fetch_branch.php?id=${branchId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        Swal.fire({
+                            title: 'Edit Branch',
+                            html: `
+                        <input id="branch-location" class="form-control mb-2" 
+                               placeholder="Branch Location" 
+                               value="${data.data.location}">
+                    `,
+                            confirmButtonText: 'Save Changes',
+                            focusConfirm: false,
+                            showCancelButton: true,
+                            preConfirm: () => {
+                                const location = document.getElementById('branch-location').value;
+
+                                if (!location) {
+                                    Swal.showValidationMessage('Please enter a branch location');
+                                }
+
+                                return { location };
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const { location } = result.value;
+
+                                fetch('../endpoints/edit_branch.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: branchId, location })
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            Swal.fire('Success', 'Branch updated successfully!', 'success').then(() => {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            Swal.fire('Error', 'Failed to update branch!', 'error');
+                                        }
+                                    });
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'Branch data not found', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Failed to fetch branch details', 'error');
+                });
+        }
+
+        function deleteBranch(branchId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                cancelButtonText: 'Cancel'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch('../endpoints/delete_branch.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: branchId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Deleted!', 'The branch has been deleted.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', 'Failed to delete branch!', 'error');
+                            }
+                        });
+                }
+            });
+        }
+
+
         // Add Product
         function addProduct(businessId) {
             Swal.fire({
@@ -738,6 +818,20 @@ $conn->close();
                 }
             });
         });
+        // Branch filter
+        document.getElementById('search-branch').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr'); // Target all table rows in the tbody
+
+            rows.forEach(row => {
+                const locationCell = row.querySelector('td:first-child'); // Target the first <td> (Location column)
+                if (locationCell) {
+                    const location = locationCell.textContent.toLowerCase();
+                    row.style.display = location.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+
         // product filter
         document.getElementById('search-product').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
