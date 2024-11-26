@@ -58,7 +58,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebar_manager.js"></script>
     <script>
         document.getElementById('businessSelect').addEventListener('change', function() {

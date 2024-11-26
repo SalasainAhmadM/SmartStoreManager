@@ -261,7 +261,7 @@ $conn->close();
                                         onclick="toggleDetails('business-<?php echo $business['id']; ?>')">
                                         <i class="fa-solid fa-building"></i>
                                         <?php echo htmlspecialchars($business['name']); ?>
-                                        <i class="position-absolute end-0 mt-2 me-2 fas fa-plus me-2"></i>
+                                        <i class="end-0 mt-2 me-2 fas fa-plus me-2"></i>
                                     </a>
 
                                     <div id="business-<?php echo $business['id']; ?>" class="business-details card-one"
