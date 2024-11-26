@@ -65,8 +65,8 @@
                             </button>
 
                             <table class="table mt-3">
-                                <thead>
-                                    <tr>
+                            <table class="table table-striped table-hover mt-4">
+                                <thead class="table-dark">
                                         <th>Product</th>
                                         <th>Quantity Sold</th>
                                         <th>Revenue</th>

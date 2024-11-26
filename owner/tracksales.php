@@ -73,19 +73,19 @@ $today = date("F j, Y");
                                 <tr>
                                     <td>Product 1</td>
                                     <td>10</td>
-                                    <td>$100</td>
+                                    <td>₱100</td>
                                     <td><?php echo $today; ?></td>
                                 </tr>
                                 <tr>
                                     <td>Product 2</td>
                                     <td>15</td>
-                                    <td>$150</td>
+                                    <td>₱150</td>
                                     <td><?php echo $today; ?></td>
                                 </tr>
                                 <tr>
                                     <td>Product 3</td>
                                     <td>20</td>
-                                    <td>$200</td>
+                                    <td>₱200</td>
                                     <td><?php echo $today; ?></td>
                                 </tr>
                             </tbody>
@@ -93,7 +93,7 @@ $today = date("F j, Y");
                                 <tr>
                                     <th>Total</th>
                                     <th>45</th>
-                                    <th>$450</th>
+                                    <th>₱450</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -121,19 +121,19 @@ $today = date("F j, Y");
                                 <tr>
                                     <td>Product 1</td>
                                     <td>12</td>
-                                    <td>$120</td>
+                                    <td>₱120</td>
                                     <td>November 24, 2024</td>
                                 </tr>
                                 <tr>
                                     <td>Product 2</td>
                                     <td>18</td>
-                                    <td>$180</td>
+                                    <td>₱180</td>
                                     <td>November 24, 2024</td>
                                 </tr>
                                 <tr>
                                     <td>Product 3</td>
                                     <td>25</td>
-                                    <td>$250</td>
+                                    <td>₱250</td>
                                     <td>November 24, 2024</td>
                                 </tr>
                             </tbody>

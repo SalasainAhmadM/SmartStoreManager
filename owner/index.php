@@ -117,7 +117,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-tachometer-alt me-2"></i> Owner Dashboard</b></h1>
+                    <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</b></h1>
 
                     <div class="container-fluid">
                         <div class="row">
