@@ -205,7 +205,79 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="chat" class="tab-content">
 
-                        <h1 class="mt-5"></h1>
+                        <div class="container-fluid mt-4">
+                            <div class="row">
+
+                                <div class="col-md-4 col-lg-3 p-0">
+                                    <div class="list-group bg-light border">
+                                        <div class="p-3 bg-primary text-white">
+                                            <h5 class="mb-0">Managers</h5>
+                                        </div>
+
+                                        <button
+                                            class="list-group-item list-group-item-action d-flex align-items-center">
+                                            <img src="../assets/profile.png" alt="Avatar"
+                                                style="width: 40px; height: 40px; object-fit: cover;"
+                                                class="rounded-circle me-3">
+                                            <div>
+                                                <strong>Manager Name</strong>
+                                                <p class="text-muted small mb-0">Last message snippet...</p>
+                                            </div>
+                                        </button>
+                                        <button
+                                            class="list-group-item list-group-item-action d-flex align-items-center">
+                                            <img src="../assets/profile.png"
+                                                style="width: 40px; height: 40px; object-fit: cover;" alt="Avatar"
+                                                class="rounded-circle me-3">
+                                            <div>
+                                                <strong>Another Manager</strong>
+                                                <p class="text-muted small mb-0">Last message snippet...</p>
+                                            </div>
+                                        </button>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-md-8 col-lg-9 p-0">
+                                    <div class="d-flex flex-column vh-100 border">
+
+                                        <div class="p-3 bg-primary text-white d-flex align-items-center">
+                                            <img src="../assets/profile.png"
+                                                style="width: 40px; height: 40px; object-fit: cover;" alt="Avatar"
+                                                class="rounded-circle me-3">
+                                            <h5 class="mb-0">Manager Name</h5>
+                                        </div>
+
+                                        <div id="chat-messages" class="flex-grow-1 p-3 bg-light overflow-auto">
+
+                                            <div class="d-flex justify-content-end mb-3">
+                                                <div class="bg-primary text-white p-2 rounded" style="max-width: 60%;">
+                                                    <p class="mb-0">Yow muks ikuzee?</p>
+                                                    <small class="d-block text-end">2:15 PM</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-start mb-3">
+                                                <div class="bg-white border p-2 rounded" style="max-width: 60%;">
+                                                    <p class="mb-0">nah nah ikuze ta.</p>
+                                                    <small class="d-block text-start text-muted">2:16 PM</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="p-3 bg-light border-top">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" placeholder="Type a message...">
+                                                <button class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
 
 
                     </div>
@@ -236,7 +308,7 @@ $owner_id = $_SESSION['user_id'];
 
     <script>
         document.querySelectorAll('.btn-primary').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const isAssignManagerButton = this.textContent.includes('Assign a Manager');
 
                 if (isAssignManagerButton) {
