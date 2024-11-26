@@ -25,47 +25,46 @@
                             <div class="form-group">
                                 <i class="fas fa-user"></i>
                                 <span id="full_name_display"><b>Gol D. Roger</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editFullName()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editFullName()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-envelope"></i>
                                 <span id="email_display"><b>goldroger@example.com</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editEmail()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editEmail()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-lock"></i>
                                 <span id="password_display"><b>**********</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editPassword()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editPassword()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-phone-alt"></i>
                                 <span id="phone_display"><b>09366763481</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editPhone()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editPhone()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-home"></i>
                                 <span id="address_display"><b>New World</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editAddress()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAddress()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-venus-mars"></i>
                                 <span id="gender_display"><b>Male</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editGender()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editGender()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-birthday-cake"></i>
                                 <span id="age_display"><b>30</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editAge()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAge()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-calendar-alt"></i>
                                 <span id="birthday_display"><b>1933-02-09</b></span>
-                                <button type="button" class="edit-btn fas fa-edit" onclick="editBirthday()"></button>
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editBirthday()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-user-tie"></i>
-                                <span id="role_display"><b>Manager</b></span>
-                                <button type="button" class="edit-btn" disabled>Role: Manager</button>
+                                <span id="role_display"><b><div href="#" class="btn btn-dark text-white me-3" disabled>Role: Manager</div></b></span>
                             </div>
                         </form>
 

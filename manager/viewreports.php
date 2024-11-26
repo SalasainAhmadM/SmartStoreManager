@@ -35,9 +35,17 @@
                         <!-- Sales Report Panel -->
                         <div id="salesReportPanel" class="collapse">
                             <h4 class="mt-4" id="reportTitle"></h4>
-                            <button class="btn btn-primary mt-2" id="printReportBtn">
+                            <button class="btn btn-primary mt-2 mb-5" id="printReportBtn">
                                 <i class="fas fa-print me-2"></i> Print Sales Report
                             </button>
+
+                            <!-- Search Bar -->
+                            <div class="mt-4">
+                                <form class="d-flex" role="search">
+                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
+                                </form>
+                            </div>
+
 
                             <table class="table mt-3">
                             <table class="table table-striped table-hover mt-4">

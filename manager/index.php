@@ -60,22 +60,29 @@
 
                         <div id="salesPanel" class="collapse">
                             <h4 class="mt-4" id="salesTitle"></h4>
-                            <button class="btn btn-success mt-2" id="addSaleBtn">
+                            <button class="btn btn-success mt-2 mb-5" id="addSaleBtn">
                                 <i class="fas fa-plus me-2"></i> Add Sale
                             </button>
 
+                            <!-- Search Bar -->
+                            <div class="mt-4">
+                                <form class="d-flex" role="search">
+                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
+                                </form>
+                            </div>
+
                             <table class="table mt-3">
-                            <table class="table table-striped table-hover mt-4">
-                                <thead class="table-dark">
+                                <table class="table table-striped table-hover mt-4">
+                                    <thead class="table-dark">
                                         <th>Product</th>
                                         <th>Quantity Sold</th>
                                         <th>Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="salesTableBody">
-                                    <!-- Sales Data will be dynamically populated here -->
-                                </tbody>
-                            </table>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesTableBody">
+                                        <!-- Sales Data will be dynamically populated here -->
+                                    </tbody>
+                                </table>
                         </div>
                     </div>
                 </div>
@@ -85,7 +92,7 @@
 
     <script src="../js/sidebar_manager.js"></script>
     <script>
-        document.getElementById('businessSelect').addEventListener('change', function () {
+        document.getElementById('businessSelect').addEventListener('change', function() {
             var selectedBusiness = this.value;
             var salesPanel = document.getElementById('salesPanel');
             var salesTitle = document.getElementById('salesTitle');
@@ -116,7 +123,7 @@
             }
         });
 
-        document.getElementById('addSaleBtn').addEventListener('click', function () {
+        document.getElementById('addSaleBtn').addEventListener('click', function() {
             // SweetAlert for adding a sale
             Swal.fire({
                 title: 'Add New Sale',
@@ -145,11 +152,17 @@
                         Swal.showValidationMessage('Please fill in all fields');
                         return false;
                     }
-                    return { product, quantity };
+                    return {
+                        product,
+                        quantity
+                    };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const { product, quantity } = result.value;
+                    const {
+                        product,
+                        quantity
+                    } = result.value;
                     // Here you can add logic to save the sale and update the table
                     Swal.fire('Sale Added!', `Product: ${product}, Quantity: ${quantity}`, 'success');
                     // You can add the sale data to the table dynamically here
