@@ -152,10 +152,10 @@ $conn->close();
                                             <td><?php echo htmlspecialchars($business['created_at']); ?></td>
                                             <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
                                             <td>
-                                                <a href="#" class="text-primary me-3 edit-btn" title="Edit">
+                                                <a href="#" class="text-primary me-3" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="#" class="text-danger delete-btn" title="Delete">
+                                                <a href="#" class="text-danger" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </td>
@@ -307,10 +307,14 @@ $conn->close();
                                                             <td><?php echo htmlspecialchars($product['created_at']); ?></td>
                                                             <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
                                                             <td>
-                                                                <button class="btn btn-primary btn-sm"
-                                                                    onclick="editProduct(<?php echo $product['id']; ?>)">Edit</button>
-                                                                <button class="btn btn-danger btn-sm"
-                                                                    onclick="deleteProduct(<?php echo $product['id']; ?>)">Delete</button>
+                                                                <a href="#" class="text-primary me-3" 
+                                                                    onclick="editProduct(<?php echo $product['id']; ?>)">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="#" class="text-danger" 
+                                                                    onclick="deleteProduct(<?php echo $product['id']; ?>)">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
                                                             </td>
                                                         </tr>
                                                     <?php endforeach; ?>
