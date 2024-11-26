@@ -38,6 +38,6 @@ document.getElementById('sidebarToggle').addEventListener('click', function() {
         if (logo) logo.style.display = 'block';
         if (userName) userName.style.display = 'block';
 
-        toggleButton.style.marginLeft = '5rem';  // Reset to original margin
+        toggleButton.style.marginLeft = '3.25rem';  // Reset to original margin
     }
 });
