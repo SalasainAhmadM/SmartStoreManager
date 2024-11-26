@@ -53,8 +53,6 @@ if ($result->num_rows > 0) {
     echo "No data found";
 }
 
-
-
 ?>
 <script>
     const ownerId = <?php echo json_encode($owner_id); ?>;
@@ -145,8 +143,7 @@ if ($result->num_rows > 0) {
                                 <div class="scroll-container" style="height: 450px; overflow-y: auto;">
                                     <?php
                                     foreach ($businessData as $businessName => $branches) {
-                                        // Create a button for each business
-                                        echo '<button class="col-md-12 card" onclick="updateChart(' . json_encode($branches) . ')">';
+                                        echo '<button class="col-md-12 card">';
                                         echo '<h5>' . $businessName . '</h5>';
                                         echo '<table class="table table-striped table-hover mt-4">';
                                         echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
