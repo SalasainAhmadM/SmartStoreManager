@@ -21,7 +21,11 @@
                 <div class="dashboard-content">
                     <div class="profile-container">
                         <div class="profile-header">
-                            <h1><i class="fas fa-user-circle"></i> Manager Profile</h1>
+                            <div class="form-group-img-profile ">
+                                <img id="profile_picture_display" src="../assets/default-profile.png" alt="Profile Picture" class="profile-pic" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editProfilePicture()"></a>
+                            </div>
+                            <h1>Manager Profile</h1>
                         </div>
                         <form class="profile-form">
                             <div class="form-group">

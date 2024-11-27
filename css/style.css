@@ -464,6 +464,12 @@ tr:hover {
   margin-bottom: 20px; 
 }
 
+.form-group-img-profile {
+  display: inline-flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
 .form-group span {
   display: inline-block;
   background-color: #f8f9fa;
@@ -510,3 +516,48 @@ tr:hover {
   width: 300px !important; 
   text-align: center;
 }
+
+
+/* SweetAlert Components */
+
+.swal2-popup {
+  background: linear-gradient(to bottom, #ffffff, #f2f2f2) !important; /* White to light grey gradient */
+  padding: 20px !important;                /* Add spacing inside the box */
+  border-radius: 10px !important;          /* Rounded corners for a modern look */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important; /* Soft shadow */
+}
+
+.swal2-title {
+  margin-bottom: 10px !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+
+.swal2-html-container {
+  margin: 10px 0 !important;
+  text-align: center !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+
+.swal2-confirm {
+  background-color: #4CAF50 !important;
+  color: white !important;             
+  border: none !important;
+}
+
+.swal2-cancel {
+  background-color: #f44336 !important; 
+  color: white !important;
+  border: none !important;
+}
+
+.swal2-confirm:hover {
+  background-color: #45a049 !important;
+}
+
+.swal2-cancel:hover {
+  background-color: #d32f2f !important;
+}
+
