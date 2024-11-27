@@ -309,11 +309,11 @@ $conn->close();
                                                             <td><?php echo htmlspecialchars($product['created_at']); ?></td>
                                                             <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
                                                             <td>
-                                                                <a href="#" class="text-primary me-3" 
+                                                                <a href="#" class="text-primary me-3"
                                                                     onclick="editProduct(<?php echo $product['id']; ?>)">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
-                                                                <a href="#" class="text-danger" 
+                                                                <a href="#" class="text-danger"
                                                                     onclick="deleteProduct(<?php echo $product['id']; ?>)">
                                                                     <i class="fas fa-trash"></i>
                                                                 </a>
@@ -394,7 +394,7 @@ $conn->close();
                     }
 
                     return $.ajax({
-                        url: '../endpoints/add_business.php',
+                        url: '../endpoints/business/add_business.php',
                         type: 'POST',
                         data: data,
                     }).fail(() => {
@@ -455,7 +455,7 @@ $conn->close();
                         }
 
                         return $.ajax({
-                            url: '../endpoints/edit_business.php',
+                            url: '../endpoints/business/edit_business.php',
                             type: 'POST',
                             data: updatedData,
                         }).fail(() => {
@@ -487,7 +487,7 @@ $conn->close();
                 }).then(result => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '../endpoints/delete_business.php',
+                            url: '../endpoints/business/delete_business.php',
                             type: 'POST',
                             data: { id: businessId },
                             success: () => {
@@ -526,7 +526,7 @@ $conn->close();
                     const { location } = result.value;
 
                     // Send data to add_branch.php
-                    fetch('../endpoints/add_branch.php', {
+                    fetch('../endpoints/branch/add_branch.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ business_id: businessId, location })
@@ -573,7 +573,7 @@ $conn->close();
                             if (result.isConfirmed) {
                                 const { location } = result.value;
 
-                                fetch('../endpoints/edit_branch.php', {
+                                fetch('../endpoints/branch/edit_branch.php', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ id: branchId, location })
@@ -611,7 +611,7 @@ $conn->close();
                 cancelButtonText: 'Cancel'
             }).then(result => {
                 if (result.isConfirmed) {
-                    fetch('../endpoints/delete_branch.php', {
+                    fetch('../endpoints/branch/delete_branch.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: branchId })
@@ -660,7 +660,7 @@ $conn->close();
                     const { name, type, price, description } = result.value;
 
                     // Send data to add_product.php
-                    fetch('../endpoints/add_product.php', {
+                    fetch('../endpoints/product/add_product.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ business_id: businessId, name, type, price, description })
@@ -682,7 +682,7 @@ $conn->close();
 
         // Edit Product
         function editProduct(productId) {
-            fetch(`../endpoints/fetch_product.php?id=${productId}`)
+            fetch(`../endpoints/product/fetch_product.php?id=${productId}`)
                 .then(response => response.json())
                 .then(data => {
                     Swal.fire({
@@ -709,7 +709,7 @@ $conn->close();
                         }
                     }).then(result => {
                         if (result.isConfirmed) {
-                            fetch('../endpoints/edit_product.php', {
+                            fetch('../endpoints/product/edit_product.php', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ id: productId, ...result.value })
@@ -742,7 +742,7 @@ $conn->close();
                 cancelButtonText: 'Cancel'
             }).then(result => {
                 if (result.isConfirmed) {
-                    fetch('../endpoints/delete_product.php', {
+                    fetch('../endpoints/product/delete_product.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: productId })

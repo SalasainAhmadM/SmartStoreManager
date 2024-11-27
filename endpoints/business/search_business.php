@@ -1,5 +1,5 @@
 <?php
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['query'])) {
     $query = $_GET['query'];

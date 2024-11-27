@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 if (!$data) {

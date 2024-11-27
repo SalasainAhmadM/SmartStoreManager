@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 
 try {
     // Retrieve form data

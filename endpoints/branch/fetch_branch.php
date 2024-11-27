@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 
 // Get the branch ID from the query string
 $branch_id = isset($_GET['id']) ? intval($_GET['id']) : 0;

@@ -1,10 +1,10 @@
 <?php
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 $data = json_decode(file_get_contents('php://input'), true);
 
 $id = $data['id'];
 
-$query = "DELETE FROM branch WHERE id = ?";
+$query = "DELETE FROM products WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('i', $id);
 
