@@ -3,7 +3,7 @@ session_start();
 require_once '../../conn/auth.php';
 require_once '../../conn/conn.php';
 
-validateSession('owner'); // Or 'manager' if this applies to managers too
+validateSession('owner');
 
 $manager_id = $_GET['manager_id'] ?? null;
 $owner_id = $_SESSION['user_id'];
