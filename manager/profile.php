@@ -162,8 +162,8 @@ $manager_id = $_SESSION['user_id'];
             });
         }
 
-        function editPassword() {
-
+            function editPassword() {
+                
             Swal.fire({
                 title: 'Edit Password',
                 html: `
@@ -173,7 +173,7 @@ $manager_id = $_SESSION['user_id'];
                     <input id="confirm_password" class="swal2-input" type="password" placeholder="Confirm password">
                 `,
                 showCancelButton: true,
-                width: '600px',
+                width: '600px',  
                 padding: '30px',
                 confirmButtonText: 'Save',
                 preConfirm: () => {
@@ -196,7 +196,7 @@ $manager_id = $_SESSION['user_id'];
                 if (result.isConfirmed) {
                     const { newPassword } = result.value;
 
-                    document.getElementById('password_display').textContent = '**********';
+                    document.getElementById('password_display').textContent = '**********'; 
 
                     Swal.fire('Saved!', 'Your password has been updated.', 'success');
                 }

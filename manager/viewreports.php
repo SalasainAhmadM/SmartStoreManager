@@ -43,14 +43,12 @@ $manager_id = $_SESSION['user_id'];
                             </select>
                         </div>
 
-                        <!-- Sales Report Panel -->
                         <div id="salesReportPanel" class="collapse">
                             <h4 class="mt-4" id="reportTitle"></h4>
                             <button class="btn btn-primary mt-2 mb-5" id="printReportBtn">
                                 <i class="fas fa-print me-2"></i> Print Sales Report
                             </button>
 
-                            <!-- Search Bar -->
                             <div class="mt-4">
                                 <form class="d-flex" role="search">
                                     <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
@@ -60,8 +58,8 @@ $manager_id = $_SESSION['user_id'];
 
 
                             <table class="table mt-3">
-                                <table class="table table-striped table-hover mt-4">
-                                    <thead class="table-dark">
+                            <table class="table table-striped table-hover mt-4">
+                                <thead class="table-dark">
                                         <th>Date</th>
                                         <th>Product Sold</th>
                                         <th>Total Sales (PHP)</th>
@@ -85,10 +83,9 @@ $manager_id = $_SESSION['user_id'];
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebar_manager.js"></script>
     <script>
-        document.getElementById('businessSelect').addEventListener('change', function () {
+        document.getElementById('businessSelect').addEventListener('change', function() {
             var selectedBusiness = this.value;
             var salesReportPanel = document.getElementById('salesReportPanel');
             var reportTitle = document.getElementById('reportTitle');
@@ -154,7 +151,7 @@ $manager_id = $_SESSION['user_id'];
         });
 
         // Print report functionality
-        document.getElementById('printReportBtn').addEventListener('click', function () {
+        document.getElementById('printReportBtn').addEventListener('click', function() {
             const printContent = document.getElementById('salesReportPanel').innerHTML;
             const originalContent = document.body.innerHTML;
 

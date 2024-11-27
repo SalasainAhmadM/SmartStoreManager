@@ -32,9 +32,6 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     <title>Manager Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="d-flex">
@@ -95,7 +92,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
     <script src="../js/sidebar_manager.js"></script>
     <script>
-        document.getElementById('businessSelect').addEventListener('change', function () {
+        document.getElementById('businessSelect').addEventListener('change', function() {
             var selectedBusiness = this.value;
             var salesPanel = document.getElementById('salesPanel');
             var salesTitle = document.getElementById('salesTitle');
@@ -126,7 +123,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
             }
         });
 
-        document.getElementById('addSaleBtn').addEventListener('click', function () {
+        document.getElementById('addSaleBtn').addEventListener('click', function() {
             // SweetAlert for adding a sale
             Swal.fire({
                 title: 'Add New Sale',
