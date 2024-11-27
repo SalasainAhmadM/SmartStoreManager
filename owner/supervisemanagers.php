@@ -1,10 +1,19 @@
 <?php
 session_start();
 require_once '../conn/auth.php';
+require_once '../conn/conn.php';
 
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
+
+// Fetch all managers for this owner
+$query = "SELECT * FROM manager WHERE owner_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$managers = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -62,8 +71,8 @@ $owner_id = $_SESSION['user_id'];
                                         placeholder="Search manager..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-                                <button id="add-business-btn"
-                                    class="btn btn-success position-absolute top-0 end-0  me-2" type="button">
+                                <button id="add-business-btn" class="btn btn-success position-absolute top-0 end-0 me-2"
+                                    type="button">
                                     <i class="fas fa-plus me-2"></i> Create Manager
                                 </button>
                             </div>
@@ -78,37 +87,37 @@ $owner_id = $_SESSION['user_id'];
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>John Doe</td>
-                                        <td>johndoe@example.com</td>
-                                        <td>+1234567890</td>
-                                        <td>123 Main St, City, Country</td>
-                                        <td>
-                                            <a href="#" class="text-primary me-3" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="#" class="text-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jane Smith</td>
-                                        <td>janesmith@example.com</td>
-                                        <td>+0987654321</td>
-                                        <td>456 Elm St, City, Country</td>
-                                        <td>
-                                            <a href="#" class="text-primary me-3" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="#" class="text-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                <tbody id="manager-table-body">
+                                    <?php if (empty($managers)): ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No managers found.</td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($managers as $manager): ?>
+                                            <tr>
+                                                <td class="manager-name">
+                                                    <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
+                                                </td>
+                                                <td><?= htmlspecialchars($manager['email']) ?></td>
+                                                <td><?= htmlspecialchars($manager['contact_number']) ?></td>
+                                                <td><?= htmlspecialchars($manager['address']) ?></td>
+                                                <td>
+                                                    <a href="#" class="text-primary me-3 edit-manager"
+                                                        data-id="<?= $manager['id'] ?>"
+                                                        data-details='<?= json_encode($manager) ?>' title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="text-danger delete-manager"
+                                                        data-id="<?= $manager['id'] ?>" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
+
                         </div>
                     </div>
 
@@ -292,6 +301,178 @@ $owner_id = $_SESSION['user_id'];
     <script src="../js/sidebar.js"></script>
 
     <script>
+        document.getElementById('add-business-btn').addEventListener('click', function () {
+            const ownerId = <?= json_encode($owner_id); ?>;
+
+            Swal.fire({
+                title: 'Create Manager',
+                html: `
+        <input id="manager-email" class="form-control mb-2" placeholder="Email" type="email">
+        <input id="manager-username" class="form-control mb-2" placeholder="Username">
+        <input id="manager-firstname" class="form-control mb-2" placeholder="First Name">
+        <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name">
+        <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name">
+        <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number">
+        <input id="manager-address" class="form-control mb-2" placeholder="Address">
+        <input id="manager-password" class="form-control mb-2" placeholder="Password" type="password">
+    `,
+                confirmButtonText: 'Create',
+                showCancelButton: true,
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const email = document.getElementById('manager-email').value;
+                    const username = document.getElementById('manager-username').value;
+                    const firstName = document.getElementById('manager-firstname').value;
+                    const middleName = document.getElementById('manager-middlename').value;
+                    const lastName = document.getElementById('manager-lastname').value;
+                    const phone = document.getElementById('manager-phone').value;
+                    const address = document.getElementById('manager-address').value;
+                    const password = document.getElementById('manager-password').value;
+
+                    if (!email || !username || !firstName || !lastName || !phone || !address || !password) {
+                        Swal.showValidationMessage('All fields are required');
+                    }
+
+                    return {
+                        email, username, firstName, middleName, lastName, phone, address, password, ownerId
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const managerData = result.value;
+
+                    // AJAX call to save the manager
+                    fetch('../endpoints/manager/add_manager.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(managerData)
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success', 'Manager created successfully', 'success')
+                                    .then(() => {
+                                        // Reload the page after the user clicks OK
+                                        location.reload();
+                                    });
+                            } else {
+                                Swal.fire('Error', data.message || 'An error occurred', 'error');
+                            }
+                        });
+                }
+            });
+        });
+
+        // Edit and Delete Manager
+        document.addEventListener('DOMContentLoaded', () => {
+            // Edit Manager
+            document.querySelectorAll('.edit-manager').forEach(button => {
+                button.addEventListener('click', function () {
+                    const managerId = this.dataset.id;
+                    const managerDetails = JSON.parse(this.dataset.details);
+
+                    Swal.fire({
+                        title: 'Edit Manager',
+                        html: `
+                    <input id="manager-email" class="form-control mb-2" placeholder="Email" value="${managerDetails.email}" type="email">
+                    <input id="manager-username" class="form-control mb-2" placeholder="Username" value="${managerDetails.user_name}">
+                    <input id="manager-firstname" class="form-control mb-2" placeholder="First Name" value="${managerDetails.first_name}">
+                    <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name" value="${managerDetails.middle_name}">
+                    <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name" value="${managerDetails.last_name}">
+                    <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number" value="${managerDetails.contact_number}">
+                    <input id="manager-address" class="form-control mb-2" placeholder="Address" value="${managerDetails.address}">
+                `,
+                        confirmButtonText: 'Update',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancel',
+                        preConfirm: () => {
+                            const email = document.getElementById('manager-email').value;
+                            const username = document.getElementById('manager-username').value;
+                            const firstName = document.getElementById('manager-firstname').value;
+                            const middleName = document.getElementById('manager-middlename').value;
+                            const lastName = document.getElementById('manager-lastname').value;
+                            const phone = document.getElementById('manager-phone').value;
+                            const address = document.getElementById('manager-address').value;
+
+                            if (!email || !username || !firstName || !lastName || !phone || !address) {
+                                Swal.showValidationMessage('All fields are required');
+                            }
+
+                            return { id: managerId, email, username, firstName, middleName, lastName, phone, address };
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // AJAX call to update manager
+                            fetch(`../endpoints/manager/edit_manager.php`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(result.value)
+                            }).then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Manager updated successfully', 'success')
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', data.message || 'Failed to update manager', 'error');
+                                    }
+                                });
+                        }
+                    });
+                });
+            });
+
+            // Delete Manager
+            document.querySelectorAll('.delete-manager').forEach(button => {
+                button.addEventListener('click', function () {
+                    const managerId = this.dataset.id;
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'This action cannot be undone!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // AJAX call to delete manager
+                            fetch(`../endpoints/manager/delete_manager.php`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: managerId })
+                            }).then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Manager deleted successfully', 'success')
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', data.message || 'Failed to delete manager', 'error');
+                                    }
+                                });
+                        }
+                    });
+                });
+            });
+        });
+
+        // manager search
+        document.getElementById('search-business').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#manager-table-body tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:first-child');
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -306,9 +487,7 @@ $owner_id = $_SESSION['user_id'];
                 });
             });
         });
-    </script>
 
-    <script>
         document.querySelectorAll('.btn-primary').forEach(button => {
             button.addEventListener('click', function () {
                 const isAssignManagerButton = this.textContent.includes('Assign a Manager');
