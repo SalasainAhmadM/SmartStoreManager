@@ -72,8 +72,4 @@ function isActive($link)
 </div>
 
 
-<!-- Bootstrap JS for collapse functionality -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- SweetAlert! -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php include 'js_cdn.php' ?>

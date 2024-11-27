@@ -33,6 +33,39 @@ footer {
   text-align: center;
 }
 
+
+#particles-js {
+  width: 100%;
+  height: 100vh;
+  background-image: url('./assets/2.jpg');
+  background-size: cover;
+  background-position: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.content {
+  position: relative;
+  /* Ensure content is above particles */
+  text-align: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+p {
+  font-size: 1.2rem;
+}
+
+
 .navbar {
   background: linear-gradient(90deg, #242424, #1a1a1a);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

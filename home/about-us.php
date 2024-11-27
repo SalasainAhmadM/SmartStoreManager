@@ -14,7 +14,9 @@
 <body>
 
     <?php include '../components/homepage_nav.php' ?>
-
+  <!-- Particles.js container -->
+  <div id="particles-js"></div>
+  
     <div class="homepage ">
 
         <div class="title">
