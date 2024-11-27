@@ -6,7 +6,6 @@ require_once '../conn/auth.php';
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
-
 ?>
 
 <!DOCTYPE html>
@@ -36,6 +35,7 @@ $owner_id = $_SESSION['user_id'];
                     <div class="mt-5 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
+                                
                                 <label style="margin-right: 2rem;">
                                     <input type="radio" name="selection" value="business" id="businessRadio" checked>
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
@@ -52,7 +52,6 @@ $owner_id = $_SESSION['user_id'];
                         </h5>
                     </div>
 
-
                 </div>
 
                 <div id="businessPanel" class="mt-3">
@@ -67,17 +66,20 @@ $owner_id = $_SESSION['user_id'];
 
                     <div id="expensesPanel" class="collapse mt-3">
                         <h4>Expenses List for Business <span id="businessName"></span></h4>
-                        <table class="table">
-                            <thead>
+                        <table class="table table-striped table-hover mt-4">
+                            <thead class="table-dark">
                                 <tr>
+                                    <th>Type</th>
                                     <th>Description</th>
                                     <th>Amount</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
+
                             <tbody id="expensesList">
-                                <!-- Expenses will be dynamically populated here -->
                                 <script src="../js/business_expenses.js"></script>
                             </tbody>
+
                         </table>
                     </div>
                 </div>
@@ -85,11 +87,7 @@ $owner_id = $_SESSION['user_id'];
         </div>
     </div>
 
-
-
-
     <script src="../js/sidebar.js"></script>
-
 
 </body>
 

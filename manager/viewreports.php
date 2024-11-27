@@ -34,23 +34,19 @@
                             </select>
                         </div>
 
-                        <!-- Sales Report Panel -->
                         <div id="salesReportPanel" class="collapse">
                             <h4 class="mt-4" id="reportTitle"></h4>
                             <button class="btn btn-primary mt-2 mb-5" id="printReportBtn">
                                 <i class="fas fa-print me-2"></i> Print Sales Report
                             </button>
 
-                            <!-- Search Bar -->
                             <div class="mt-4">
                                 <form class="d-flex" role="search">
                                     <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
                                 </form>
                             </div>
 
-
-                            <table class="table mt-3">
-                            <table class="table table-striped table-hover mt-4">
+                            <table class="table table-striped table-hover mt-4 mt-3">
                                 <thead class="table-dark">
                                         <th>Date</th>
                                         <th>Product Sold</th>
@@ -75,84 +71,9 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebar_manager.js"></script>
-    <script>
-        document.getElementById('businessSelect').addEventListener('change', function() {
-            var selectedBusiness = this.value;
-            var salesReportPanel = document.getElementById('salesReportPanel');
-            var reportTitle = document.getElementById('reportTitle');
-            var salesReportBody = document.getElementById('salesReportBody');
-            var totalSalesCell = document.getElementById('totalSalesCell');
-
-            salesReportBody.innerHTML = '';
-            totalSalesCell.textContent = '';
-
-            if (selectedBusiness === 'A') {
-                reportTitle.textContent = 'Sales Report for Business A';
-                // Example Sales Data for Business A
-                const salesData = [
-                    { date: '2024-11-01', product: 'Product 1', quantity: 10, price: 150, sales: 10 * 150 },
-                    { date: '2024-11-01', product: 'Product 2', quantity: 5, price: 100, sales: 5 * 100 },
-                    { date: '2024-11-02', product: 'Product 1', quantity: 8, price: 150, sales: 8 * 150 },
-                    { date: '2024-11-02', product: 'Product 2', quantity: 3, price: 100, sales: 3 * 100 }
-                ];
-
-                let totalSales = 0;
-                salesData.forEach(sale => {
-                    salesReportBody.innerHTML += `
-                        <tr>
-                            <td>${sale.date}</td>
-                            <td>${sale.product} (Quantity: ${sale.quantity}, Price: ₱${sale.price.toLocaleString()})</td>
-                            <td>₱${sale.sales.toLocaleString()}</td>
-                        </tr>
-                    `;
-                    totalSales += sale.sales;
-                });
-
-                totalSalesCell.textContent = `₱${totalSales.toLocaleString()}`;
-            } else if (selectedBusiness === 'B') {
-                reportTitle.textContent = 'Sales Report for Business B';
-                // Example Sales Data for Business B
-                const salesData = [
-                    { date: '2024-11-01', product: 'Product 3', quantity: 15, price: 200, sales: 15 * 200 },
-                    { date: '2024-11-01', product: 'Product 4', quantity: 7, price: 120, sales: 7 * 120 },
-                    { date: '2024-11-02', product: 'Product 3', quantity: 12, price: 200, sales: 12 * 200 },
-                    { date: '2024-11-02', product: 'Product 4', quantity: 5, price: 120, sales: 5 * 120 }
-                ];
-
-                let totalSales = 0;
-                salesData.forEach(sale => {
-                    salesReportBody.innerHTML += `
-                        <tr>
-                            <td>${sale.date}</td>
-                            <td>${sale.product} (Quantity: ${sale.quantity}, Price: ₱${sale.price.toLocaleString()})</td>
-                            <td>₱${sale.sales.toLocaleString()}</td>
-                        </tr>
-                    `;
-                    totalSales += sale.sales;
-                });
-
-                totalSalesCell.textContent = `₱${totalSales.toLocaleString()}`;
-            }
-
-            if (selectedBusiness) {
-                salesReportPanel.classList.add('show');
-            } else {
-                salesReportPanel.classList.remove('show');
-            }
-        });
-
-        // Print report functionality
-        document.getElementById('printReportBtn').addEventListener('click', function() {
-            const printContent = document.getElementById('salesReportPanel').innerHTML;
-            const originalContent = document.body.innerHTML;
-
-            document.body.innerHTML = printContent;
-            window.print();
-            document.body.innerHTML = originalContent;
-        });
-    </script>
+    <script src="../js/manager_view_reports.js"></script>
+    
 </body>
 
 </html>

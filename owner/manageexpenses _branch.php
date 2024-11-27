@@ -1,3 +1,14 @@
+<?php
+session_start();
+require_once '../conn/conn.php';
+require_once '../conn/auth.php';
+
+validateSession('owner');
+
+$owner_id = $_SESSION['user_id'];
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,28 +17,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
-    <?php include '../components/head_cdn.php'; ?>
+    <?php include '../components/head_cdn.php'; ?>   
 </head>
-
-<?php
-session_start();
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
-?>
 
 <body class="d-flex">
 
@@ -51,7 +42,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
                                 </label>
 
-                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'" checked>
+                                <label for="branchRadio" checked>
                                     <input type="radio" name="selection" value="branch" id="branchRadio">
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
                                 </label>
@@ -85,15 +76,16 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
                     <div id="expensesPanel" class="collapse mt-3">
                         <h4>Expenses List for Branch <span id="branchName"></span></h4>
-                        <table class="table">
-                            <thead>
+                        <table class="table table-striped table-hover mt-4">
+                            <thead class="table-dark">
                                 <tr>
+                                    <th>Type</th>
                                     <th>Description</th>
                                     <th>Amount</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="expensesList">
-                                <!-- Expenses will be dynamically populated here -->
                                 <script src="../js/branch_expenses.js"></script>
                             </tbody>
                         </table>
@@ -105,10 +97,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
         </div>
     </div>
 
-
-
     <script src="../js/sidebar.js"></script>
-
 </body>
 
 </html>
