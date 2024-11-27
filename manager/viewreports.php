@@ -13,6 +13,8 @@
 
 <body class="d-flex">
 
+    <div id="particles-js"></div>
+
     <?php include '../components/manager_sidebar.php'; ?>
 
     <div class="container-fluid page-body">
