@@ -1,5 +1,5 @@
 <?php
-require_once '../conn/conn.php';
+require_once '../../conn/conn.php';
 
 // Set the timezone to Asia/Manila
 date_default_timezone_set('Asia/Manila');
