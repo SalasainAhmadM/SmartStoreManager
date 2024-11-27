@@ -83,21 +83,25 @@ function handleRegister($conn)
         return;
     }
 
-    // Check if the user already exists
-    $stmt = $conn->prepare("SELECT * FROM owner WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    // Check if the email exists in the owner or manager table
+    $stmt = $conn->prepare("
+        SELECT id FROM owner WHERE email = ? 
+        UNION 
+        SELECT id FROM manager WHERE email = ?
+    ");
+    $stmt->bind_param("ss", $email, $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        echo json_encode(['status' => 'error', 'message' => 'User already exists']);
+        echo json_encode(['status' => 'error', 'message' => 'Email is already registered']);
         return;
     }
 
     // Hash the password for security
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-    // Insert the new user
+    // Insert the new owner
     $stmt = $conn->prepare("
         INSERT INTO owner (user_name, email, first_name, middle_name, last_name, gender, age, address, contact_number, created_at, image, password)
         VALUES (?, ?, '', '', '', '', '', '', '', NOW(), '', ?)
@@ -110,4 +114,5 @@ function handleRegister($conn)
         echo json_encode(['status' => 'error', 'message' => 'Failed to register user']);
     }
 }
+
 ?>
