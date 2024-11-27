@@ -14,6 +14,7 @@ $stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $managers = $result->fetch_all(MYSQLI_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -218,68 +219,49 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
                         <div class="container-fluid mt-4">
                             <div class="row">
-
+                                <!-- Sidebar with Managers -->
                                 <div class="col-md-4 col-lg-3 p-0">
                                     <div class="list-group bg-light border">
                                         <div class="p-3 bg-primary text-white">
                                             <h5 class="mb-0">Managers</h5>
                                         </div>
-
-                                        <button
-                                            class="list-group-item list-group-item-action d-flex align-items-center">
-                                            <img src="../assets/profile.png" alt="Avatar"
-                                                style="width: 40px; height: 40px; object-fit: cover;"
-                                                class="rounded-circle me-3">
-                                            <div>
-                                                <strong>Manager Name</strong>
-                                                <p class="text-muted small mb-0">Last message snippet...</p>
-                                            </div>
-                                        </button>
-                                        <button
-                                            class="list-group-item list-group-item-action d-flex align-items-center">
-                                            <img src="../assets/profile.png"
-                                                style="width: 40px; height: 40px; object-fit: cover;" alt="Avatar"
-                                                class="rounded-circle me-3">
-                                            <div>
-                                                <strong>Another Manager</strong>
-                                                <p class="text-muted small mb-0">Last message snippet...</p>
-                                            </div>
-                                        </button>
-
+                                        <?php foreach ($managers as $manager): ?>
+                                            <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                                data-manager-id="<?= $manager['id'] ?>">
+                                                <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
+                                                    alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
+                                                    class="rounded-circle me-3">
+                                                <div>
+                                                    <strong><?= htmlspecialchars($manager['first_name'] . ' ' . $manager['last_name']) ?></strong>
+                                                    <p class="text-muted small mb-0">
+                                                        <?= htmlspecialchars($last_message['message'] ?? 'No messages yet...') ?>
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        <?php endforeach; ?>
                                     </div>
                                 </div>
 
+                                <!-- Chat Area -->
                                 <div class="col-md-8 col-lg-9 p-0">
                                     <div class="d-flex flex-column vh-100 border">
-
-                                        <div class="p-3 bg-primary text-white d-flex align-items-center">
-                                            <img src="../assets/profile.png"
-                                                style="width: 40px; height: 40px; object-fit: cover;" alt="Avatar"
-                                                class="rounded-circle me-3">
-                                            <h5 class="mb-0">Manager Name</h5>
+                                        <!-- Chat Header -->
+                                        <div id="chat-header"
+                                            class="p-3 bg-primary text-white d-flex align-items-center">
+                                            <h5 class="mb-0">Select a Manager to Chat</h5>
                                         </div>
 
+                                        <!-- Chat Messages -->
                                         <div id="chat-messages" class="flex-grow-1 p-3 bg-light overflow-auto">
-
-                                            <div class="d-flex justify-content-end mb-3">
-                                                <div class="bg-primary text-white p-2 rounded" style="max-width: 60%;">
-                                                    <p class="mb-0">Yow muks ikuzee?</p>
-                                                    <small class="d-block text-end">2:15 PM</small>
-                                                </div>
-                                            </div>
-
-                                            <div class="d-flex justify-content-start mb-3">
-                                                <div class="bg-white border p-2 rounded" style="max-width: 60%;">
-                                                    <p class="mb-0">nah nah ikuze ta.</p>
-                                                    <small class="d-block text-start text-muted">2:16 PM</small>
-                                                </div>
-                                            </div>
+                                            <p class="text-center text-muted">No messages selected...</p>
                                         </div>
 
+                                        <!-- Chat Input -->
                                         <div class="p-3 bg-light border-top">
                                             <div class="input-group">
-                                                <input type="text" class="form-control" placeholder="Type a message...">
-                                                <button class="btn btn-primary">
+                                                <input type="text" id="message-input" class="form-control"
+                                                    placeholder="Type a message...">
+                                                <button id="send-btn" class="btn btn-primary">
                                                     <i class="fas fa-paper-plane"></i>
                                                 </button>
                                             </div>
@@ -290,13 +272,77 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                         </div>
 
 
-
                     </div>
 
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        let selectedManagerId = null;
+
+        function loadMessages(managerId) {
+            selectedManagerId = managerId;
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '<p class="text-center text-muted">Loading...</p>';
+
+            fetch(`../endpoints/messages/fetch_messages.php?manager_id=${managerId}`)
+                .then(response => response.json())
+                .then(messages => {
+                    chatMessages.innerHTML = '';
+                    if (messages.length === 0) {
+                        chatMessages.innerHTML = '<p class="text-center text-muted">No messages yet...</p>';
+                    }
+                    messages.forEach(msg => {
+                        const isOwner = msg.sender_type === 'owner';
+                        const messageElement = `
+                <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
+                    <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} p-2 rounded" style="max-width: 60%;">
+                        <p class="mb-0">${msg.message}</p>
+                        <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
+                            ${new Date(msg.timestamp).toLocaleString()}
+                        </small>
+                    </div>
+                </div>
+                `;
+                        chatMessages.innerHTML += messageElement;
+                    });
+                });
+        }
+
+
+        // Function to send a new message
+        document.querySelector('#send-btn').addEventListener('click', () => {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (message && selectedManagerId) {
+                fetch('../endpoints/messages/send_message.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiver_id: selectedManagerId, message })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            messageInput.value = '';
+                            loadMessages(selectedManagerId);
+                        } else {
+                            alert('Failed to send message');
+                        }
+                    });
+            }
+        });
+
+
+        // Attach event listeners to manager buttons
+        document.querySelectorAll('.list-group-item').forEach(button => {
+            button.addEventListener('click', () => {
+                const managerId = button.dataset.managerId; // Add `data-manager-id` to your buttons
+                loadMessages(managerId);
+            });
+        });
+    </script>
 
     <script src="../js/sidebar.js"></script>
 

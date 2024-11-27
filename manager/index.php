@@ -1,27 +1,27 @@
 <?php
-// require_once '../conn/auth.php';
+session_start();
+require_once '../conn/auth.php';
+require_once '../conn/conn.php';
+validateSession('manager');
 
-// validateSession('manager');
+$manager_id = $_SESSION['user_id'];
 
-// $manager_id = $_SESSION['user_id'];
-// $owner_id = $_SESSION['owner_id'];
-
-// if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-//     echo "
-//         <script>
-//             window.onload = function() {
-//                 Swal.fire({
-//                     icon: 'success',
-//                     title: 'Login Successful',
-//                     text: 'Welcome!',
-//                     timer: 2000,
-//                     showConfirmButton: false
-//                 });
-//             };
-//         </script>
-//     ";
-//     unset($_SESSION['login_success']);
-// }
+if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+    echo "
+        <script>
+            window.onload = function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            };
+        </script>
+    ";
+    unset($_SESSION['login_success']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +69,8 @@
                             <!-- Search Bar -->
                             <div class="mt-4">
                                 <form class="d-flex" role="search">
-                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search">
+                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
+                                        aria-label="Search">
                                 </form>
                             </div>
 
@@ -94,7 +95,7 @@
 
     <script src="../js/sidebar_manager.js"></script>
     <script>
-        document.getElementById('businessSelect').addEventListener('change', function() {
+        document.getElementById('businessSelect').addEventListener('change', function () {
             var selectedBusiness = this.value;
             var salesPanel = document.getElementById('salesPanel');
             var salesTitle = document.getElementById('salesTitle');
@@ -125,7 +126,7 @@
             }
         });
 
-        document.getElementById('addSaleBtn').addEventListener('click', function() {
+        document.getElementById('addSaleBtn').addEventListener('click', function () {
             // SweetAlert for adding a sale
             Swal.fire({
                 title: 'Add New Sale',

@@ -1,3 +1,12 @@
+<?php
+session_start();
+require_once '../conn/auth.php';
+require_once '../conn/conn.php';
+validateSession('manager');
+
+$manager_id = $_SESSION['user_id'];
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -22,8 +31,11 @@
                     <div class="profile-container">
                         <div class="profile-header">
                             <div class="form-group-img-profile ">
-                                <img id="profile_picture_display" src="../assets/default-profile.png" alt="Profile Picture" class="profile-pic" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editProfilePicture()"></a>
+                                <img id="profile_picture_display" src="../assets/default-profile.png"
+                                    alt="Profile Picture" class="profile-pic"
+                                    style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                                <a type="button" class="text-primary me-3 fas fa-edit"
+                                    onclick="editProfilePicture()"></a>
                             </div>
                             <h1>Manager Profile</h1>
                         </div>
@@ -70,7 +82,9 @@
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-user-tie"></i>
-                                <span id="role_display"><b><div href="#" class="btn btn-dark text-white me-3" disabled>Role: Manager</div></b></span>
+                                <span id="role_display"><b>
+                                        <div href="#" class="btn btn-dark text-white me-3" disabled>Role: Manager</div>
+                                    </b></span>
                             </div>
                         </form>
 
@@ -148,8 +162,8 @@
             });
         }
 
-            function editPassword() {
-                
+        function editPassword() {
+
             Swal.fire({
                 title: 'Edit Password',
                 html: `
@@ -159,7 +173,7 @@
                     <input id="confirm_password" class="swal2-input" type="password" placeholder="Confirm password">
                 `,
                 showCancelButton: true,
-                width: '600px',  
+                width: '600px',
                 padding: '30px',
                 confirmButtonText: 'Save',
                 preConfirm: () => {
@@ -182,7 +196,7 @@
                 if (result.isConfirmed) {
                     const { newPassword } = result.value;
 
-                    document.getElementById('password_display').textContent = '**********'; 
+                    document.getElementById('password_display').textContent = '**********';
 
                     Swal.fire('Saved!', 'Your password has been updated.', 'success');
                 }
