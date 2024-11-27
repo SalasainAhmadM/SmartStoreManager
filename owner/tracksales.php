@@ -24,6 +24,10 @@ $today = date("F j, Y");
 
 <body class="d-flex">
 
+    <div id="particles-js"></div>
+
+    <div id="particles-js"></div>
+
     <?php include '../components/owner_sidebar.php'; ?>
 
     <div class="container-fluid page-body">

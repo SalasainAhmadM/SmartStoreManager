@@ -31,6 +31,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
 <body class="d-flex">
 
+    <div id="particles-js"></div>
+
     <?php include '../components/owner_sidebar.php'; ?>
 
     <div class="container-fluid page-body">

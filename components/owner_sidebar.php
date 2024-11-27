@@ -72,4 +72,5 @@ function isActive($link)
 </div>
 
 
-<?php include 'js_cdn.php' ?>
+<?php include '../components/js_cdn.php' ?>
+<script src="../js/particle.js"></script>

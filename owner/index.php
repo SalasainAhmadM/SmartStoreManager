@@ -126,6 +126,8 @@ if ($result->num_rows > 0) {
 
 <body class="d-flex">
 
+    <div id="particles-js"></div>
+
     <?php include '../components/owner_sidebar.php'; ?>
 
     <div class="container-fluid page-body">
@@ -276,7 +278,7 @@ if ($result->num_rows > 0) {
 
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
-
+    
 </body>
 
 </html>

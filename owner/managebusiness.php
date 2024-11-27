@@ -83,6 +83,8 @@ $conn->close();
 
 <body class="d-flex">
 
+    <div id="particles-js"></div>
+
     <?php include '../components/owner_sidebar.php'; ?>
 
     <div class="container-fluid page-body">
@@ -152,10 +154,10 @@ $conn->close();
                                             <td><?php echo htmlspecialchars($business['created_at']); ?></td>
                                             <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
                                             <td>
-                                                <a href="#" class="text-primary me-3" title="Edit">
+                                                <a href="#" class="edit-button text-primary me-3" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="#" class="text-danger" title="Delete">
+                                                <a href="#" class="delete-button text-danger" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </td>
@@ -409,7 +411,7 @@ $conn->close();
 
         $(document).ready(function () {
             // Edit Button
-            $('.edit-btn').click(function (e) {
+            $('.edit-button').click(function (e) {
                 e.preventDefault();
                 const row = $(this).closest('tr');
                 const businessId = row.data('id');
@@ -469,7 +471,7 @@ $conn->close();
             });
 
             // Delete Button
-            $('.delete-btn').click(function (e) {
+            $('.delete-button').click(function (e) {
                 e.preventDefault();
                 const row = $(this).closest('tr');
                 const businessId = row.data('id');
