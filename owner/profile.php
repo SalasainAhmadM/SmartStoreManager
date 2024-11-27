@@ -36,7 +36,11 @@ $businesses = [
                 <div class="dashboard-content">
                     <div class="profile-container">
                         <div class="profile-header">
-                            <h1><i class="fas fa-user-circle"></i> Owner Profile</h1>
+                            <div class="form-group-img-profile ">
+                                <img id="profile_picture_display" src="../assets/default-profile.png" alt="Profile Picture" class="profile-pic" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editProfilePicture()"></a>
+                            </div>
+                            <h1>Owner Profile</h1>
                         </div>
                         <form class="profile-form">
                             <div class="form-group">
@@ -79,6 +83,7 @@ $businesses = [
                                 <span id="birthday_display"><b>1933-02-09</b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editBirthday()"></a>
                             </div>
+                            <form class="profile-form">
                             <div class="form-group">
                                 <i class="fas fa-user-tie"></i>
                                 <span id="role_display"><b><div href="#" class="btn btn-dark text-white me-3" disabled>Role: Owner</div></b></span>
@@ -338,6 +343,43 @@ $businesses = [
                 }
             });
         }
+
+
+        function editProfilePicture() {
+            Swal.fire({
+                title: 'Change Profile Picture',
+                html: `
+                    <input type="file" id="profile_pic_input" class="swal2-input" accept="image/*">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Upload',
+                preConfirm: () => {
+                    const fileInput = document.getElementById('profile_pic_input');
+                    const file = fileInput.files[0];
+
+                    if (!file) {
+                        Swal.showValidationMessage('Please select an image to upload!');
+                        return false;
+                    }
+
+                    // Create a temporary URL to preview the uploaded image
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('profile_picture_display').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+
+                    return { file };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { file } = result.value;
+                    
+                    Swal.fire('Uploaded!', 'Your profile picture has been updated.', 'success');
+                }
+            });
+        }
+
     </script>
 </body>
 

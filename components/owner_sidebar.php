@@ -4,6 +4,19 @@ function isActive($link)
     $current_page = basename($_SERVER['PHP_SELF']);
     return $current_page === $link ? 'active' : 'link-dark';
 }
+
+
+function logout() {
+    session_unset();
+    session_destroy();
+    // Redirect to the login page (or another page)
+    header("Location: ../index.php");
+    exit();
+}
+
+if (isset($_GET['logout'])) {
+    logout();
+}
 ?>
 
 <div class="d-flex flex-column flex-shrink-0 p-3 bg-light collapsed" id="sidebar" style="width: 80px; height: 100vh; transition: all 0.3s ease;">
@@ -66,7 +79,7 @@ function isActive($link)
             <li>
                 <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="#"> <i class="fas fa-sign-out-alt"></i> Sign out</a></li>
+            <li><a class="dropdown-item" href="?logout=true"> <i class="fas fa-sign-out-alt"></i> Sign out</a></li>
         </ul>
     </div>
 </div>
