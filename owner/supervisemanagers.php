@@ -314,10 +314,6 @@ while ($row = $result->fetch_assoc()) {
                                                 <button id="send-btn" class="btn btn-primary">
                                                     <i class="fas fa-paper-plane"></i>
                                                 </button>
-                                                <button id="emoji-picker-btn" class="btn btn-light">
-                                                <i class="fas fa-smile"></i>
-                                                </button>
-
                                             </div>
                                         </div>
                                     </div>
