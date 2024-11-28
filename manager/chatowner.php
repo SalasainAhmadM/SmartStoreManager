@@ -56,7 +56,7 @@ if (!$owner) {
                                         <h5 class="mb-0">Owner Details</h5>
                                     </div>
                                     <div class="list-group-item list-group-item-action d-flex align-items-center">
-                                        <img src="<?= !empty($owner['image']) ? $owner['image'] : '../assets/profile.png' ?>"
+                                        <img src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : '../assets/profile.png' ?>"
                                             alt="Owner Avatar" style="width: 60px; height: 60px; object-fit: cover;"
                                             class="rounded-circle me-3">
                                         <div>
