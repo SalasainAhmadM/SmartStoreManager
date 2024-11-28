@@ -264,7 +264,7 @@ while ($row = $result->fetch_assoc()) {
                                             style="z-index: 1">
                                             <h5 class="mb-0">Managers</h5>
                                             <form class="d-flex" role="search" id="search-form">
-                                                <input class="form-control me-2 w-50" id="search-manager" type="search"
+                                                <input class="form-control me-2 mt-3" id="search-manager" type="search"
                                                     placeholder="Search business..." aria-label="Search">
                                                 <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                             </form>
