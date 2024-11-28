@@ -259,9 +259,9 @@ while ($row = $result->fetch_assoc()) {
                                 <!-- Sidebar with Managers -->
                                 <div id="user-list" class="col-md-4 col-lg-3 p-0">
                                     <div class="list-group bg-light border">
-                                        <div class="p-3 bg-primary text-white">
-                                            <h5 class="mb-0">Managers</h5>
-                                        </div>
+                                    <div class="p-3 bg-primary text-white position-sticky top-0" style="z-index: 1">
+                                        <h5 class="mb-0">Managers</h5>
+                                    </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
                                             $unreadQuery = "SELECT COUNT(*) as unread_count FROM messages WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' AND is_read = 0";
