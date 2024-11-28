@@ -384,14 +384,14 @@ while ($row = $result->fetch_assoc()) {
                     messages.forEach(msg => {
                         const isOwner = msg.sender_type === 'owner';
                         const messageElement = `
-                <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
-                    <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
-                        <p class="mb-0">${msg.message}</p>
-                        <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
-                            ${new Date(msg.timestamp).toLocaleString()}
-                        </small>
-                    </div>
-                </div>`;
+                        <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
+                            <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
+                                <p class="mb-0">${msg.message}</p>
+                                <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
+                                    ${new Date(msg.timestamp).toLocaleString()}
+                                </small>
+                            </div>
+                        </div>`;
                         chatMessages.innerHTML += messageElement;
                     });
 
@@ -401,6 +401,13 @@ while ($row = $result->fetch_assoc()) {
                     refreshUnreadCounts();
                 });
         }
+
+        // Polling for new messages every 5 seconds
+        setInterval(() => {
+            if (selectedManagerId) {
+                loadMessages(selectedManagerId);  // Refresh messages for the selected manager
+            }
+        }, 5000); // Refresh every 5 seconds
 
         function refreshUnreadCounts() {
             fetch('../endpoints/messages/fetch_unread_counts.php')
