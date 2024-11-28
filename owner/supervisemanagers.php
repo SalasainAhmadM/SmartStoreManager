@@ -15,6 +15,38 @@ $stmt->execute();
 $result = $stmt->get_result();
 $managers = $result->fetch_all(MYSQLI_ASSOC);
 
+// Query to fetch all businesses and their branches for the owner
+$query = "
+    SELECT 
+        b.name AS business_name, 
+        br.id AS branch_id, 
+        br.location AS branch_location
+    FROM business b
+    LEFT JOIN branch br ON b.id = br.business_id
+    WHERE b.owner_id = ?
+    ORDER BY b.name, br.id
+";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Organize businesses and branches into an associative array
+$businesses = [];
+while ($row = $result->fetch_assoc()) {
+    $business_name = $row['business_name'];
+    $branch = [
+        'branch_id' => $row['branch_id'],
+        'branch_location' => $row['branch_location']
+    ];
+
+    if (!isset($businesses[$business_name])) {
+        $businesses[$business_name] = [];
+    }
+
+    $businesses[$business_name][] = $branch;
+}
 ?>
 
 <!DOCTYPE html>
@@ -151,33 +183,29 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Business A</td>
-                                        <td>103</td>
-                                        <td>Chicago</td>
-                                        <td>
-                                            <button class="btn btn-primary btn-sm">Assign Manager</button>
-                                            <button class="btn btn-info btn-sm">List of Manager(s)</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Business B</td>
-                                        <td>
-                                            <ul>
-                                                <li>103</li>
-                                                <li>102</li>
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <ul>
-                                                <li>Rio Hondo</li>
-                                                <li>Sta. Barbara</li>
-                                            </ul>
-                                        <td>
-                                            <button class="btn btn-primary btn-sm">Assign Manager</button>
-                                            <button class="btn btn-info btn-sm">List of Manager(s)</button>
-                                        </td>
-                                    </tr>
+                                    <?php foreach ($businesses as $business_name => $branches): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($business_name) ?></td>
+                                            <td>
+                                                <ul>
+                                                    <?php foreach ($branches as $branch): ?>
+                                                        <li><?= htmlspecialchars($branch['branch_id']) ?></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <ul>
+                                                    <?php foreach ($branches as $branch): ?>
+                                                        <li><?= htmlspecialchars($branch['branch_location']) ?></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm">Assign Manager</button>
+                                                <button class="btn btn-info btn-sm">List of Manager(s)</button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -595,21 +623,53 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
             });
         });
 
-
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
 
+            const savedTab = localStorage.getItem('activeTab');
+
+            if (savedTab) {
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                const savedNavLink = document.querySelector(`.nav-link[data-tab="${savedTab}"]`);
+                const savedTabContent = document.getElementById(savedTab);
+
+                if (savedNavLink && savedTabContent) {
+                    savedNavLink.classList.add('active');
+                    savedTabContent.classList.add('active');
+                }
+            }
+
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
+
                     navLinks.forEach(nav => nav.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
+
                     link.classList.add('active');
                     const targetTab = document.getElementById(link.getAttribute('data-tab'));
                     targetTab.classList.add('active');
+
+                    localStorage.setItem('activeTab', link.getAttribute('data-tab'));
                 });
             });
         });
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     const navLinks = document.querySelectorAll('.nav-link');
+        //     const tabContents = document.querySelectorAll('.tab-content');
+
+        //     navLinks.forEach(link => {
+        //         link.addEventListener('click', () => {
+        //             navLinks.forEach(nav => nav.classList.remove('active'));
+        //             tabContents.forEach(content => content.classList.remove('active'));
+        //             link.classList.add('active');
+        //             const targetTab = document.getElementById(link.getAttribute('data-tab'));
+        //             targetTab.classList.add('active');
+        //         });
+        //     });
+        // });
 
         document.querySelectorAll('.btn-primary').forEach(button => {
             button.addEventListener('click', function () {
