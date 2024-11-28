@@ -1,49 +1,66 @@
-        // Financial data
-        const labels = ['January', 'February', 'March', 'April', 'May', 'June'];
-        const data = {
-            labels: labels,
-            datasets: [{
-                    label: 'Sales',
-                    data: [1200, 1500, 1100, 1800, 1700, 2100],
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'Expenses',
-                    data: [800, 700, 900, 1100, 950, 1200],
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                },
-            ],
-        };
+let chart;
 
-        // Chart configuration
-        const config = {
-            type: 'bar',
-            data: data,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Sales and Expenses'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+function updateChart(businessName) {
+    // Clear previous chart data
+    const salesData = [];
+    const expensesData = [];
+    const branchNames = [];
+
+    // Get rows under the clicked business name
+    const rows = document.querySelectorAll('#btn_' + businessName + ' .branch_row');
+    
+    rows.forEach(row => {
+        const branchName = row.querySelector('.branch_name').innerText;
+        const sales = parseInt(row.querySelector('.sales').innerText, 10);
+        const expenses = parseInt(row.querySelector('.expenses').innerText, 10);
+
+        // Push data to respective arrays
+        branchNames.push(branchName);
+        salesData.push(sales);
+        expensesData.push(expenses);
+    });
+
+    // Update chart data
+    if (chart) {
+        chart.data.labels = branchNames;
+        chart.data.datasets[0].data = salesData;
+        chart.data.datasets[1].data = expensesData;
+        chart.update();
+    }
+}
+
+// Initialize chart
+function initializeChart() {
+    const ctx = document.getElementById('chartCanvas').getContext('2d');
+    
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [], // Branch names will go here
+            datasets: [{
+                label: 'Sales (₱)',
+                data: [], // Sales data will go here
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Expenses (₱)',
+                data: [], // Expenses data will go here
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        };
+        }
+    });
+}
 
-        // Render the chart
-        const financialChart = new Chart(
-            document.getElementById('financialChart'),
-            config
-        );
+window.onload = initializeChart;
