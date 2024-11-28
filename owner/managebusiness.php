@@ -348,9 +348,7 @@ $conn->close();
     </div>
 
     <script src="../js/sidebar.js"></script>
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         const ownerId = <?php echo json_encode($owner_id); ?>;
 
