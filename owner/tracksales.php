@@ -38,9 +38,8 @@ $today = date("F j, Y");
 
                     <div class="mt-5">
                         <div class="form-group">
-                            <label for="businessSelect">Select Business</label>
                             <select id="businessSelect" class="form-control">
-                                <option value="">Select Business</option>
+                                <option value=""><strong>Select Business</strong></option>
                                 <option value="A">Business A</option>
                                 <option value="B">Business B</option>
                             </select>

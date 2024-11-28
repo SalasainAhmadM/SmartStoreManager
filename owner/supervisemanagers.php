@@ -261,6 +261,7 @@ while ($row = $result->fetch_assoc()) {
                                     <div class="list-group bg-light border">
                                     <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
                                         <h5 class="mb-0">Managers</h5>
+                                        <input type="text" id="manager-search" class="form-control mt-2" placeholder="Search Managers...">
                                     </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
@@ -309,7 +310,7 @@ while ($row = $result->fetch_assoc()) {
 
 
                                         <!-- Chat Input -->
-                                        <div class="p-3 bg-light border-top">
+                                        <div class="p-3 bg-light border-top border-dark">
                                             <div class="input-group">
                                                 <input type="text" id="message-input" class="form-control"
                                                     placeholder="Type a message...">
@@ -318,6 +319,7 @@ while ($row = $result->fetch_assoc()) {
                                                 </button>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -343,6 +345,15 @@ while ($row = $result->fetch_assoc()) {
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.innerHTML = '<p class="text-center text-muted">Loading...</p>';
 
+            // Highlight the selected manager's button
+            document.querySelectorAll('.list-group-item').forEach(item => {
+                if (item.getAttribute('data-manager-id') == managerId) {
+                    item.classList.add('bg-primary', 'text-white'); 
+                } else {
+                    item.classList.remove('bg-primary', 'text-white'); 
+                }
+            });
+
             // Fetch messages and mark them as read
             fetch(`../endpoints/messages/fetch_messages.php?manager_id=${managerId}`)
                 .then(response => response.json())
@@ -365,6 +376,8 @@ while ($row = $result->fetch_assoc()) {
                         chatMessages.innerHTML += messageElement;
                     });
 
+                    // Scroll to the bottom after the messages are loaded
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                     // Refresh unread counts
                     refreshUnreadCounts();
                 });
@@ -432,6 +445,8 @@ while ($row = $result->fetch_assoc()) {
             });
         });
     </script>
+
+
 
     <script>
         document.getElementById('add-business-btn').addEventListener('click', function () {
