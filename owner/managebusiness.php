@@ -129,9 +129,9 @@ $product_stmt->close();
                             </button>
                         </div>
 
-                        <div class="col-md-12 mt-5">
+                        <div class="col-md-12 mt-5 scrollable-table">
                             <table class="table table-striped table-hover mt-4">
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th scope="col">Name <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
@@ -209,8 +209,9 @@ $product_stmt->close();
 
                                         </div>
 
+                                        <div class="scrollable-table">
                                         <table class="table">
-                                            <thead class="table-dark">
+                                            <thead class="table-dark position-sticky top-0">
                                                 <tr>
                                                     <th>Location <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
@@ -247,6 +248,8 @@ $product_stmt->close();
                                                 <?php endif; ?>
                                             </tbody>
                                         </table>
+                                        </div>
+  
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -290,8 +293,9 @@ $product_stmt->close();
                                             </button>
                                         </div>
 
+                                        <div class="scrollable-table">
                                         <table class="table" id="product-table">
-                                            <thead class="table-dark">
+                                            <thead class="table-dark position-sticky top-0">
                                                 <tr>
                                                     <th>Product ID <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
@@ -343,6 +347,8 @@ $product_stmt->close();
                                                 <?php endif; ?>
                                             </tbody>
                                         </table>
+                                        </div>
+
                                     </div>
                                 </div>
                             <?php endforeach; ?>

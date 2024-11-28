@@ -55,9 +55,9 @@ $owner_id = $_SESSION['user_id'];
 
                     <h5 class="mt-5"><b>Business Overview:</b></h5>
 
-                    <div class="table-container">
+                    <div class="table-container scrollable-table-two">
                         <table class="table table-striped table-hover mt-4">
-                            <thead class="table-dark">
+                            <thead class="table-dark position-sticky top-0">
                                 <tr>
                                     <th>Business Name <button class="btn text-white"><i
                                                 class="fas fa-sort"></i></button></th>

@@ -57,7 +57,7 @@ $owner_id = $_SESSION['user_id'];
 
                 <div id="businessPanel" class="mt-3">
                     <div class="form-group">
-                        <label for="businessSelect">Select Business</label>
+                        <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
                         <select id="businessSelect" class="form-control">
                             <option value="">Select Business</option>
                             <option value="A">Business A</option>
@@ -65,10 +65,10 @@ $owner_id = $_SESSION['user_id'];
                         </select>
                     </div>
 
-                    <div id="expensesPanel" class="collapse mt-3">
+                    <div id="expensesPanel" class="collapse mt-3 scrollable-table">
                         <h4>Expenses List for Business <span id="businessName"></span></h4>
                         <table class="table table-striped table-hover mt-4">
-                            <thead class="table-dark">
+                            <thead class="table-dark position-sticky top-0">
                                 <tr>
                                     <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                     <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button>

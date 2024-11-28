@@ -8,7 +8,6 @@ $owner_id = $_SESSION['user_id'];
 
 // Get today's date
 $today = date("F j, Y");
-
 ?>
 
 <!DOCTYPE html>
@@ -30,6 +29,10 @@ $today = date("F j, Y");
 
     <?php include '../components/owner_sidebar.php'; ?>
 
+
+
+
+
     <div class="container-fluid page-body">
         <div class="row">
             <div class="col-md-12 dashboard-body">
@@ -38,6 +41,7 @@ $today = date("F j, Y");
 
                     <div class="mt-5">
                         <div class="form-group">
+                        <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
                             <select id="businessSelect" class="form-control">
                                 <option value=""><strong>Select Business</strong></option>
                                 <option value="A">Business A</option>
@@ -46,10 +50,10 @@ $today = date("F j, Y");
                         </div>
                     </div>
 
-                    <!-- Search Bar -->
+                    <!-- Search Bar for Sales -->
                     <div class="mt-4 mb-4 position-relative">
                         <form class="d-flex" role="search">
-                            <input class="form-control me-2 w-50" type="search" placeholder="Search sale.." aria-label="Search">
+                            <input id="saleSearchBar" class="form-control me-2 w-50" type="search" placeholder="Search sale.." aria-label="Search" onkeyup="searchSales()">
                         </form>
                         <!-- Add Sale Button -->
                         <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button">
@@ -57,13 +61,13 @@ $today = date("F j, Y");
                         </button>
                     </div>
 
-                    <h1 class="mt-5">
+                    <h1 class="mt-5 mb-5">
                         <i class="fa-solid fa-dollar-sign" style="margin-right: 10px;"></i>
                         <b>Today Sales for Business A (<?php echo $today; ?>)</b>
                     </h1>
 
-                    <div class="mt-4">
-                    <table class="table table-striped table-hover mt-4">
+                    <div class="scrollable-table">
+                    <table id="salesTable" class="table table-striped table-hover">
                     <thead class="table-dark">
                                 <tr>
                                     <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -91,6 +95,78 @@ $today = date("F j, Y");
                                     <td>₱200</td>
                                     <td><?php echo $today; ?></td>
                                 </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Product 3</td>
+                                    <td>20</td>
+                                    <td>₱200</td>
+                                    <td><?php echo $today; ?></td>
+                                </tr>
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -105,13 +181,17 @@ $today = date("F j, Y");
                     <div class="mt-5">
                         <button class="btn btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#previousSalesTable" aria-expanded="false" aria-controls="previousSalesTable">
                             <i class="fas fa-calendar-day me-2"></i><b>View Sales Log</b> <i class="fas fa-plus me-2"></i>
-
                         </button>
                     </div>
 
-                    <div class="collapse mt-3" id="previousSalesTable">
+                    <div class="collapse mt-5" id="previousSalesTable">
                         <h3><b>Sales Log</b></h3>
-                        <table class="table table-striped table-hover mt-4">
+                        <div class="mt-4 mb-4 position-relative">
+                        <form class="d-flex" role="search">
+                            <input id="logSearchBar" class="form-control me-2 w-50" type="search" placeholder="Search sale log.." aria-label="Search" onkeyup="searchSalesLog()">
+                        </form>
+                        </div>
+                        <table id="salesLogTable" class="table table-striped table-hover mt-4">
                         <thead class="table-dark">
                                 <tr>
                                     <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -150,8 +230,46 @@ $today = date("F j, Y");
 
     </div>
 
+
+
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+
+    <script>
+        // Search function for Sales table
+        function searchSales() {
+            const query = document.getElementById('saleSearchBar').value.toLowerCase();
+            const rows = document.querySelectorAll('#salesTable tbody tr');
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let match = false;
+                for (let i = 0; i < cells.length; i++) {
+                    if (cells[i].textContent.toLowerCase().includes(query)) {
+                        match = true;
+                        break;
+                    }
+                }
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        // Search function for Sales Log table
+        function searchSalesLog() {
+            const query = document.getElementById('logSearchBar').value.toLowerCase();
+            const rows = document.querySelectorAll('#salesLogTable tbody tr');
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let match = false;
+                for (let i = 0; i < cells.length; i++) {
+                    if (cells[i].textContent.toLowerCase().includes(query)) {
+                        match = true;
+                        break;
+                    }
+                }
+                row.style.display = match ? '' : 'none';
+            });
+        }
+    </script>
     
 </body>
 
