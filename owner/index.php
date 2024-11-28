@@ -7,6 +7,14 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
+// Query to fetch owner details
+$query = "SELECT * FROM owner WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$owner = $result->fetch_assoc();
 // Check if the owner is new
 $query = "SELECT is_new_owner FROM owner WHERE id = ?";
 $stmt = $conn->prepare($query);
@@ -91,9 +99,9 @@ if ($result->num_rows > 0) {
                 formData.append('owner_id', ownerId);
 
                 fetch('../endpoints/add_business_prompt.php', {
-                        method: 'POST',
-                        body: formData
-                    })
+                    method: 'POST',
+                    body: formData
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -207,13 +215,20 @@ if ($result->num_rows > 0) {
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Branch <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Product <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Branch <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -266,9 +281,12 @@ if ($result->num_rows > 0) {
                                     <table class="table" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Activity <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Status <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Activity <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Date <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Status <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>

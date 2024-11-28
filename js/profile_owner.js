@@ -4,14 +4,14 @@ function editFullName() {
 
     Swal.fire({
         title: 'Edit Full Name',
-        html: `        
-            <label for="first_name">First Name</label>
-            <input id="first_name" class="swal2-input" value="${firstName}">
-            <label for="middle_name">Middle Name</label>
-            <input id="middle_name" class="swal2-input" value="${middleName}">
-            <label for="last_name">Last Name</label>
-            <input id="last_name" class="swal2-input" value="${lastName}">
-        `,
+        html: `
+    <label for="first_name">First Name</label>
+    <input id="first_name" class="swal2-input" value="${firstName}">
+    <label for="middle_name">Middle Name</label>
+    <input id="middle_name" class="swal2-input" value="${middleName}">
+    <label for="last_name">Last Name</label>
+    <input id="last_name" class="swal2-input" value="${lastName}">
+`,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
@@ -28,13 +28,41 @@ function editFullName() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { firstName, middleName, lastName } = result.value;
-            const updatedName = `${firstName} ${middleName} ${lastName}`.trim();
-            document.getElementById('full_name_display').textContent = updatedName;
 
-            Swal.fire('Saved!', 'Your name has been updated.', 'success');
+            // Update fields separately
+            Promise.all([
+                updateProfileField('first_name', firstName),
+                updateProfileField('middle_name', middleName),
+                updateProfileField('last_name', lastName),
+            ]).then(() => {
+                document.getElementById(
+                    'full_name_display'
+                ).textContent = `${firstName} ${middleName} ${lastName}`.trim();
+                Swal.fire('Saved!', 'Your name has been updated.', 'success');
+            }).catch(() => {
+                Swal.fire('Error!', 'Failed to update your name.', 'error');
+            });
         }
     });
 }
+
+// Reusable function to update a profile field
+function updateProfileField(field, value) {
+    return fetch('../endpoints/profile/update_profile.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ field, value }),
+    }).then((response) => response.json())
+        .then((data) => {
+            if (data.status !== 'success') {
+                throw new Error(data.message);
+            }
+        });
+}
+
+
 
 function editEmail() {
     const email = document.getElementById('email_display').textContent.trim();
@@ -47,8 +75,8 @@ function editEmail() {
         preConfirm: () => {
             const email = document.getElementById('email').value.trim();
 
-            if (!email) {
-                Swal.showValidationMessage('Email is required!');
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                Swal.showValidationMessage('Please enter a valid email address!');
             }
 
             return { email };
@@ -56,15 +84,35 @@ function editEmail() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { email } = result.value;
-            document.getElementById('email_display').textContent = email;
 
-            Swal.fire('Saved!', 'Your email has been updated.', 'success');
+            // Update on the server
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    field: 'email',
+                    value: email,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        document.getElementById('email_display').textContent = email;
+                        Swal.fire('Saved!', 'Your email has been updated.', 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Failed to update your email.', 'error');
+                });
         }
     });
 }
 
-    function editPassword() {
-        
+function editPassword() {
     Swal.fire({
         title: 'Edit Password',
         html: `
@@ -74,7 +122,7 @@ function editEmail() {
             <input id="confirm_password" class="swal2-input" type="password" placeholder="Confirm password">
         `,
         showCancelButton: true,
-        width: '600px',  
+        width: '600px',
         padding: '30px',
         confirmButtonText: 'Save',
         preConfirm: () => {
@@ -97,9 +145,22 @@ function editEmail() {
         if (result.isConfirmed) {
             const { newPassword } = result.value;
 
-            document.getElementById('password_display').textContent = '**********'; 
-
-            Swal.fire('Saved!', 'Your password has been updated.', 'success');
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'password', value: newPassword }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        Swal.fire('Saved!', 'Your password has been updated.', 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Failed to update your password.', 'error');
+                });
         }
     });
 }
@@ -109,14 +170,14 @@ function editPhone() {
 
     Swal.fire({
         title: 'Edit Phone Number',
-        html: `<input id="phone" class="swal2-input" value="${phone}">`,
+        html: `<input id="phone" class="swal2-input" value="${phone}" placeholder="Enter phone number">`,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
             const phone = document.getElementById('phone').value.trim();
 
-            if (!phone) {
-                Swal.showValidationMessage('Phone number is required!');
+            if (!phone || !/^\d+$/.test(phone)) {
+                Swal.showValidationMessage('Please enter a valid phone number!');
             }
 
             return { phone };
@@ -124,19 +185,35 @@ function editPhone() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { phone } = result.value;
-            document.getElementById('phone_display').textContent = phone;
 
-            Swal.fire('Saved!', 'Your phone number has been updated.', 'success');
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'contact_number', value: phone }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        document.getElementById('phone_display').textContent = phone;
+                        Swal.fire('Saved!', 'Your phone number has been updated.', 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Failed to update your phone number.', 'error');
+                });
         }
     });
 }
+
 
 function editAddress() {
     const address = document.getElementById('address_display').textContent.trim();
 
     Swal.fire({
         title: 'Edit Address',
-        html: `<input id="address" class="swal2-input" value="${address}">`,
+        html: `<textarea id="address" class="swal2-textarea" placeholder="Enter address">${address}</textarea>`,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
@@ -151,9 +228,24 @@ function editAddress() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { address } = result.value;
-            document.getElementById('address_display').textContent = address;
 
-            Swal.fire('Saved!', 'Your address has been updated.', 'success');
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'address', value: address }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        document.getElementById('address_display').textContent = address;
+                        Swal.fire('Saved!', 'Your address has been updated.', 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Failed to update your address.', 'error');
+                });
         }
     });
 }
@@ -182,26 +274,42 @@ function editGender() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { gender } = result.value;
-            document.getElementById('gender_display').textContent = gender;
 
-            Swal.fire('Saved!', 'Your gender has been updated.', 'success');
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'gender', value: gender }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        document.getElementById('gender_display').textContent = gender;
+                        Swal.fire('Saved!', 'Your gender has been updated.', 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error!', 'Failed to update your gender.', 'error');
+                });
         }
     });
 }
+
 
 function editAge() {
     const age = document.getElementById('age_display').textContent.trim();
 
     Swal.fire({
         title: 'Edit Age',
-        html: `<input id="age" class="swal2-input" type="number" value="${age}">`,
+        html: `<input id="age" class="swal2-input" type="number" value="${age}" min="1">`,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
             const age = document.getElementById('age').value.trim();
 
-            if (!age) {
-                Swal.showValidationMessage('Age is required!');
+            if (!age || age <= 0) {
+                Swal.showValidationMessage('Please enter a valid age!');
             }
 
             return { age };
@@ -209,12 +317,29 @@ function editAge() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { age } = result.value;
-            document.getElementById('age_display').textContent = age;
 
-            Swal.fire('Saved!', 'Your age has been updated.', 'success');
+            // Send the updated age to the server
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'age', value: age })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('age_display').textContent = age;
+                    Swal.fire('Saved!', 'Your age has been updated.', 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Failed to update age. Please try again later.', 'error');
+            });
         }
     });
 }
+
 
 function editBirthday() {
     const birthday = document.getElementById('birthday_display').textContent.trim();
@@ -236,9 +361,25 @@ function editBirthday() {
     }).then((result) => {
         if (result.isConfirmed) {
             const { birthday } = result.value;
-            document.getElementById('birthday_display').textContent = birthday;
 
-            Swal.fire('Saved!', 'Your birthday has been updated.', 'success');
+            // Send the updated birthday to the server
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ field: 'birthday', value: birthday })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('birthday_display').textContent = birthday;
+                    Swal.fire('Saved!', 'Your birthday has been updated.', 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Failed to update birthday. Please try again later.', 'error');
+            });
         }
     });
 }
@@ -261,20 +402,41 @@ function editProfilePicture() {
                 return false;
             }
 
-            // Create a temporary URL to preview the uploaded image
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('profile_picture_display').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-
             return { file };
         }
     }).then((result) => {
         if (result.isConfirmed) {
             const { file } = result.value;
-            
-            Swal.fire('Uploaded!', 'Your profile picture has been updated.', 'success');
+
+            // Create a form data object to send the file
+            const formData = new FormData();
+            formData.append('field', 'profile_picture');
+            formData.append('file', file);
+
+            // Send the file to the server
+            fetch('../endpoints/profile/update_profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Preview the uploaded image
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('profile_picture_display').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+
+                    Swal.fire('Uploaded!', 'Your profile picture has been updated.', 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Failed to upload profile picture. Please try again later.', 'error');
+            });
         }
     });
 }
+

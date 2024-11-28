@@ -1,16 +1,24 @@
 <?php
 session_start();
+require_once '../conn/conn.php';
 require_once '../conn/auth.php';
 
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-$businesses = [
-    'Tech Solutions Ltd.',
-    'Green Farms Inc.',
-    'Urban Design Studio'
-];
+// Query to fetch owner details
+$query = "SELECT * FROM owner WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$owner = $result->fetch_assoc();
+
+$owner = array_map(function ($value) {
+    return empty($value) ? 'N/A' : htmlspecialchars($value);
+}, $owner);
 ?>
 
 <!DOCTYPE html>
@@ -37,20 +45,25 @@ $businesses = [
                     <div class="profile-container">
                         <div class="profile-header">
                             <div class="form-group-img-profile ">
-                                <img id="profile_picture_display" src="../assets/default-profile.png" alt="Profile Picture" class="profile-pic" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-                                <a type="button" class="text-primary me-3 fas fa-edit" onclick="editProfilePicture()"></a>
+                                <img id="profile_picture_display" src="../assets/profiles/<?= $owner['image']; ?>"
+                                    alt="Profile Picture" class="profile-pic"
+                                    style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                                <a type="button" class="text-primary me-3 fas fa-edit"
+                                    onclick="editProfilePicture()"></a>
                             </div>
                             <h1>Owner Profile</h1>
                         </div>
                         <form class="profile-form">
                             <div class="form-group">
                                 <i class="fas fa-user"></i>
-                                <span id="full_name_display"><b>Gol D. Roger</b></span>
+                                <span id="full_name_display">
+                                    <b><?= $owner['first_name'] . ' ' . $owner['middle_name'] . ' ' . $owner['last_name']; ?></b>
+                                </span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editFullName()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-envelope"></i>
-                                <span id="email_display"><b>goldroger@example.com</b></span>
+                                <span id="email_display"><b><?= $owner['email']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editEmail()"></a>
                             </div>
                             <div class="form-group">
@@ -60,45 +73,44 @@ $businesses = [
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-phone-alt"></i>
-                                <span id="phone_display"><b>09366763481</b></span>
+                                <span id="phone_display"><b><?= $owner['contact_number']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editPhone()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-home"></i>
-                                <span id="address_display"><b>New World</b></span>
+                                <span id="address_display"><b><?= $owner['address']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAddress()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-venus-mars"></i>
-                                <span id="gender_display"><b>Male</b></span>
+                                <span id="gender_display"><b><?= $owner['gender']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editGender()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-birthday-cake"></i>
-                                <span id="age_display"><b>30</b></span>
+                                <span id="age_display"><b><?= $owner['age']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAge()"></a>
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-calendar-alt"></i>
-                                <span id="birthday_display"><b>1933-02-09</b></span>
+                                <span id="birthday_display"><b><?= $owner['birthday']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editBirthday()"></a>
                             </div>
-                            <form class="profile-form">
                             <div class="form-group">
                                 <i class="fas fa-user-tie"></i>
-                                <span id="role_display"><b><div href="#" class="btn btn-dark text-white me-3" disabled>Role: Owner</div></b></span>
+                                <span id="role_display"><b>
+                                        <div href="#" class="btn btn-dark text-white me-3" disabled>Role: Owner</div>
+                                    </b></span>
                             </div>
                         </form>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <script src="../js/sidebar.js"></script>
     <script src="../js/profile_owner.js"></script>
-    
+
 </body>
 
 </html>

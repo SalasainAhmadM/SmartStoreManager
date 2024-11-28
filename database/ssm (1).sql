@@ -171,6 +171,7 @@ CREATE TABLE `owner` (
   `last_name` varchar(255) NOT NULL,
   `gender` varchar(255) NOT NULL,
   `age` varchar(255) NOT NULL,
+  `birthday` DATE NOT NULL,
   `address` varchar(255) NOT NULL,
   `contact_number` varchar(15) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),

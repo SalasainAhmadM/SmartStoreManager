@@ -614,3 +614,6 @@ ol, ul {
 .emoji:hover {
   background-color: #f0f0f0;
 }
+.profile-form .form-group i {
+  padding: 15px; 
+}
