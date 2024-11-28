@@ -259,9 +259,9 @@ while ($row = $result->fetch_assoc()) {
                                 <!-- Sidebar with Managers -->
                                 <div id="user-list" class="col-md-4 col-lg-3 p-0">
                                     <div class="list-group bg-light border">
-                                        <div class="p-3 bg-primary text-white">
-                                            <h5 class="mb-0">Managers</h5>
-                                        </div>
+                                    <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
+                                        <h5 class="mb-0">Managers</h5>
+                                    </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
                                             $unreadQuery = "SELECT COUNT(*) as unread_count FROM messages WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' AND is_read = 0";
@@ -273,7 +273,8 @@ while ($row = $result->fetch_assoc()) {
                                             ?>
                                             <button class="list-group-item list-group-item-action d-flex align-items-center"
                                                 data-manager-id="<?= $manager['id'] ?>"
-                                                onclick="loadMessages(<?= $manager['id'] ?>)">
+                                                onclick="loadMessages(<?= $manager['id'] ?>)"
+                                                style="z-index: 0">
                                                 <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
                                                     alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
                                                     class="rounded-circle me-3">
@@ -297,14 +298,15 @@ while ($row = $result->fetch_assoc()) {
                                     <div class="d-flex flex-column border">
                                         <!-- Chat Header -->
                                         <div id="chat-header"
-                                            class="p-3 bg-primary text-white d-flex align-items-center">
+                                            class="p-3 bg-primary text-white d-flex align-items-center shadow">
                                             <h5 class="mb-0">Select a Manager to Chat</h5>
                                         </div>
 
                                         <!-- Chat Messages -->
-                                        <div id="chat-messages" class="flex-grow-1 p-3 bg-light overflow-auto">
+                                        <div id="chat-messages" class="flex-grow-1 p-3 overflow-auto">
                                             <p class="text-center text-muted">No messages selected...</p>
                                         </div>
+
 
                                         <!-- Chat Input -->
                                         <div class="p-3 bg-light border-top">
@@ -314,10 +316,6 @@ while ($row = $result->fetch_assoc()) {
                                                 <button id="send-btn" class="btn btn-primary">
                                                     <i class="fas fa-paper-plane"></i>
                                                 </button>
-                                                <button id="emoji-picker-btn" class="btn btn-light">
-                                                <i class="fas fa-smile"></i>
-                                                </button>
-
                                             </div>
                                         </div>
                                     </div>
@@ -357,7 +355,7 @@ while ($row = $result->fetch_assoc()) {
                         const isOwner = msg.sender_type === 'owner';
                         const messageElement = `
                 <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
-                    <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} p-2 rounded" style="max-width: 60%;">
+                    <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
                         <p class="mb-0">${msg.message}</p>
                         <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
                             ${new Date(msg.timestamp).toLocaleString()}
