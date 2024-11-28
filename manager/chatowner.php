@@ -45,7 +45,7 @@ if (!$owner) {
         <div class="row">
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
-                    <h1><b><i class="fas fa-comments me-2"></i> Chat Owner</b></h1>
+                    <h1><b><i class="fas fa-comments me-2"></i> Chat with Owner</b></h1>
 
                     <div class="container-fluid mt-4">
                         <div class="row">
@@ -55,13 +55,13 @@ if (!$owner) {
                                     <div class="p-3 bg-primary text-white">
                                         <h5 class="mb-0">Owner Details</h5>
                                     </div>
-                                    <div class="list-group-item list-group-item-action d-flex align-items-center">
+                                    <div class="list-group-item list-group-item-action d-flex align-items-center bg-dark text-white">
                                         <img src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : '../assets/profile.png' ?>"
                                             alt="Owner Avatar" style="width: 60px; height: 60px; object-fit: cover;"
                                             class="rounded-circle me-3">
                                         <div>
                                             <strong><?= htmlspecialchars($owner['first_name'] . ' ' . $owner['middle_name'] . ' ' . $owner['last_name']) ?></strong>
-                                            <p class="text-muted small mb-0"><?= htmlspecialchars($owner['email']) ?>
+                                            <p class="small mb-0 text-white"><?= htmlspecialchars($owner['email']) ?>
                                             </p>
                                         </div>
                                     </div>
@@ -70,19 +70,19 @@ if (!$owner) {
 
                             <!-- Chat Area -->
                             <div class="col-md-8 col-lg-9 p-0">
-                                <div class="d-flex flex-column vh-100 border">
+                                <div class="d-flex flex-column border">
                                     <!-- Chat Header -->
                                     <div id="chat-header" class="p-3 bg-primary text-white d-flex align-items-center">
                                         <h5 class="mb-0">Chat with <?= htmlspecialchars($owner['first_name']) ?></h5>
                                     </div>
 
                                     <!-- Chat Messages -->
-                                    <div id="chat-messages" class="flex-grow-1 p-3 bg-light overflow-auto">
+                                    <div id="chat-messages" class="flex-grow-1 p-3 overflow-auto">
                                         <p class="text-center text-muted">No messages selected...</p>
                                     </div>
 
                                     <!-- Chat Input -->
-                                    <div class="p-3 bg-light border-top">
+                                    <div class="p-3 bg-light border-top border-dark">
                                         <div class="input-group">
                                             <input type="text" id="message-input" class="form-control"
                                                 placeholder="Type a message...">
@@ -123,18 +123,18 @@ if (!$owner) {
                 }
 
                 messages.forEach(msg => {
-                    const msgClass = msg.sender_type === 'manager' ? 'text-end' : 'text-start';
-                    const bgColor = msg.sender_type === 'owner'
-                        ? 'background-color: #d1ecf1; color: #0c5460;' // Light blue inline style
-                        : 'background-color: #f8f9fa; color: #212529;'; // Default light gray
-
-                    chatMessages.innerHTML += `
-            <div class="${msgClass} mb-3">
-                <p style="${bgColor}" class="border p-2 rounded">${msg.message}</p>
-                <small class="text-muted">${msg.timestamp}</small>
-            </div>
-        `;
-                });
+                        const isManager = msg.sender_type === 'manager';
+                        const messageElement = `
+                        <div class="d-flex ${isManager ? 'justify-content-end' : 'justify-content-start'} mb-3">
+                            <div class="${isManager ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
+                                <p class="mb-0">${msg.message}</p>
+                                <small class="d-block text-${isManager ? 'end' : 'start'} text-muted">
+                                    ${new Date(msg.timestamp).toLocaleString()}
+                                </small>
+                            </div>
+                        </div>`;
+                        chatMessages.innerHTML += messageElement;
+                    });
 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
