@@ -17,7 +17,8 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
 // Query to fetch all businesses and their branches for the owner
 $query = "
-    SELECT 
+    SELECT
+        b.id AS business_id,  -- Add business_id here
         b.name AS business_name, 
         br.id AS branch_id, 
         br.location AS branch_location
@@ -35,18 +36,25 @@ $result = $stmt->get_result();
 // Organize businesses and branches into an associative array
 $businesses = [];
 while ($row = $result->fetch_assoc()) {
+    $business_id = $row['business_id']; // Fetch the business_id here
     $business_name = $row['business_name'];
     $branch = [
         'branch_id' => $row['branch_id'],
         'branch_location' => $row['branch_location']
     ];
 
-    if (!isset($businesses[$business_name])) {
-        $businesses[$business_name] = [];
+    if (!isset($businesses[$business_id])) {
+        $businesses[$business_id] = [
+            'business_name' => $business_name,
+            'branches' => []
+        ];
     }
 
-    $businesses[$business_name][] = $branch;
+    if ($branch['branch_id']) { // Add branch only if it exists
+        $businesses[$business_id]['branches'][] = $branch;
+    }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -167,7 +175,7 @@ while ($row = $result->fetch_assoc()) {
 
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
-                                        placeholder="Search business..." aria-label="Search">
+                                        placeholder="Search business or branch..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
@@ -183,34 +191,186 @@ while ($row = $result->fetch_assoc()) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($businesses as $business_name => $branches): ?>
+                                    <?php foreach ($businesses as $business_id => $business): ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($business_name) ?></td>
+                                            <td><?= htmlspecialchars($business['business_name']) ?></td>
                                             <td>
                                                 <ul>
-                                                    <?php foreach ($branches as $branch): ?>
+                                                    <?php foreach ($business['branches'] as $branch): ?>
                                                         <li><?= htmlspecialchars($branch['branch_id']) ?></li>
                                                     <?php endforeach; ?>
                                                 </ul>
                                             </td>
                                             <td>
                                                 <ul>
-                                                    <?php foreach ($branches as $branch): ?>
+                                                    <?php foreach ($business['branches'] as $branch): ?>
                                                         <li><?= htmlspecialchars($branch['branch_location']) ?></li>
                                                     <?php endforeach; ?>
                                                 </ul>
                                             </td>
                                             <td>
-                                                <button class="btn btn-primary btn-sm">Assign Manager</button>
+                                                <button class="btn btn-primary btn-sm assign-manager"
+                                                    data-business-id="<?= htmlspecialchars($business_id) ?>"
+                                                    data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
+                                                    Assign Manager
+                                                </button>
                                                 <button class="btn btn-info btn-sm">List of Manager(s)</button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
+
+
                             </table>
                         </div>
 
+                        <script>
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                let managers = [];
 
+                                try {
+                                    const response = await fetch('fetch_managers.php');
+                                    const data = await response.json();
+                                    if (data.success) {
+                                        managers = data.managers;
+                                    } else {
+                                        console.error('Failed to fetch managers:', data.message);
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching managers:', error);
+                                }
+
+                                const buttons = document.querySelectorAll('.assign-manager');
+
+                                buttons.forEach(button => {
+                                    button.addEventListener('click', () => {
+                                        const businessId = button.getAttribute('data-business-id');
+                                        const branchesData = button.getAttribute('data-branches');
+                                        const branches = branchesData ? JSON.parse(branchesData) : [];
+
+                                        const managerOptions = managers.map(manager =>
+                                            `<option value="${manager.id}">${manager.name}</option>`
+                                        ).join('');
+
+                                        if (branches.length > 1) {
+                                            const branchOptions = branches.map(branch =>
+                                                `<option value="${branch.branch_id}">${branch.branch_location} (ID: ${branch.branch_id})</option>`
+                                            ).join('');
+
+                                            Swal.fire({
+                                                title: 'Assign to a Branch',
+                                                html: `
+                        <label for="branch-select">Choose a branch:</label>
+                        <select id="branch-select" class="swal2-input">${branchOptions}</select>
+                        <label for="manager-select">Choose a manager:</label>
+                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
+                    `,
+                                                showCancelButton: true,
+                                                confirmButtonText: 'Assign',
+                                                preConfirm: () => {
+                                                    const selectedBranch = document.getElementById('branch-select').value;
+                                                    const selectedManager = document.getElementById('manager-select').value;
+
+                                                    if (!selectedBranch || !selectedManager) {
+                                                        Swal.showValidationMessage('Please select both a branch and a manager.');
+                                                    }
+
+                                                    return { branch: selectedBranch, manager: selectedManager };
+                                                }
+                                            }).then(result => {
+                                                if (result.isConfirmed) {
+                                                    const { branch, manager } = result.value;
+                                                    fetch('assign_branch_manager.php', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ branch_id: branch, manager_id: manager })
+                                                    }).then(res => res.json()).then(data => {
+                                                        if (data.success) {
+                                                            Swal.fire('Success', data.message, 'success');
+                                                        } else {
+                                                            Swal.fire('Error', data.message, 'error');
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        } else if (branches.length === 1) {
+                                            const branchId = branches[0].branch_id;
+
+                                            Swal.fire({
+                                                title: 'Assign to Branch?',
+                                                html: `
+                        <p>Branch ID: ${branchId}</p>
+                        <label for="manager-select">Choose a manager:</label>
+                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
+                    `,
+                                                showCancelButton: true,
+                                                confirmButtonText: 'Assign',
+                                                preConfirm: () => {
+                                                    const selectedManager = document.getElementById('manager-select').value;
+
+                                                    if (!selectedManager) {
+                                                        Swal.showValidationMessage('Please select a manager.');
+                                                    }
+
+                                                    return { branch: branchId, manager: selectedManager };
+                                                }
+                                            }).then(result => {
+                                                if (result.isConfirmed) {
+                                                    const { branch, manager } = result.value;
+                                                    fetch('assign_branch_manager.php', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ branch_id: branch, manager_id: manager })
+                                                    }).then(res => res.json()).then(data => {
+                                                        if (data.success) {
+                                                            Swal.fire('Success', data.message, 'success');
+                                                        } else {
+                                                            Swal.fire('Error', data.message, 'error');
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        } else {
+                                            Swal.fire({
+                                                title: 'Assign to Business?',
+                                                html: `
+                        <p>Business ID: ${businessId}</p>
+                        <label for="manager-select">Choose a manager:</label>
+                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
+                    `,
+                                                showCancelButton: true,
+                                                confirmButtonText: 'Assign',
+                                                preConfirm: () => {
+                                                    const selectedManager = document.getElementById('manager-select').value;
+
+                                                    if (!selectedManager) {
+                                                        Swal.showValidationMessage('Please select a manager.');
+                                                    }
+
+                                                    return { business: businessId, manager: selectedManager };
+                                                }
+                                            }).then(result => {
+                                                if (result.isConfirmed) {
+                                                    const { business, manager } = result.value;
+                                                    fetch('assign_business_manager.php', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ business_id: business, manager_id: manager })
+                                                    }).then(res => res.json()).then(data => {
+                                                        if (data.success) {
+                                                            Swal.fire('Success', data.message, 'success');
+                                                        } else {
+                                                            Swal.fire('Error', data.message, 'error');
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                            });
+
+                        </script>
 
                         <div class="table-responsive mt-5">
                             <table class="table table-striped table-hover mt-5">
