@@ -6,6 +6,18 @@ validateSession('manager');
 
 $manager_id = $_SESSION['user_id'];
 
+// Query to fetch manager details
+$query = "SELECT * FROM manager WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $manager_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$manager = $result->fetch_assoc();
+
+$manager = array_map(function ($value) {
+    return empty($value) ? 'N/A' : htmlspecialchars($value);
+}, $manager);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +25,7 @@ $manager_id = $_SESSION['user_id'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Profile</title>
+    <title>Manager Profile</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
@@ -97,7 +109,7 @@ $manager_id = $_SESSION['user_id'];
     <script src="../js/sidebar.js"></script>
 
     <script src="../js/profile_manager.js"></script>
-    
+
 </body>
 
 </html>

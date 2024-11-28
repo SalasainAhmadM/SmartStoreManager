@@ -259,43 +259,55 @@ while ($row = $result->fetch_assoc()) {
                                 <!-- Sidebar with Managers -->
                                 <div id="user-list" class="col-md-4 col-lg-3 p-0">
                                     <div class="list-group bg-light border">
-                                    <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
-                                        <h5 class="mb-0">Managers</h5>
-                                        <form class="d-flex" role="search" id="search-form">
-                                            <input class="form-control me-2 mt-3" id="search-manager" type="search"
-                                                placeholder="Search manager..." aria-label="Search">
-                                            <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
-                                        </form>
-                                    </div>
-                                        <?php foreach ($managers as $manager):
-                                            // Fetch unread message count
-                                            $unreadQuery = "SELECT COUNT(*) as unread_count FROM messages WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' AND is_read = 0";
-                                            $stmt = $conn->prepare($unreadQuery);
-                                            $stmt->bind_param("ii", $manager['id'], $_SESSION['user_id']);
-                                            $stmt->execute();
-                                            $unreadResult = $stmt->get_result()->fetch_assoc();
-                                            $unreadCount = $unreadResult['unread_count'] ?? 0;
-                                            ?>
-                                            <button class="list-group-item list-group-item-action d-flex align-items-center"
-                                                data-manager-id="<?= $manager['id'] ?>"
-                                                onclick="loadMessages(<?= $manager['id'] ?>)"
-                                                style="z-index: 0">
-                                                <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
-                                                    alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
-                                                    class="rounded-circle me-3">
-                                                <div class="flex-grow-1">
-                                                    <strong><?= htmlspecialchars($manager['first_name'] . ' ' . $manager['last_name']) ?></strong>
-                                                    <p class="text-muted small mb-0">
-                                                        <?= htmlspecialchars($last_message['message'] ?? 'No messages yet...') ?>
-                                                    </p>
-                                                </div>
-                                                <?php if ($unreadCount > 0): ?>
-                                                    <span class="badge bg-danger ms-2"><?= $unreadCount ?></span>
-                                                <?php endif; ?>
-                                            </button>
-                                        <?php endforeach; ?>
-                                    </div>
+                                        <!-- Search Header -->
+                                        <div class="p-3 bg-primary text-white position-sticky top-0 shadow"
+                                            style="z-index: 1">
+                                            <h5 class="mb-0">Managers</h5>
+                                            <input type="text" id="manager-search" class="form-control mt-2"
+                                                placeholder="Search Managers...">
+                                        </div>
+                                        <!-- Manager List -->
+                                        <div id="manager-list">
+                                            <?php foreach ($managers as $manager):
+                                                // Fetch unread message count
+                                                $unreadQuery = "SELECT COUNT(*) as unread_count FROM messages WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' AND is_read = 0";
+                                                $stmt = $conn->prepare($unreadQuery);
+                                                $stmt->bind_param("ii", $manager['id'], $_SESSION['user_id']);
+                                                $stmt->execute();
+                                                $unreadResult = $stmt->get_result()->fetch_assoc();
+                                                $unreadCount = $unreadResult['unread_count'] ?? 0;
 
+                                                // Fetch last message only from the manager
+                                                $lastMessageQuery = "SELECT message, timestamp FROM messages 
+                                     WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' 
+                                     ORDER BY timestamp DESC LIMIT 1";
+                                                $stmt = $conn->prepare($lastMessageQuery);
+                                                $stmt->bind_param("ii", $manager['id'], $_SESSION['user_id']);
+                                                $stmt->execute();
+                                                $lastMessageResult = $stmt->get_result()->fetch_assoc();
+                                                $lastMessage = $lastMessageResult['message'] ?? 'No messages yet...';
+                                                ?>
+                                                <button
+                                                    class="list-group-item list-group-item-action d-flex align-items-center manager-item"
+                                                    data-manager-id="<?= $manager['id'] ?>"
+                                                    onclick="loadMessages(<?= $manager['id'] ?>)" style="z-index: 0">
+                                                    <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
+                                                        alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
+                                                        class="rounded-circle me-3">
+                                                    <div class="flex-grow-1">
+                                                        <strong
+                                                            class="manager-name"><?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?></strong>
+                                                        <p class="text-muted small mb-0">
+                                                            <?= htmlspecialchars($lastMessage) ?>
+                                                        </p>
+                                                    </div>
+                                                    <?php if ($unreadCount > 0): ?>
+                                                        <span class="badge bg-danger ms-2"><?= $unreadCount ?></span>
+                                                    <?php endif; ?>
+                                                </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
                                 </div>
 
 
