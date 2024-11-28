@@ -573,3 +573,44 @@ ol, ul {
   padding-left: 0rem;
 }
 
+
+
+
+#user-list {
+  max-height: 60vh; 
+  overflow-y: auto;
+}
+
+#chat-messages {
+  max-height: 53vh; 
+  overflow-y: auto; 
+}
+
+
+#emoji-picker {
+  display: none;
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 5px;
+  width: 250px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  padding: 5px;
+}
+
+.emoji {
+  font-size: 24px;
+  padding: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.emoji:hover {
+  background-color: #f0f0f0;
+}
