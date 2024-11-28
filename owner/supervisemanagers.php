@@ -225,21 +225,34 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                         <div class="p-3 bg-primary text-white">
                                             <h5 class="mb-0">Managers</h5>
                                         </div>
-                                        <?php foreach ($managers as $manager): ?>
+                                        <?php foreach ($managers as $manager):
+                                            // Fetch unread message count
+                                            $unreadQuery = "SELECT COUNT(*) as unread_count FROM messages WHERE sender_id = ? AND receiver_id = ? AND sender_type = 'manager' AND is_read = 0";
+                                            $stmt = $conn->prepare($unreadQuery);
+                                            $stmt->bind_param("ii", $manager['id'], $_SESSION['user_id']);
+                                            $stmt->execute();
+                                            $unreadResult = $stmt->get_result()->fetch_assoc();
+                                            $unreadCount = $unreadResult['unread_count'] ?? 0;
+                                            ?>
                                             <button class="list-group-item list-group-item-action d-flex align-items-center"
-                                                data-manager-id="<?= $manager['id'] ?>">
+                                                data-manager-id="<?= $manager['id'] ?>"
+                                                onclick="loadMessages(<?= $manager['id'] ?>)">
                                                 <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
                                                     alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
                                                     class="rounded-circle me-3">
-                                                <div>
+                                                <div class="flex-grow-1">
                                                     <strong><?= htmlspecialchars($manager['first_name'] . ' ' . $manager['last_name']) ?></strong>
                                                     <p class="text-muted small mb-0">
                                                         <?= htmlspecialchars($last_message['message'] ?? 'No messages yet...') ?>
                                                     </p>
                                                 </div>
+                                                <?php if ($unreadCount > 0): ?>
+                                                    <span class="badge bg-danger ms-2"><?= $unreadCount ?></span>
+                                                <?php endif; ?>
                                             </button>
                                         <?php endforeach; ?>
                                     </div>
+
                                 </div>
 
                                 <!-- Chat Area -->
@@ -286,6 +299,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.innerHTML = '<p class="text-center text-muted">Loading...</p>';
 
+            // Fetch messages and mark them as read
             fetch(`../endpoints/messages/fetch_messages.php?manager_id=${managerId}`)
                 .then(response => response.json())
                 .then(messages => {
@@ -303,13 +317,39 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                             ${new Date(msg.timestamp).toLocaleString()}
                         </small>
                     </div>
-                </div>
-                `;
+                </div>`;
                         chatMessages.innerHTML += messageElement;
                     });
+
+                    // Refresh unread counts
+                    refreshUnreadCounts();
                 });
         }
 
+        function refreshUnreadCounts() {
+            fetch('../endpoints/messages/fetch_unread_counts.php')
+                .then(response => response.json())
+                .then(unreadCounts => {
+                    document.querySelectorAll('.list-group-item').forEach(item => {
+                        const managerId = item.getAttribute('data-manager-id');
+                        const badge = item.querySelector('.badge');
+                        const unreadCount = unreadCounts[managerId] || 0;
+
+                        if (unreadCount > 0) {
+                            if (!badge) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'badge bg-danger ms-2';
+                                newBadge.textContent = unreadCount;
+                                item.appendChild(newBadge);
+                            } else {
+                                badge.textContent = unreadCount;
+                            }
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    });
+                });
+        }
 
         // Function to send a new message
         document.querySelector('#send-btn').addEventListener('click', () => {
