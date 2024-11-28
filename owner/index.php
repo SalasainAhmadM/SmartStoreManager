@@ -7,14 +7,6 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-// Query to fetch owner details
-$query = "SELECT * FROM owner WHERE id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $owner_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$owner = $result->fetch_assoc();
 // Check if the owner is new
 $query = "SELECT is_new_owner FROM owner WHERE id = ?";
 $stmt = $conn->prepare($query);

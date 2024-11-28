@@ -56,12 +56,15 @@ $owner_id = $_SESSION['user_id'];
                     <h5 class="mt-5"><b>Business Overview:</b></h5>
 
                     <div class="table-container">
-                    <table class="table table-striped table-hover mt-4">
-                    <thead class="table-dark">
+                        <table class="table table-striped table-hover mt-4">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>Business Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Total Sales (₱) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Total Expenses (₱) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Business Name <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
+                                    <th>Total Sales (₱) <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
+                                    <th>Total Expenses (₱) <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
                                     <th>Details</th>
                                 </tr>
                             </thead>

@@ -53,7 +53,6 @@ foreach ($businesses as $business) {
 }
 
 $product_stmt->close();
-$conn->close();
 ?>
 
 
