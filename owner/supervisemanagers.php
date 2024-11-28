@@ -261,11 +261,7 @@ while ($row = $result->fetch_assoc()) {
                                     <div class="list-group bg-light border">
                                     <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
                                         <h5 class="mb-0">Managers</h5>
-                                        <form class="d-flex" role="search" id="search-form">
-                                            <input class="form-control mt-1" id="search-manager" type="search"
-                                                placeholder="Search manager..." aria-label="Search">
-                                            <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
-                                        </form>
+                                        <input type="text" id="manager-search" class="form-control mt-2" placeholder="Search Managers...">
                                     </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
@@ -297,6 +293,7 @@ while ($row = $result->fetch_assoc()) {
                                     </div>
 
                                 </div>
+
 
                                 <!-- Chat Area -->
                                 <div class="col-md-8 col-lg-9 p-0">
@@ -335,7 +332,7 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </div>
     </div>
-    
+
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
@@ -351,9 +348,9 @@ while ($row = $result->fetch_assoc()) {
             // Highlight the selected manager's button
             document.querySelectorAll('.list-group-item').forEach(item => {
                 if (item.getAttribute('data-manager-id') == managerId) {
-                    item.classList.add('bg-primary', 'text-white'); 
+                    item.classList.add('bg-primary', 'text-white');
                 } else {
-                    item.classList.remove('bg-primary', 'text-white'); 
+                    item.classList.remove('bg-primary', 'text-white');
                 }
             });
 
@@ -447,11 +444,7 @@ while ($row = $result->fetch_assoc()) {
                 loadMessages(managerId);
             });
         });
-    </script>
 
-
-
-    <script>
         document.getElementById('add-business-btn').addEventListener('click', function () {
             const ownerId = <?= json_encode($owner_id); ?>;
 
@@ -748,6 +741,8 @@ while ($row = $result->fetch_assoc()) {
                 }
             });
         });
+
+
     </script>
 
 </body>

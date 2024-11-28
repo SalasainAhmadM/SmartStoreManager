@@ -6,6 +6,7 @@ require_once '../conn/auth.php';
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
+
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +36,7 @@ $owner_id = $_SESSION['user_id'];
                     <div class="mt-5 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
-                                
+
                                 <label style="margin-right: 2rem;">
                                     <input type="radio" name="selection" value="business" id="businessRadio" checked>
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
@@ -70,7 +71,8 @@ $owner_id = $_SESSION['user_id'];
                             <thead class="table-dark">
                                 <tr>
                                     <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button>
+                                    </th>
                                     <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                     <th>Action <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                 </tr>
@@ -89,7 +91,7 @@ $owner_id = $_SESSION['user_id'];
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
-    
+
 </body>
 
 </html>

@@ -1,11 +1,19 @@
 <?php
+require_once '../conn/conn.php';
 function isActive($link)
 {
     $current_page = basename($_SERVER['PHP_SELF']);
     return $current_page === $link ? 'active' : 'link-dark';
 }
 
+// Query to fetch owner details
+$query = "SELECT * FROM owner WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
+$owner = $result->fetch_assoc();
 function logout()
 {
     session_unset();
