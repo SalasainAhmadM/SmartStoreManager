@@ -606,6 +606,9 @@ ol, ul {
     background: #f1f1f1; /* Color of the track */
     border-radius: 10px; /* Rounded corners for the track */
 }
+.profile-form .form-group i {
+  padding: 15px; 
+}
 
 .scrollable {
     overflow: auto;
