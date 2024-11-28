@@ -61,7 +61,6 @@ if (isset($_GET['logout'])) {
             <li>
                 <hr class="dropdown-divider">
             </li>
-            <!-- Updated Logout Link -->
             <li><a class="dropdown-item" href="#" data-logout="true"> <i class="fas fa-sign-out-alt"></i> Sign out</a>
             </li>
         </ul>
