@@ -584,8 +584,8 @@ ol, ul {
 #chat-messages {
   max-height: 53vh; 
   overflow-y: auto; 
+  background-color: #ffedce;
 }
-
 
 
 
