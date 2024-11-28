@@ -261,7 +261,11 @@ while ($row = $result->fetch_assoc()) {
                                     <div class="list-group bg-light border">
                                     <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
                                         <h5 class="mb-0">Managers</h5>
-                                        <input type="text" id="manager-search" class="form-control mt-2" placeholder="Search Managers...">
+                                        <form class="d-flex" role="search" id="search-form">
+                                            <input class="form-control me-2 mt-3" id="search-manager" type="search"
+                                                placeholder="Search manager..." aria-label="Search">
+                                            <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
+                                        </form>
                                     </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
@@ -407,6 +411,25 @@ while ($row = $result->fetch_assoc()) {
                     });
                 });
         }
+
+        // Search manager
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-manager');
+            const managerButtons = document.querySelectorAll('#user-list .list-group-item');
+
+            searchInput.addEventListener('input', (event) => {
+                const query = event.target.value.toLowerCase();
+
+                managerButtons.forEach(button => {
+                    const managerName = button.querySelector('strong').textContent.toLowerCase();
+                    if (managerName.includes(query)) {
+                        button.style.visibility = 'visible'; // Show matching button
+                    } else {
+                        button.style.visibility = 'hidden'; // Hide non-matching button
+                    }
+                });
+            });
+        });
 
         // Function to send a new message
         document.querySelector('#send-btn').addEventListener('click', () => {
