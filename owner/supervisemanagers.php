@@ -291,7 +291,7 @@ while ($row = $result->fetch_assoc()) {
                                                 $lastMessage = $lastMessageResult['message'] ?? 'No messages yet...';
                                                 ?>
                                                 <button
-                                                    class="list-group-item list-group-item-action d-flex align-items-center manager-item"
+                                                    class="list-group-item list-group-item-action d-flex-alt align-items-center manager-item"
                                                     data-manager-id="<?= $manager['id'] ?>"
                                                     onclick="loadMessages(<?= $manager['id'] ?>)" style="z-index: 0">
                                                     <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
@@ -438,9 +438,9 @@ while ($row = $result->fetch_assoc()) {
                 managerButtons.forEach(button => {
                     const managerName = button.querySelector('strong').textContent.toLowerCase();
                     if (managerName.includes(query)) {
-                        button.style.visibility = 'visible'; // Show matching button
+                        button.style.display = ''; // Show matching button
                     } else {
-                        button.style.visibility = 'hidden'; // Hide non-matching button
+                        button.style.display = 'none'; // Hide non-matching button
                     }
                 });
             });
