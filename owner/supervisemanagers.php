@@ -218,7 +218,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                         <div class="container-fluid mt-4">
                             <div class="row">
                                 <!-- Sidebar with Managers -->
-                                <div class="col-md-4 col-lg-3 p-0">
+                                <div id="user-list" class="col-md-4 col-lg-3 p-0">
                                     <div class="list-group bg-light border">
                                         <div class="p-3 bg-primary text-white">
                                             <h5 class="mb-0">Managers</h5>
@@ -255,7 +255,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
                                 <!-- Chat Area -->
                                 <div class="col-md-8 col-lg-9 p-0">
-                                    <div class="d-flex flex-column vh-100 border">
+                                    <div class="d-flex flex-column border">
                                         <!-- Chat Header -->
                                         <div id="chat-header"
                                             class="p-3 bg-primary text-white d-flex align-items-center">
@@ -275,6 +275,10 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                                 <button id="send-btn" class="btn btn-primary">
                                                     <i class="fas fa-paper-plane"></i>
                                                 </button>
+                                                <button id="emoji-picker-btn" class="btn btn-light">
+                                                <i class="fas fa-smile"></i>
+                                                </button>
+
                                             </div>
                                         </div>
                                     </div>
@@ -282,13 +286,18 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </div>
 
-
                     </div>
 
                 </div>
             </div>
         </div>
     </div>
+    
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/sort_items.js"></script>
+
+
     <script>
         let selectedManagerId = null;
 
@@ -386,9 +395,6 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
             });
         });
     </script>
-
-    <script src="../js/sidebar.js"></script>
-    <script src="../js/sort_items.js"></script>
 
     <script>
         document.getElementById('add-business-btn').addEventListener('click', function() {
