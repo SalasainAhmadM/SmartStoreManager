@@ -574,7 +574,9 @@ ol, ul {
 }
 
 
-
+.d-flex-alt{
+    display: flex;
+}
 
 #user-list {
   max-height: 60vh; 

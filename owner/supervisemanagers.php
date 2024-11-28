@@ -263,8 +263,11 @@ while ($row = $result->fetch_assoc()) {
                                         <div class="p-3 bg-primary text-white position-sticky top-0 shadow"
                                             style="z-index: 1">
                                             <h5 class="mb-0">Managers</h5>
-                                            <input type="text" id="manager-search" class="form-control mt-2"
-                                                placeholder="Search Managers...">
+                                            <form class="d-flex" role="search" id="search-form">
+                                                <input class="form-control me-2 mt-3" id="search-manager" type="search"
+                                                    placeholder="Search business..." aria-label="Search">
+                                                <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
+                                            </form>
                                         </div>
                                         <!-- Manager List -->
                                         <div id="manager-list">
@@ -288,7 +291,7 @@ while ($row = $result->fetch_assoc()) {
                                                 $lastMessage = $lastMessageResult['message'] ?? 'No messages yet...';
                                                 ?>
                                                 <button
-                                                    class="list-group-item list-group-item-action d-flex align-items-center manager-item"
+                                                    class="list-group-item list-group-item-action d-flex-alt align-items-center manager-item"
                                                     data-manager-id="<?= $manager['id'] ?>"
                                                     onclick="loadMessages(<?= $manager['id'] ?>)" style="z-index: 0">
                                                     <img src="../assets/profiles/<?= !empty($manager['image']) ? $manager['image'] : 'profile.png' ?>"
@@ -435,9 +438,9 @@ while ($row = $result->fetch_assoc()) {
                 managerButtons.forEach(button => {
                     const managerName = button.querySelector('strong').textContent.toLowerCase();
                     if (managerName.includes(query)) {
-                        button.style.visibility = 'visible'; // Show matching button
+                        button.style.display = ''; // Show matching button
                     } else {
-                        button.style.visibility = 'hidden'; // Hide non-matching button
+                        button.style.display = 'none'; // Hide non-matching button
                     }
                 });
             });
