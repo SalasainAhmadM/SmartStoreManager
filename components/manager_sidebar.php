@@ -5,7 +5,8 @@ function isActive($link)
     return $current_page === $link ? 'active' : 'link-dark';
 }
 
-function logout() {
+function logout()
+{
     session_unset();
     session_destroy();
     // Redirect to the login page (or another page)
@@ -18,7 +19,8 @@ if (isset($_GET['logout'])) {
 }
 ?>
 
-<div class="d-flex flex-column flex-shrink-0 p-3 bg-light collapsed" id="sidebar" style="width: 80px; height: 100vh; transition: all 0.3s ease;">
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-light collapsed" id="sidebar"
+    style="width: 80px; height: 100vh; transition: all 0.3s ease;">
     <div class="d-flex align-items-center mb-5">
         <div id="sidebarLogo">
             <img src="../assets/logo.png" style="height: 25px;">
@@ -49,7 +51,8 @@ if (isset($_GET['logout'])) {
     </ul>
     <hr>
     <div class="dropdown">
-        <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
+        <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2"
+            data-bs-toggle="dropdown" aria-expanded="false">
             <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
             <strong id="sidebarLogo">mdo</strong>
         </a>
@@ -58,11 +61,32 @@ if (isset($_GET['logout'])) {
             <li>
                 <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="?logout=true"> <i class="fas fa-sign-out-alt"></i> Sign out</a></li>
+            <!-- Updated Logout Link -->
+            <li><a class="dropdown-item" href="#" data-logout="true"> <i class="fas fa-sign-out-alt"></i> Sign out</a>
+            </li>
         </ul>
     </div>
 </div>
 
-
 <?php include '../components/js_cdn.php' ?>
 <script src="../js/particle.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelector('[data-logout]').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will be logged out!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Confirm'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "?logout=true";
+            }
+        });
+    });
+</script>
