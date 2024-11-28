@@ -781,35 +781,45 @@ $conn->close();
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
 
-            const savedTab = localStorage.getItem('activeTab');
 
-            if (savedTab) {
+            const defaultTabId = 'businesslist';
+
+            const savedTab = localStorage.getItem('activeTab') || defaultTabId;
+
+            const savedTabContent = document.getElementById(savedTab);
+            const savedNavLink = document.querySelector(`.nav-link[data-tab="${savedTab}"]`);
+
+            if (savedTabContent && savedNavLink) {
                 navLinks.forEach(nav => nav.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
 
-                const savedNavLink = document.querySelector(`.nav-link[data-tab="${savedTab}"]`);
-                const savedTabContent = document.getElementById(savedTab);
+                savedNavLink.classList.add('active');
+                savedTabContent.classList.add('active');
+            } else {
+                const defaultNavLink = document.querySelector(`.nav-link[data-tab="${defaultTabId}"]`);
+                const defaultTabContent = document.getElementById(defaultTabId);
 
-                if (savedNavLink && savedTabContent) {
-                    savedNavLink.classList.add('active');
-                    savedTabContent.classList.add('active');
+                if (defaultNavLink && defaultTabContent) {
+                    defaultNavLink.classList.add('active');
+                    defaultTabContent.classList.add('active');
                 }
             }
 
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
-
                     navLinks.forEach(nav => nav.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
 
                     link.classList.add('active');
                     const targetTab = document.getElementById(link.getAttribute('data-tab'));
-                    targetTab.classList.add('active');
+                    if (targetTab) targetTab.classList.add('active');
 
                     localStorage.setItem('activeTab', link.getAttribute('data-tab'));
                 });
             });
         });
+
+
 
         // document.addEventListener('DOMContentLoaded', () => {
         //     const navLinks = document.querySelectorAll('.nav-link');
