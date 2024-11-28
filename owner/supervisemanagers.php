@@ -261,7 +261,11 @@ while ($row = $result->fetch_assoc()) {
                                     <div class="list-group bg-light border">
                                     <div class="p-3 bg-primary text-white position-sticky top-0 shadow" style="z-index: 1">
                                         <h5 class="mb-0">Managers</h5>
-                                        <input type="text" id="manager-search" class="form-control mt-2" placeholder="Search Managers...">
+                                        <form class="d-flex" role="search" id="search-form">
+                                            <input class="form-control mt-1" id="search-manager" type="search"
+                                                placeholder="Search manager..." aria-label="Search">
+                                            <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
+                                        </form>
                                     </div>
                                         <?php foreach ($managers as $manager):
                                             // Fetch unread message count
@@ -335,7 +339,6 @@ while ($row = $result->fetch_assoc()) {
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
-
 
     <script>
         let selectedManagerId = null;
