@@ -155,8 +155,8 @@ if ($result->num_rows > 0) {
                                         foreach ($branches as $branchLocation) {
                                             echo '<tr>';
                                             echo '<td>' . $branchLocation . '</td>';
-                                            echo '<td>8000</td>'; 
-                                            echo '<td>4000</td>'; 
+                                            echo '<td>8000</td>';
+                                            echo '<td>4000</td>';
                                             echo '</tr>';
                                         }
 
@@ -200,63 +200,90 @@ if ($result->num_rows > 0) {
                             </div>
 
                             <div class="col-md-12 mt-5">
-                                <h1 class="section-title"><b><i class="fas fa-boxes icon"></i> Popular
-                                        Products/Services</b></h1>
+                                <h1 class="section-title">
+                                    <b><i class="fas fa-boxes icon"></i> Popular Products</b>
+                                </h1>
                                 <div class="col-md-12 dashboard-content">
-                                    <table>
-                                        <thead>
+                                    <table class="table table-hover" id="product-table">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <th>Product/Service</th>
-                                                <th>Category</th>
-                                                <th>Popularity</th>
+                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Branch <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td><i class="fas fa-laptop icon"></i> Laptop Repair</td>
+                                                <td>Laptop</td>
+                                                <td>Business A</td>
+                                                <td>Location A</td>
                                                 <td>Services</td>
-                                                <td><i class="fas fa-fire icon"></i> High</td>
+                                                <td>₱5000</td>
+                                                <td>Awesome Service</td>
+                                                <td>₱1,000,000</td>
                                             </tr>
                                             <tr>
-                                                <td><i class="fas fa-tshirt icon"></i> Custom T-Shirts</td>
+                                                <td>Custom T-Shirts</td>
+                                                <td>Business B</td>
+                                                <td>Location B</td>
                                                 <td>Products</td>
-                                                <td><i class="fas fa-chart-line icon"></i> Moderate</td>
+                                                <td>₱4000</td>
+                                                <td>Awesome T-Shirts</td>
+                                                <td>₱500,000</td>
                                             </tr>
                                             <tr>
-                                                <td><i class="fas fa-coffee icon"></i> Coffee Beans</td>
+                                                <td>Coffee Beans</td>
+                                                <td>Business C</td>
+                                                <td>Location C</td>
                                                 <td>Products</td>
-                                                <td><i class="fas fa-arrow-up icon"></i> Trending</td>
+                                                <td>₱2,000</td>
+                                                <td>Awesome Coffee Beans</td>
+                                                <td>₱10,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Coffee Beans</td>
+                                                <td>Business C</td>
+                                                <td>Location C</td>
+                                                <td>Products</td>
+                                                <td>₱777,000</td>
+                                                <td>Awesome Coffee Beans</td>
+                                                <td>₱222,210,000</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
+
                             <div class="col-md-12 mt-5">
                                 <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b>
                                 </h1>
                                 <div class="col-md-12 dashboard-content">
-                                    <table>
-                                        <thead>
+                                    <table class="table" id="product-table">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <th>Activity</th>
-                                                <th>Date</th>
-                                                <th>Status</th>
+                                                <th>Activity <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Status <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td><i class="fas fa-user-plus icon"></i> New User Registered</td>
+                                                <td>New User Registered</td>
                                                 <td>2024-11-20</td>
                                                 <td><i class="fas fa-check-circle icon"></i> Completed</td>
                                             </tr>
                                             <tr>
-                                                <td><i class="fas fa-file-alt icon"></i> Report Generated</td>
+                                                <td>Report Generated</td>
                                                 <td>2024-11-21</td>
                                                 <td><i class="fas fa-spinner icon"></i> In Progress</td>
                                             </tr>
                                             <tr>
-                                                <td><i class="fas fa-shopping-cart icon"></i> Product Ordered</td>
+                                                <td>Product Ordered</td>
                                                 <td>2024-11-22</td>
                                                 <td><i class="fas fa-times-circle icon"></i> Failed</td>
                                             </tr>
@@ -278,7 +305,9 @@ if ($result->num_rows > 0) {
 
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
-    
+    <script src="../js/sort_items.js"></script>
+
+
 </body>
 
 </html>

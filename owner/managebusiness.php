@@ -134,12 +134,12 @@ $conn->close();
                             <table class="table table-striped table-hover mt-4">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Description</th>
-                                        <th scope="col">Asset Size</th>
-                                        <th scope="col">Employee Count</th>
-                                        <th scope="col">Created At</th>
-                                        <th scope="col">Updated At</th>
+                                        <th scope="col">Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Asset Size <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Employee Count <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Created At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Updated At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -207,9 +207,9 @@ $conn->close();
                                         <table class="table">
                                             <thead class="table-dark">
                                                 <tr>
-                                                    <th>Location</th>
-                                                    <th>Created At</th>
-                                                    <th>Updated At</th>
+                                                    <th>Location <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Created At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Updated At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
@@ -285,13 +285,13 @@ $conn->close();
                                         <table class="table" id="product-table">
                                             <thead class="table-dark">
                                                 <tr>
-                                                    <th>Product ID</th>
-                                                    <th>Name</th>
-                                                    <th>Type</th>
-                                                    <th>Price</th>
-                                                    <th>Description</th>
-                                                    <th>Created At</th>
-                                                    <th>Updated At</th>
+                                                    <th>Product ID <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Created At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                    <th>Updated At <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
@@ -348,6 +348,7 @@ $conn->close();
     </div>
 
     <script src="../js/sidebar.js"></script>
+    <script src="../js/sort_items.js"></script>
 
     <script>
         const ownerId = <?php echo json_encode($owner_id); ?>;

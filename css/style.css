@@ -396,14 +396,18 @@ table {
   border-collapse: collapse;
   width: 100%;
 }
+
 th, td {
   border: 1px solid #ddd;
   padding: 8px;
 }
+
 th {
   background-color: #f4f4f4;
   text-align: left;
+  vertical-align: middle;
 }
+
 tr:hover {
   background-color: #f1f1f1;
 }
@@ -559,5 +563,14 @@ tr:hover {
 
 .swal2-cancel:hover {
   background-color: #d32f2f !important;
+}
+
+li {
+  list-style-type: none;
+  padding-left: 0;  /* Optional: removes indentation */
+}
+
+ol, ul {
+  padding-left: 0rem;
 }
 

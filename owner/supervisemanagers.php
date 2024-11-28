@@ -81,10 +81,10 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                             <table class="table table-striped table-hover mt-5">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Address</th>
+                                        <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Email <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Phone <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Address <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -123,12 +123,11 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                     </div>
 
                     <div id="assignmanager" class="tab-content">
-
                         <h1 class="mt-5"></h1>
 
                         <div class="table-responsive mt-5">
-                            <table class="table table-striped table-hover mt-5">
 
+                            <table class="table table-striped table-hover mt-5">
 
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
@@ -136,40 +135,39 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
-
-
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Business Name</th>
-                                        <th>Branch ID</th>
-                                        <th>Branch Location</th>
+                                        <th>Business Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Branch ID <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Branches Locations <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td rowspan="2">Business A</td>
-                                        <td>101</td>
+                                        <td>Business A</td>
+                                        <td>103</td>
                                         <td>Chicago</td>
                                         <td>
-                                            <button class="btn btn-primary btn-sm">Assign a Manager</button>
-                                            <button class="btn btn-info btn-sm">List of Manager(s)</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>102</td>
-                                        <td>New World</td>
-                                        <td>
-                                            <button class="btn btn-primary btn-sm">Assign a Manager</button>
+                                            <button class="btn btn-primary btn-sm">Assign Manager</button>
                                             <button class="btn btn-info btn-sm">List of Manager(s)</button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Business B</td>
-                                        <td>103</td>
-                                        <td>Rio Hondo</td>
                                         <td>
-                                            <button class="btn btn-primary btn-sm">Assign a Manager</button>
+                                            <ul>
+                                                <li>103</li>
+                                                <li>102</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul>
+                                                <li>Rio Hondo</li>
+                                                <li>Sta. Barbara</li>
+                                            </ul>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm">Assign Manager</button>
                                             <button class="btn btn-info btn-sm">List of Manager(s)</button>
                                         </td>
                                     </tr>
@@ -191,10 +189,10 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Assigned Branches</th>
+                                        <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Email <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Phone <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        <th>Assigned Branches <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -233,7 +231,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                             $stmt->execute();
                                             $unreadResult = $stmt->get_result()->fetch_assoc();
                                             $unreadCount = $unreadResult['unread_count'] ?? 0;
-                                            ?>
+                                        ?>
                                             <button class="list-group-item list-group-item-action d-flex align-items-center"
                                                 data-manager-id="<?= $manager['id'] ?>"
                                                 onclick="loadMessages(<?= $manager['id'] ?>)">
@@ -358,10 +356,15 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
             if (message && selectedManagerId) {
                 fetch('../endpoints/messages/send_message.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ receiver_id: selectedManagerId, message })
-                })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            receiver_id: selectedManagerId,
+                            message
+                        })
+                    })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -385,9 +388,10 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
     </script>
 
     <script src="../js/sidebar.js"></script>
+    <script src="../js/sort_items.js"></script>
 
     <script>
-        document.getElementById('add-business-btn').addEventListener('click', function () {
+        document.getElementById('add-business-btn').addEventListener('click', function() {
             const ownerId = <?= json_encode($owner_id); ?>;
 
             Swal.fire({
@@ -420,7 +424,15 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                     }
 
                     return {
-                        email, username, firstName, middleName, lastName, phone, address, password, ownerId
+                        email,
+                        username,
+                        firstName,
+                        middleName,
+                        lastName,
+                        phone,
+                        address,
+                        password,
+                        ownerId
                     };
                 }
             }).then((result) => {
@@ -429,12 +441,12 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
                     // AJAX call to save the manager
                     fetch('../endpoints/manager/add_manager.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(managerData)
-                    }).then(response => response.json())
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(managerData)
+                        }).then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 Swal.fire('Success', 'Manager created successfully', 'success')
@@ -454,7 +466,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
         document.addEventListener('DOMContentLoaded', () => {
             // Edit Manager
             document.querySelectorAll('.edit-manager').forEach(button => {
-                button.addEventListener('click', function () {
+                button.addEventListener('click', function() {
                     const managerId = this.dataset.id;
                     const managerDetails = JSON.parse(this.dataset.details);
 
@@ -485,16 +497,27 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                                 Swal.showValidationMessage('All fields are required');
                             }
 
-                            return { id: managerId, email, username, firstName, middleName, lastName, phone, address };
+                            return {
+                                id: managerId,
+                                email,
+                                username,
+                                firstName,
+                                middleName,
+                                lastName,
+                                phone,
+                                address
+                            };
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // AJAX call to update manager
                             fetch(`../endpoints/manager/edit_manager.php`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(result.value)
-                            }).then(response => response.json())
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(result.value)
+                                }).then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
                                         Swal.fire('Success', 'Manager updated successfully', 'success')
@@ -510,7 +533,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 
             // Delete Manager
             document.querySelectorAll('.delete-manager').forEach(button => {
-                button.addEventListener('click', function () {
+                button.addEventListener('click', function() {
                     const managerId = this.dataset.id;
 
                     Swal.fire({
@@ -526,10 +549,14 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
                         if (result.isConfirmed) {
                             // AJAX call to delete manager
                             fetch(`../endpoints/manager/delete_manager.php`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ id: managerId })
-                            }).then(response => response.json())
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id: managerId
+                                    })
+                                }).then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
                                         Swal.fire('Success', 'Manager deleted successfully', 'success')
@@ -545,7 +572,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
         });
 
         // manager search
-        document.getElementById('search-business').addEventListener('input', function () {
+        document.getElementById('search-business').addEventListener('input', function() {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#manager-table-body tr');
 
@@ -575,7 +602,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
         });
 
         document.querySelectorAll('.btn-primary').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const isAssignManagerButton = this.textContent.includes('Assign a Manager');
 
                 if (isAssignManagerButton) {

@@ -79,10 +79,10 @@ $owner_id = $_SESSION['user_id'];
                         <table class="table table-striped table-hover mt-4">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Action</th>
+                                    <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Action <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                 </tr>
                             </thead>
                             <tbody id="expensesList">
@@ -98,6 +98,8 @@ $owner_id = $_SESSION['user_id'];
     </div>
 
     <script src="../js/sidebar.js"></script>
+    <script src="../js/sort_items.js"></script>
+    
 </body>
 
 </html>

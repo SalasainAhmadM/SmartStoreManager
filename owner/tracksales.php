@@ -67,10 +67,10 @@ $today = date("F j, Y");
                     <table class="table table-striped table-hover mt-4">
                     <thead class="table-dark">
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Amount Sold</th>
-                                    <th>Total Sales</th>
-                                    <th>Date</th>
+                                    <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Amount Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,10 +115,10 @@ $today = date("F j, Y");
                         <table class="table table-striped table-hover mt-4">
                         <thead class="table-dark">
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Amount Sold</th>
-                                    <th>Total Sales</th>
-                                    <th>Date</th>
+                                    <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Amount Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -152,7 +152,8 @@ $today = date("F j, Y");
     </div>
 
     <script src="../js/sidebar.js"></script>
-
+    <script src="../js/sort_items.js"></script>
+    
 </body>
 
 </html>
