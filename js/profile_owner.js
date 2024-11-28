@@ -116,10 +116,12 @@ function editPassword() {
     Swal.fire({
         title: 'Edit Password',
         html: `
-            <label for="new_password">New Password</label>
-            <input id="new_password" class="swal2-input" type="password" placeholder="Enter new password">
-            <label for="confirm_password">Confirm Password</label>
-            <input id="confirm_password" class="swal2-input" type="password" placeholder="Confirm password">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                <label for="new_password" style="font-size: 16px; margin-bottom: 5px;">New Password</label>
+                <input id="new_password" class="swal2-input" type="password" placeholder="Enter new password" style="width: 80%;">
+                <label for="confirm_password" style="font-size: 16px; margin-bottom: 5px;">Confirm Password</label>
+                <input id="confirm_password" class="swal2-input" type="password" placeholder="Confirm password" style="width: 80%;">
+            </div>
         `,
         showCancelButton: true,
         width: '600px',
@@ -213,7 +215,7 @@ function editAddress() {
 
     Swal.fire({
         title: 'Edit Address',
-        html: `<textarea id="address" class="swal2-textarea" placeholder="Enter address">${address}</textarea>`,
+        html: `<textarea style='width: 300px' id="address" class="swal2-textarea" placeholder="Enter address">${address}</textarea>`,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {

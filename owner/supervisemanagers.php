@@ -291,7 +291,7 @@ while ($row = $result->fetch_assoc()) {
                                                     class="list-group-item list-group-item-action d-flex align-items-center manager-item"
                                                     data-manager-id="<?= $manager['id'] ?>"
                                                     onclick="loadMessages(<?= $manager['id'] ?>)" style="z-index: 0">
-                                                    <img src="<?= !empty($manager['image']) ? $manager['image'] : '../assets/profile.png' ?>"
+                                                    <img src="../assets/profiles/<?= !empty($manager['image']) ? $manager['image'] : 'profile.png' ?>"
                                                         alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
                                                         class="rounded-circle me-3">
                                                     <div class="flex-grow-1">

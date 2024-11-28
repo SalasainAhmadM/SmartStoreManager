@@ -17,7 +17,7 @@ $result = $stmt->get_result();
 $owner = $result->fetch_assoc();
 
 $owner = array_map(function ($value) {
-    return empty($value) ? 'N/A' : htmlspecialchars($value);
+    return empty($value) ? ' ' : htmlspecialchars($value);
 }, $owner);
 ?>
 
@@ -45,7 +45,8 @@ $owner = array_map(function ($value) {
                     <div class="profile-container">
                         <div class="profile-header">
                             <div class="form-group-img-profile ">
-                                <img id="profile_picture_display" src="../assets/profiles/<?= $owner['image']; ?>"
+                                <img id="profile_picture_display"
+                                    src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : 'profile.png' ?>"
                                     alt="Profile Picture" class="profile-pic"
                                     style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
                                 <a type="button" class="text-primary me-3 fas fa-edit"

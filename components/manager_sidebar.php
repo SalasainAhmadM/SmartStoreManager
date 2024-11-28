@@ -1,10 +1,18 @@
 <?php
+require_once '../conn/conn.php';
 function isActive($link)
 {
     $current_page = basename($_SERVER['PHP_SELF']);
     return $current_page === $link ? 'active' : 'link-dark';
 }
+// Query to fetch manager details
+$query = "SELECT * FROM manager WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $manager_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
+$manager = $result->fetch_assoc();
 function logout()
 {
     session_unset();
@@ -53,7 +61,8 @@ if (isset($_GET['logout'])) {
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2"
             data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="../assets/profile.png" alt="" width="32" height="32" class="rounded-circle me-2">
+            <img src="../assets/profiles/<?= !empty($manager['image']) ? $manager['image'] : 'profile.png' ?>" alt=""
+                width="32" height="32" class="rounded-circle me-2">
             <strong id="sidebarLogo">mdo</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">

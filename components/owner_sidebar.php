@@ -82,8 +82,8 @@ if (isset($_GET['logout'])) {
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2"
             data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="../assets/profiles/<?= $owner['image']; ?>" alt="" width="32" height="32"
-                class="rounded-circle me-2">
+            <img src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : 'profile.png' ?>" alt=""
+                width="32" height="32" class="rounded-circle me-2">
             <strong id="sidebarLogo">mdo</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
