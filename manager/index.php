@@ -66,16 +66,18 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                             <!-- Search Bar -->
                             <div class="mt-4">
                                 <form class="d-flex" role="search">
-                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
-                                        aria-label="Search">
+                                <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search" id="searchInput">
                                 </form>
                             </div>
 
+                            <div class="scrollable-table">
                             <table class="table mt-3">
                                 <table class="table table-striped table-hover mt-4">
                                     <thead class="table-dark">
                                         <th>Product <button class="btn text-white"><i
                                         class="fas fa-sort"></i></button></th>
+                                        <th>Price <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>                                        
                                         <th>Quantity Sold <button class="btn text-white"><i
                                         class="fas fa-sort"></i></button></th>
                                         <th>Revenue <button class="btn text-white"><i
@@ -89,6 +91,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                         <script src="../js/manager_add_sale.js"></script>
                                     </tbody>
                                 </table>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -98,7 +102,35 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
     <script src="../js/sidebar_manager.js"></script>
     <script src="../js/sort_items.js"></script>
-    
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const salesTableBody = document.getElementById('salesTableBody');
+
+        searchInput.addEventListener('input', function () {
+            const searchValue = searchInput.value.toLowerCase();
+
+            // Get all rows in the sales table
+            const rows = salesTableBody.getElementsByTagName('tr');
+
+            // Loop through rows and toggle their visibility based on the search value
+            for (let row of rows) {
+                const cells = row.getElementsByTagName('td');
+                let rowMatches = false;
+
+                // Check each cell in the row
+                for (let cell of cells) {
+                    if (cell.textContent.toLowerCase().includes(searchValue)) {
+                        rowMatches = true;
+                        break;
+                    }
+                }
+                
+                row.style.display = rowMatches ? '' : 'none';
+            }
+        });
+    </script>
+
 </body>
 
 </html>

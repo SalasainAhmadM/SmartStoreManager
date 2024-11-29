@@ -111,54 +111,23 @@ document.getElementById('businessSelect').addEventListener('change', function() 
 
 // Print report functionality
 document.getElementById('printReportBtn').addEventListener('click', function() {
-    const reportTitle = document.getElementById('reportTitle').outerHTML;
-    const salesTable = document.querySelector('#salesReportPanel table.table').outerHTML;
-
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Print Sales Report</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 20px;
-                }
-                h4 {
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                table, th, td {
-                    border: 1px solid black;
-                }
-                th, td {
-                    padding: 10px;
-                    text-align: left;
-                }
-                thead {
-                    background-color: #333;
-                    color: #fff;
-                }
-                tfoot {
-                    font-weight: bold;
-                }
-            </style>
-        </head>
-        <body>
-            ${reportTitle}
-            ${salesTable}
-        </body>
-        </html>
-    `);
-
+    // Create a new window for printing
+    const printWindow = window.open('', '', 'height=600,width=800');
+    
+    printWindow.document.write('<html><head><title>Print Sales Report</title>');
+    printWindow.document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">');
+    printWindow.document.write('</head><body>');
+    
+    const reportTitle = document.getElementById('reportTitle').textContent;
+    const tableContent = document.querySelector('.scrollable-table').innerHTML;
+    
+    printWindow.document.write('<h4>' + reportTitle + '</h4>');
+    printWindow.document.write('<table class="table mt-3">' + tableContent + '</table>');
+    
+    // Close the body and html tags
+    printWindow.document.write('</body></html>');
+    
     printWindow.document.close();
     printWindow.print();
-    printWindow.close();
 });
+

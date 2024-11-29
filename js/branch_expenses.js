@@ -95,7 +95,7 @@ document.getElementById('branchSelect').addEventListener('change', function() {
         row.innerHTML = `<td>${expense.type}</td>
                         <td>${expense.description}</td>
                         <td>${expense.amount}</td>
-                        <td>
+                        <td style="text-align:center;">
                             <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
                             <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
                         </td>`;

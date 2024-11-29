@@ -12,15 +12,18 @@ document.getElementById('businessSelect').addEventListener('change', function() 
         salesTableBody.innerHTML = `
 
             <tr>
-            <td>Product 1</td><td>100</td>
-            <td>$1000</td>
+            <td>Product 1</td>
+            <td>₱150</td>
+            <td>300</td>
+            <td>₱45000</td>
             <td>2024-09-29 00:06:49</td>
             </tr>
 
             <tr>
             <td>Product 2</td>
-            <td>50</td>
-            <td>$500</td>
+            <td>₱100</td>
+            <td>300</td>
+            <td>₱30000</td>
             <td>2024-11-29 00:06:49</td>
             </tr>
 
@@ -32,15 +35,17 @@ document.getElementById('businessSelect').addEventListener('change', function() 
 
             <tr>
             <td>Product 3</td>
-            <td>200</td>
-            <td>$2000</td>
+            <td>₱250</td>
+            <td>50</td>
+            <td>₱12500</td>
             <td>2024-05-29 00:06:49</td>
             </tr>
 
             <tr>
             <td>Product 4</td>
-            <td>75</td>
-            <td>$750</td>
+            <td>₱550</td>
+            <td>100</td>
+            <td>₱55000</td>
             <td>2024-11-29 00:06:49</td>
             </tr>
 

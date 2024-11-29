@@ -130,7 +130,7 @@ while ($row = $result->fetch_assoc()) {
                                         </th>
                                         <th>Address <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
-                                        <th>Actions</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="manager-table-body">
@@ -147,7 +147,7 @@ while ($row = $result->fetch_assoc()) {
                                                 <td><?= htmlspecialchars($manager['email']) ?></td>
                                                 <td><?= htmlspecialchars($manager['contact_number']) ?></td>
                                                 <td><?= htmlspecialchars($manager['address']) ?></td>
-                                                <td>
+                                                <td class="text-center">
                                                     <a href="#" class="text-primary me-3 edit-manager"
                                                         data-id="<?= $manager['id'] ?>"
                                                         data-details='<?= json_encode($manager) ?>' title="Edit">
@@ -191,7 +191,7 @@ while ($row = $result->fetch_assoc()) {
                                                     class="fas fa-sort"></i></button></th>
                                         <th>Branches Locations <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
-                                        <th>Actions</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -212,7 +212,7 @@ while ($row = $result->fetch_assoc()) {
                                                     <?php endforeach; ?>
                                                 </ul>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <button class="btn btn-primary btn-sm assign-manager"
                                                     data-business-id="<?= htmlspecialchars($business_id) ?>"
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>

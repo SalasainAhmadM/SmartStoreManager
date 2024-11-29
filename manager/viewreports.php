@@ -48,33 +48,47 @@ $manager_id = $_SESSION['user_id'];
                                 <i class="fas fa-print me-2"></i> Print Sales Report
                             </button>
 
-                            <div class="mt-4">
+                            <div class="mt-4 position-relative">
                                 <form class="d-flex" role="search">
-                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
-                                        aria-label="Search">
+                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search" id="productSearchInput">
                                 </form>
+
+                                <div class="position-absolute top-0 end-0 mt-2 me-2">
+                                <button class="btn btn-success" type="button">
+                                    <i class="fas fa-plus me-2"></i> Filter Date
+                                </button>
+                                <button class="btn btn-danger" id="resetButton">
+                                    <i class="fas fa-times-circle me-2"></i> Reset Filter
+                                </button>
+                                </div>
+
+
                             </div>
 
-                            <table class="table mt-3">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                        <th>Product Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                        <th>Total Sales (PHP) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="salesReportBody">
-                                    <!-- Sales Data will be dynamically populated here -->
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="2"><strong>Total Sales</strong></td>
-                                        <td id="totalSalesCell">
-                                            <!-- Total Sales will be displayed here -->
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                            <div class="scrollable-table">
+                                <table class="table mt-3">
+                                    <thead class="table-dark position-sticky top-0">
+                                        <tr>
+                                            <th>Date <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                            <th>Product Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                            <th>Total Sales (PHP) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesReportBody">
+                                        <!-- Sales Data will be dynamically populated here -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2"><strong>All Time Sales</strong></td>
+                                            <td id="totalSalesCell">
+                                                <!-- Total Sales will be displayed here -->
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+
                         </div>
 
                     </div>
@@ -87,6 +101,27 @@ $manager_id = $_SESSION['user_id'];
     <script src="../js/sort_items.js"></script>
 
     <script src="../js/manager_view_reports.js"></script>
+    <script src="../js/manager_view_reports_filter.js"></script>
+
+    <!-- Searchbar --> 
+    <script>
+        document.getElementById('productSearchInput').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#salesReportBody tr');
+
+            tableRows.forEach(row => {
+                const productColumn = row.children[1];
+                if (productColumn) {
+                    const productText = productColumn.textContent.toLowerCase();
+                    if (productText.includes(searchValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    </script>
 
 </body>
 
