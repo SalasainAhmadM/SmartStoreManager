@@ -164,7 +164,7 @@ p {
 .card {
   background-color: #fff;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   /* max-width: 400px; */
   margin: 1rem auto;
@@ -636,7 +636,9 @@ ol, ul {
 
 /* For highlighted chart */
 button.active {
-  background: linear-gradient(to right, #2f2f2f, #252525); /* Example gradient colors */
+  background-color: #212529;
   color: white;
+  border: 2px solid #1a1a1a;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Example shadow */
 }
 
