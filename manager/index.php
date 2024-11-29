@@ -74,13 +74,17 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                             <table class="table mt-3">
                                 <table class="table table-striped table-hover mt-4">
                                     <thead class="table-dark">
-                                        <th>Product</th>
-                                        <th>Quantity Sold</th>
-                                        <th>Revenue</th>
+                                        <th>Product <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
+                                        <th>Quantity Sold <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
+                                        <th>Revenue <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
                                         </tr>
                                     </thead>
                                     <tbody id="salesTableBody">
                                         <!-- Sales Data will be dynamically populated here -->
+                                        <script src="../js/manager_add_sale.js"></script>
                                     </tbody>
                                 </table>
                         </div>
@@ -91,9 +95,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     </div>
 
     <script src="../js/sidebar_manager.js"></script>
-
-    <script src="../js/manager_add_sale.js"></script>
-
+    <script src="../js/sort_items.js"></script>
+    
 </body>
 
 </html>

@@ -60,9 +60,12 @@ $manager_id = $_SESSION['user_id'];
                             <table class="table mt-3">
                             <table class="table table-striped table-hover mt-4">
                                 <thead class="table-dark">
-                                        <th>Date</th>
-                                        <th>Product Sold</th>
-                                        <th>Total Sales (PHP)</th>
+                                        <th>Date <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
+                                        <th>Product Sold <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
+                                        <th>Total Sales (PHP) <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
                                         </tr>
                                     </thead>
                                     <tbody id="salesReportBody">
@@ -84,7 +87,8 @@ $manager_id = $_SESSION['user_id'];
     </div>
 
     <script src="../js/sidebar_manager.js"></script>
-
+    <script src="../js/sort_items.js"></script>
+    
     <script src="../js/manager_view_reports.js"></script>
 
 </body>
