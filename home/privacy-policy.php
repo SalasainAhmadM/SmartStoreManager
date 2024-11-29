@@ -27,7 +27,7 @@
                     <div class="card-body">
                         <p><strong>Effective Date:</strong> [Insert Date]</p>
 
-                        <p>[Your Company Name] ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website [your website URL], use our services, or interact with us. Please read this policy carefully. By using our website or services, you consent to the practices described in this Privacy Policy.</p>
+                        <p>Smart Store Manager ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website [your website URL], use our services, or interact with us. Please read this policy carefully. By using our website or services, you consent to the practices described in this Privacy Policy.</p>
 
                         <h3>1. Information We Collect</h3>
                         <p>We collect the following types of information:</p>

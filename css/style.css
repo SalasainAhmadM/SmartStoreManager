@@ -387,7 +387,10 @@ canvas {
 }
 
 #financialChart {
-  display: block; box-sizing: border-box; width: 1000px;
+  display: block; 
+  box-sizing: 
+  border-box; width: 
+  1000px;
 }
 
 
@@ -631,4 +634,9 @@ ol, ul {
 }
 
 
+/* For highlighted chart */
+button.active {
+  background: linear-gradient(to right, #2f2f2f, #252525); /* Example gradient colors */
+  color: white;
+}
 
