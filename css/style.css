@@ -606,23 +606,26 @@ ol, ul {
 
 
 
+ /* Page scrollbar  */
+
 ::-webkit-scrollbar {
     width: 8px; 
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #2b2b2b; /* Color of the scrollbar thumb */
-    border-radius: 5px; /* Rounded corners for the thumb */
+    background-color: #2b2b2b;
+    border-radius: 5px; 
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #555; /* Color change on hover */
+    background-color: #555; 
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Color of the track */
-    border-radius: 10px; /* Rounded corners for the track */
+    background: #f1f1f1; 
+    border-radius: 10px; 
 }
+
 .profile-form .form-group i {
   padding: 15px; 
 }
@@ -635,6 +638,7 @@ ol, ul {
 
 
 /* For highlighted chart */
+
 button.active {
   background-color: #212529;
   color: white;
@@ -642,6 +646,8 @@ button.active {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+
+/* Container for the highlighted chart */
 
 .scroll-container {
   height: 450px; 
