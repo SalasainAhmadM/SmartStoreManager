@@ -80,6 +80,8 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                                         class="fas fa-sort"></i></button></th>
                                         <th>Revenue <button class="btn text-white"><i
                                         class="fas fa-sort"></i></button></th>
+                                        <th>Updated At <button class="btn text-white"><i
+                                        class="fas fa-sort"></i></button></th>
                                         </tr>
                                     </thead>
                                     <tbody id="salesTableBody">
