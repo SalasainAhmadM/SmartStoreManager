@@ -642,3 +642,10 @@ button.active {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+
+.scroll-container {
+  height: 450px; 
+  overflow-y: auto;
+  padding: 0 0.5rem
+}
+

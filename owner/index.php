@@ -165,7 +165,7 @@ foreach ($businessData as $businessName => $branches) {
                             <div class="col-md-5">
                                 <h5 class="mt-5"><b>Select Business:</b></h5>
 
-                                <div class="scroll-container" style="height: 450px; overflow-y: auto; padding:0.5rem">
+                                <div class="scroll-container">
                                     <?php
                                     foreach ($businessData as $businessName => $branches) {
                                         echo '<button class="col-md-12 card" data-business-name="' . $businessName . '" onclick="showBusinessData(\'' . $businessName . '\')">';
