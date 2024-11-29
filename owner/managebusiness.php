@@ -230,7 +230,7 @@ $product_stmt->close();
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
                                                     <tr>
-                                                        <td colspan="4">No branches available</td>
+                                                        <td class="text-center" colspan="4">No branches available</td>
                                                     </tr>
                                                 <?php endif; ?>
                                             </tbody>

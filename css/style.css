@@ -428,7 +428,7 @@ tr:hover {
 }
 
 .business {
-  width:50vh;
+  width:100%;
   display: flex;
   justify-content: space-between; /* Push the content apart */
   align-items: center;   

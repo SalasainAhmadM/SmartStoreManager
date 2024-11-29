@@ -43,7 +43,12 @@ function filterTableByDate(date) {
   });
 
   if (!rowsFound) {
-    Swal.fire("No records found for this date");
+    Swal.fire({
+      icon: "warning",
+      title: "No Sales Found",
+      text: `No sales found for the selected date: ${date}`,
+      confirmButtonText: "OK",
+    });
   }
 }
 

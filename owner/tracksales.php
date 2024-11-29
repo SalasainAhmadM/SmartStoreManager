@@ -6,8 +6,10 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-// Get today's date
-$today = date("F j, Y");
+
+// Set the timezone to Philippine Time (Asia/Manila)
+date_default_timezone_set('Asia/Manila');
+$today = date("Y-m-d");
 ?>
 
 <!DOCTYPE html>
@@ -41,7 +43,7 @@ $today = date("F j, Y");
 
                     <div class="mt-5">
                         <div class="form-group">
-                        <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
+                            <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
                             <select id="businessSelect" class="form-control">
                                 <option value=""><strong>Select Business</strong></option>
                                 <option value="A">Business A</option>
@@ -61,14 +63,13 @@ $today = date("F j, Y");
                         </button>
                     </div>
 
-                    <h1 class="mt-5 mb-5">
-                        <i class="fa-solid fa-dollar-sign" style="margin-right: 10px;"></i>
-                        <b>Today Sales for Business A (<?php echo $today; ?>)</b>
-                    </h1>
+                    <h2 class="mt-5 mb-3">
+                        <b>Today’s Sales for Business A (<?php echo $today; ?>)</b>
+                    </h2>
 
                     <div class="scrollable-table">
-                    <table id="salesTable" class="table table-striped table-hover">
-                    <thead class="table-dark">
+                        <table id="salesTable" class="table table-striped table-hover">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                     <th>Amount Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -125,52 +126,10 @@ $today = date("F j, Y");
                                     <td>₱200</td>
                                     <td><?php echo $today; ?></td>
                                 </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
-                                <tr>
-                                    <td>Product 3</td>
-                                    <td>20</td>
-                                    <td>₱200</td>
-                                    <td><?php echo $today; ?></td>
-                                </tr>
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th>Total</th>
+                                    <th><strong>Total</strong></th>
                                     <th>45</th>
                                     <th>₱450</th>
                                 </tr>
@@ -186,13 +145,29 @@ $today = date("F j, Y");
 
                     <div class="collapse mt-5" id="previousSalesTable">
                         <h3><b>Sales Log</b></h3>
+
                         <div class="mt-4 mb-4 position-relative">
-                        <form class="d-flex" role="search">
-                            <input id="logSearchBar" class="form-control me-2 w-50" type="search" placeholder="Search sale log.." aria-label="Search" onkeyup="searchSalesLog()">
-                        </form>
+
+                            <form class="d-flex" role="search">
+                                <input id="logSearchBar" class="form-control me-2 w-50" type="search" placeholder="Search sale log.." aria-label="Search" onkeyup="searchSalesLog()">
+                            </form>
+
+                            <!-- Date Filter Button for Sales Log -->
+                            <div class="position-absolute top-0 end-0 mt-2 me-2">
+                                <button class="btn btn-success" id="filterDateButton">
+                                    <i class="fas fa-calendar-alt me-2"></i> Filter by Date
+                                </button>
+                                <button class="btn btn-danger" id="resetButton" onclick="resetFilter()">
+                                    <i class="fas fa-times-circle me-2"></i> Reset Filter
+                                </button>
+                            </div>
+
+
                         </div>
+
+
                         <table id="salesLogTable" class="table table-striped table-hover mt-4">
-                        <thead class="table-dark">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                     <th>Amount Sold <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -205,19 +180,19 @@ $today = date("F j, Y");
                                     <td>Product 1</td>
                                     <td>12</td>
                                     <td>₱120</td>
-                                    <td>November 24, 2024</td>
+                                    <td>2024-12-24</td>
                                 </tr>
                                 <tr>
                                     <td>Product 2</td>
                                     <td>18</td>
                                     <td>₱180</td>
-                                    <td>November 24, 2024</td>
+                                    <td>2024-11-24</td>
                                 </tr>
                                 <tr>
                                     <td>Product 3</td>
                                     <td>25</td>
                                     <td>₱250</td>
-                                    <td>November 24, 2024</td>
+                                    <td>2024-10-24</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -234,6 +209,62 @@ $today = date("F j, Y");
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+
+    <script>
+        // Trigger SweetAlert with Date Picker
+        document.getElementById('filterDateButton').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Select Date to Filter Sales',
+                html: '<input type="date" id="swalDateFilter" class="form-control">',
+                showCancelButton: true,
+                confirmButtonText: 'Filter',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const selectedDate = document.getElementById('swalDateFilter').value;
+                    if (selectedDate) {
+                        filterByDate(selectedDate);
+                    }
+                }
+            });
+        });
+
+        // Function to filter sales log by selected date
+        function filterByDate(date) {
+            const rows = document.querySelectorAll('#salesLogTable tbody tr');
+            let found = false; 
+
+            rows.forEach(row => {
+                const dateCell = row.cells[3]; 
+                const rowDate = dateCell ? dateCell.textContent.trim() : '';
+
+                if (rowDate === date) {
+                    row.style.display = ''; 
+                    found = true;
+                } else {
+                    row.style.display = 'none'; 
+                }
+            });
+
+            // Show SweetAlert if no rows are found
+            if (!found) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Sales Found',
+                    text: `No sales found for the selected date: ${date}`,
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        // Function to reset the filter and show all rows
+        function resetFilter() {
+            const rows = document.querySelectorAll('#salesLogTable tbody tr');
+
+            rows.forEach(row => {
+                row.style.display = ''; 
+            });
+        }
+    </script>
 
     <script>
         // Search function for Sales table
@@ -270,7 +301,7 @@ $today = date("F j, Y");
             });
         }
     </script>
-    
+
 </body>
 
 </html>
