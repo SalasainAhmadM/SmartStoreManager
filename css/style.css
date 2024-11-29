@@ -443,6 +443,26 @@ tr:hover {
 }
 
 
+.view-branches {
+  width: 100%;
+}
+
+
+.swal2-print-btn {
+  background-color: #007bff !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.swal2-print-btn:hover {
+  background-color: #0056b3 !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
 
 .tab-content {
   display: none;
