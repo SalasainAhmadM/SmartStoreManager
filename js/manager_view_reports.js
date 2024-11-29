@@ -11,11 +11,34 @@ document.getElementById('businessSelect').addEventListener('change', function() 
     if (selectedBusiness === 'A') {
         reportTitle.textContent = 'Sales Report for Business A';
 
-        const salesData = [
-            { date: '2024-11-01', product: 'Product 1', quantity: 10, price: 150, sales: 10 * 150 },
-            { date: '2024-11-01', product: 'Product 2', quantity: 5, price: 100, sales: 5 * 100 },
-            { date: '2024-11-02', product: 'Product 1', quantity: 8, price: 150, sales: 8 * 150 },
-            { date: '2024-11-02', product: 'Product 2', quantity: 3, price: 100, sales: 3 * 100 }
+        const salesData = [{
+                date: '2024-11-01',
+                product: 'Product 1',
+                quantity: 10,
+                price: 150,
+                sales: 10 * 150
+            },
+            {
+                date: '2024-11-01',
+                product: 'Product 2',
+                quantity: 5,
+                price: 100,
+                sales: 5 * 100
+            },
+            {
+                date: '2024-11-02',
+                product: 'Product 1',
+                quantity: 8,
+                price: 150,
+                sales: 8 * 150
+            },
+            {
+                date: '2024-11-02',
+                product: 'Product 2',
+                quantity: 3,
+                price: 100,
+                sales: 3 * 100
+            }
         ];
 
         let totalSales = 0;
@@ -33,12 +56,35 @@ document.getElementById('businessSelect').addEventListener('change', function() 
         totalSalesCell.textContent = `₱${totalSales.toLocaleString()}`;
     } else if (selectedBusiness === 'B') {
         reportTitle.textContent = 'Sales Report for Business B';
-        
-        const salesData = [
-            { date: '2024-11-01', product: 'Product 3', quantity: 15, price: 200, sales: 15 * 200 },
-            { date: '2024-11-01', product: 'Product 4', quantity: 7, price: 120, sales: 7 * 120 },
-            { date: '2024-11-02', product: 'Product 3', quantity: 12, price: 200, sales: 12 * 200 },
-            { date: '2024-11-02', product: 'Product 4', quantity: 5, price: 120, sales: 5 * 120 }
+
+        const salesData = [{
+                date: '2024-11-01',
+                product: 'Product 3',
+                quantity: 15,
+                price: 200,
+                sales: 15 * 200
+            },
+            {
+                date: '2024-11-01',
+                product: 'Product 4',
+                quantity: 7,
+                price: 120,
+                sales: 7 * 120
+            },
+            {
+                date: '2024-11-02',
+                product: 'Product 3',
+                quantity: 12,
+                price: 200,
+                sales: 12 * 200
+            },
+            {
+                date: '2024-11-02',
+                product: 'Product 4',
+                quantity: 5,
+                price: 120,
+                sales: 5 * 120
+            }
         ];
 
         let totalSales = 0;
@@ -64,7 +110,7 @@ document.getElementById('businessSelect').addEventListener('change', function() 
 });
 
 // Print report functionality
-document.getElementById('printReportBtn').addEventListener('click', function () {
+document.getElementById('printReportBtn').addEventListener('click', function() {
     const reportTitle = document.getElementById('reportTitle').outerHTML;
     const salesTable = document.querySelector('#salesReportPanel table.table').outerHTML;
 
@@ -116,4 +162,3 @@ document.getElementById('printReportBtn').addEventListener('click', function () 
     printWindow.print();
     printWindow.close();
 });
-
