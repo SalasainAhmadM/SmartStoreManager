@@ -118,8 +118,9 @@ while ($row = $result->fetch_assoc()) {
                                 </button>
                             </div>
 
+                            <div class="scrollable-table">
                             <table class="table table-striped table-hover mt-5">
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
@@ -162,6 +163,9 @@ while ($row = $result->fetch_assoc()) {
                                     <?php endif; ?>
                                 </tbody>
                             </table>
+                            </div>
+
+
 
                         </div>
                     </div>
@@ -169,7 +173,7 @@ while ($row = $result->fetch_assoc()) {
                     <div id="assignmanager" class="tab-content">
                         <h1 class="mt-5"></h1>
 
-                        <div class="table-responsive mt-5">
+                        <div class="table-responsive mt-5 scrollable-table">
 
                             <table class="table table-striped table-hover mt-5">
 
@@ -179,7 +183,7 @@ while ($row = $result->fetch_assoc()) {
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Business Name <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
@@ -372,7 +376,7 @@ while ($row = $result->fetch_assoc()) {
 
                         </script>
 
-                        <div class="table-responsive mt-5">
+                        <div class="table-responsive mt-5 scrollable-table">
                             <table class="table table-striped table-hover mt-5">
 
 
@@ -382,7 +386,7 @@ while ($row = $result->fetch_assoc()) {
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
