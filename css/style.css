@@ -403,7 +403,7 @@ table {
 }
 
 .scrollable-table {
-  max-height: 50vh;  /* Adjust the height to your preference */
+  max-height: 75vh;  /* Adjust the height to your preference */
   overflow-y: auto;  /* Enables scrolling when content exceeds the height */
 }
 
