@@ -15,8 +15,6 @@ $manager_id = $_SESSION['user_id'];
     <title>View Reports</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script> <!-- FontAwesome CDN -->
 </head>
 
 <body class="d-flex">
@@ -44,9 +42,6 @@ $manager_id = $_SESSION['user_id'];
 
                         <div id="salesReportPanel" class="collapse">
                             <h4 class="mt-4" id="reportTitle"></h4>
-                            <button class="btn btn-primary mt-2 mb-5" id="printReportBtn">
-                                <i class="fas fa-print me-2"></i> Print Sales Report
-                            </button>
 
                             <div class="mt-4 position-relative">
                                 <form class="d-flex" role="search">
@@ -87,6 +82,10 @@ $manager_id = $_SESSION['user_id'];
                                     </tfoot>
                                 </table>
                             </div>
+
+                            <button class="btn btn-primary mt-2 mb-5" id="printReportBtn">
+                                <i class="fas fa-print me-2"></i> Print Sales Report
+                            </button>
 
 
                         </div>

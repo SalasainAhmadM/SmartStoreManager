@@ -49,7 +49,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                     <div class="card-one">
 
                         <h5 class="mt-5"><b>Select Business:</b></h5>
-                        <div class="mt-4 mb-4 position-relative">
+                        <div class="mt-4 mb-5 position-relative">
                             <select class="form-select w-50" id="businessSelect">
                                 <option value="">Select Business</option>
                                 <option value="A">Business A</option>
@@ -59,38 +59,42 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 
                         <div id="salesPanel" class="collapse">
                             <h4 class="mt-4" id="salesTitle"></h4>
-                            <button class="btn btn-success mt-2 mb-5" id="addSaleBtn">
-                                <i class="fas fa-plus me-2"></i> Add Sale
-                            </button>
+
 
                             <!-- Search Bar -->
-                            <div class="mt-4">
-                                <form class="d-flex" role="search">
-                                <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search" id="searchInput">
+                            <div class="mt-3 position-relative">
+                            <form class="d-flex" role="search">
+                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.." aria-label="Search" id="searchInput">
                                 </form>
+                                <!-- Add Business Button -->
+                                <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" id="addSaleBtn">
+                                <i class="fas fa-plus me-2"></i> Add Sale
+                            </button>
                             </div>
 
+
+
+
                             <div class="scrollable-table">
-                            <table class="table mt-3">
-                                <table class="table table-striped table-hover mt-4">
-                                    <thead class="table-dark">
-                                        <th>Product <button class="btn text-white"><i
-                                        class="fas fa-sort"></i></button></th>
-                                        <th>Price <button class="btn text-white"><i
-                                        class="fas fa-sort"></i></button></th>                                        
-                                        <th>Quantity Sold <button class="btn text-white"><i
-                                        class="fas fa-sort"></i></button></th>
-                                        <th>Revenue <button class="btn text-white"><i
-                                        class="fas fa-sort"></i></button></th>
-                                        <th>Updated At <button class="btn text-white"><i
-                                        class="fas fa-sort"></i></button></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="salesTableBody">
-                                        <!-- Sales Data will be dynamically populated here -->
-                                        <script src="../js/manager_add_sale.js"></script>
-                                    </tbody>
-                                </table>
+                                    <table class="table table-striped table-hover mt-4 mb-5">
+                                        <thead class="table-dark">
+                                            <th>Product <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button></th>
+                                            <th>Price <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button></th>
+                                            <th>Quantity Sold <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button></th>
+                                            <th>Revenue <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button></th>
+                                            <th>Updated At <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesTableBody">
+                                            <!-- Sales Data will be dynamically populated here -->
+                                            <script src="../js/manager_add_sale.js"></script>
+                                        </tbody>
+                                    </table>
                             </div>
 
                         </div>
@@ -107,7 +111,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
         const searchInput = document.getElementById('searchInput');
         const salesTableBody = document.getElementById('salesTableBody');
 
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', function() {
             const searchValue = searchInput.value.toLowerCase();
 
             // Get all rows in the sales table
@@ -125,7 +129,7 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
                         break;
                     }
                 }
-                
+
                 row.style.display = rowMatches ? '' : 'none';
             }
         });

@@ -17,23 +17,23 @@ document.getElementById('businessSelect').addEventListener('change', function ()
         {
             description: 'Rent',
             amount: '$5000',
-            type: 'Fixed Expense'
+            type: 'Fixed Expenses'
         },
         {
             description: 'Utilities',
             amount: '$300',
-            type: 'Variable Expense'
+            type: 'Variable Expenses'
         }
     ] : businessName === 'B' ? [
         {
             description: 'Marketing',
             amount: '$2000',
-            type: 'Operating Expense'
+            type: 'Operating Expenses'
         },
         {
             description: 'Salaries',
             amount: '$12000',
-            type: 'Non-operating Expense'
+            type: 'Non-operating Expenses'
         }
     ] : [];
 
@@ -66,11 +66,11 @@ document.getElementById('addExpenseBtn').addEventListener('click', function() {
             <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
             <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
             <select id="expenseType" class="swal2-input">
-                <option value="Fixed Expense">Fixed Expense</option>
-                <option value="Variable Expense">Variable Expense</option>
-                <option value="Operating Expense">Operating Expense</option>
-                <option value="Non-operating Expense">Non-operating Expense</option>
-                <option value="Capital Expense">Capital Expense</option>
+                <option value="Fixed Expense">Fixed Expenses</option>
+                <option value="Variable Expense">Variable Expenses</option>
+                <option value="Operating Expense">Operating Expenses</option>
+                <option value="Non-operating Expense">Non-operating Expenses</option>
+                <option value="Capital Expense">Capital Expenses</option>
             </select>
         `,
         focusConfirm: false,
