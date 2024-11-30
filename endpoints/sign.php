@@ -135,6 +135,12 @@ function handleRegister($conn)
     $stmt->bind_param("sss", $userName, $email, $hashedPassword);
 
     if ($stmt->execute()) {
+        // Insert activity record
+        $activityStmt = $conn->prepare("
+            INSERT INTO activity (message, created_at, status, user, user_id) 
+            VALUES ('New User Registered', NOW(), 'Completed', 'owner', NULL)
+        ");
+        $activityStmt->execute();
         echo json_encode(['status' => 'success', 'message' => 'Registration successful']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Failed to register user']);
