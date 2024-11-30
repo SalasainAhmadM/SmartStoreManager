@@ -17,7 +17,7 @@ $owner_id = $_SESSION['user_id'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
-    <?php include '../components/head_cdn.php'; ?>   
+    <?php include '../components/head_cdn.php'; ?>
 </head>
 
 <body class="d-flex">
@@ -47,8 +47,6 @@ $owner_id = $_SESSION['user_id'];
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
                                 </label>
                             </div>
-                            
-                            <?php include '../components/add_expenses.php'; ?>
 
                         </h5>
                     </div>
@@ -74,8 +72,45 @@ $owner_id = $_SESSION['user_id'];
                         </select>
                     </div>
 
-                    <div id="expensesPanel" class="collapse mt-3 scrollable-table">
-                        <h4>Expenses List for Branch <span id="branchName"></span></h4>
+
+
+                    <div id="expensesPanel" class="collapse mt-5 scrollable-table">
+
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+
+                            <div class="w-50">
+                                <h2>Expenses List for <span id="businessName"></span> - Branch: <span id="branchName"></span>
+                                    for the month of <span id="currentMonthYear"></span></h2>
+                            </div>
+
+                            <button class="btn btn-success ms-auto m-1" id="addExpenseBtn" type="button">
+                                <i class="fas fa-plus me-2"></i> Add Expenses
+                            </button>
+
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Month
+                                </button>
+
+                                <ul class="dropdown-menu" aria-labelledby="monthDropdown">
+                                    <li><a class="dropdown-item" href="#">January</a></li>
+                                    <li><a class="dropdown-item" href="#">February</a></li>
+                                    <li><a class="dropdown-item" href="#">March</a></li>
+                                    <li><a class="dropdown-item" href="#">April</a></li>
+                                    <li><a class="dropdown-item" href="#">May</a></li>
+                                    <li><a class="dropdown-item" href="#">June</a></li>
+                                    <li><a class="dropdown-item" href="#">July</a></li>
+                                    <li><a class="dropdown-item" href="#">August</a></li>
+                                    <li><a class="dropdown-item" href="#">September</a></li>
+                                    <li><a class="dropdown-item" href="#">October</a></li>
+                                    <li><a class="dropdown-item" href="#">November</a></li>
+                                    <li><a class="dropdown-item" href="#">December</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+
                         <table class="table table-striped table-hover mt-4">
                             <thead class="table-dark position-sticky top-0">
                                 <tr>
@@ -90,16 +125,33 @@ $owner_id = $_SESSION['user_id'];
                             </tbody>
                         </table>
                     </div>
+
+
                 </div>
-
-
             </div>
         </div>
-    </div>
 
-    <script src="../js/sidebar.js"></script>
-    <script src="../js/sort_items.js"></script>
-    
+        <script>
+            // Get the current month and year
+            const currentDate = new Date();
+            const currentMonth = currentDate.toLocaleString('default', {
+                month: 'long'
+            });
+            const currentYear = currentDate.getFullYear();
+
+            // Display the current month and year in the title
+            document.getElementById('currentMonthYear').textContent = `${currentMonth} ${currentYear}`;
+
+            // Update the business name when a business is selected
+            document.getElementById('businessSelect').addEventListener('change', function() {
+                const businessName = this.options[this.selectedIndex].text;
+                document.getElementById('businessName').textContent = businessName;
+            });
+        </script>
+
+        <script src="../js/sidebar.js"></script>
+        <script src="../js/sort_items.js"></script>
+
 </body>
 
 </html>

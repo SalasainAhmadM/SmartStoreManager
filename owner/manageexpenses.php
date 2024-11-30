@@ -48,7 +48,7 @@ $owner_id = $_SESSION['user_id'];
                                 </label>
                             </div>
 
-                            <?php include '../components/add_expenses.php'; ?>
+
 
                         </h5>
                     </div>
@@ -64,30 +64,82 @@ $owner_id = $_SESSION['user_id'];
                             <option value="B">Business B</option>
                         </select>
                     </div>
+                </div>
 
-                    <div id="expensesPanel" class="collapse mt-3 scrollable-table">
-                        <h4>Expenses List for Business <span id="businessName"></span></h4>
-                        <table class="table table-striped table-hover mt-4">
-                            <thead class="table-dark position-sticky top-0">
-                                <tr>
-                                    <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button>
-                                    </th>
-                                    <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
 
-                            <tbody id="expensesList">
-                                <script src="../js/business_expenses.js"></script>
-                            </tbody>
+                <div id="expensesPanel" class="collapse scrollable-table" style="padding:0 2rem;">
 
-                        </table>
+                    <div class="d-flex justify-content-between align-items-center mt-5">
+
+                        <div class="w-50">
+                            <h2>Expenses List for <span id="businessName"></span> for the month of 
+                            <span id="currentMonthYear"></span></h2>
+                        </div>
+
+                        <button class="btn btn-success ms-auto m-1" id="addExpenseBtn" type="button">
+                            <i class="fas fa-plus me-2"></i> Add Expenses
+                        </button>
+
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Month
+                            </button>
+
+                            <ul class="dropdown-menu" aria-labelledby="monthDropdown">
+                                <li><a class="dropdown-item" href="#">January</a></li>
+                                <li><a class="dropdown-item" href="#">February</a></li>
+                                <li><a class="dropdown-item" href="#">March</a></li>
+                                <li><a class="dropdown-item" href="#">April</a></li>
+                                <li><a class="dropdown-item" href="#">May</a></li>
+                                <li><a class="dropdown-item" href="#">June</a></li>
+                                <li><a class="dropdown-item" href="#">July</a></li>
+                                <li><a class="dropdown-item" href="#">August</a></li>
+                                <li><a class="dropdown-item" href="#">September</a></li>
+                                <li><a class="dropdown-item" href="#">October</a></li>
+                                <li><a class="dropdown-item" href="#">November</a></li>
+                                <li><a class="dropdown-item" href="#">December</a></li>
+                            </ul>
+                        </div>
                     </div>
+
+                    <table class="table table-striped table-hover mt-4">
+                        <thead class="table-dark position-sticky top-0">
+                            <tr>
+                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="expensesList">
+                            <script src="../js/business_expenses.js"></script>
+                        </tbody>
+
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+    </div>
+
+    <script>
+        // Get the current month and year
+        const currentDate = new Date();
+        const currentMonth = currentDate.toLocaleString('default', {
+            month: 'long'
+        });
+        const currentYear = currentDate.getFullYear();
+
+        // Display the current month and year in the title
+        document.getElementById('currentMonthYear').textContent = `${currentMonth} ${currentYear}`;
+
+        // Update the business name when a business is selected
+        document.getElementById('businessSelect').addEventListener('change', function() {
+            const businessName = this.options[this.selectedIndex].text;
+            document.getElementById('businessName').textContent = businessName;
+        });
+    </script>
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>

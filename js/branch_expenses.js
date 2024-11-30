@@ -109,9 +109,12 @@ document.getElementById('branchSelect').addEventListener('change', function() {
     }
 });
 
+
+
+
 document.getElementById('addExpenseBtn').addEventListener('click', function() {
     Swal.fire({
-        title: 'Add Expense',
+        title: 'Add Expenses',
         html: `
             <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
             <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
@@ -122,6 +125,20 @@ document.getElementById('addExpenseBtn').addEventListener('click', function() {
                 <option value="Non-operating Expense">Non-operating Expenses</option>
                 <option value="Capital Expense">Capital Expenses</option>
             </select>
+            <select id="expenseMonth" class="swal2-input">
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
         `,
         focusConfirm: false,
         showCancelButton: true,
@@ -131,16 +148,20 @@ document.getElementById('addExpenseBtn').addEventListener('click', function() {
             const description = document.getElementById('expenseDescription').value;
             const amount = document.getElementById('expenseAmount').value;
             const type = document.getElementById('expenseType').value;
-            if (!description || !amount || !type) {
+            const month = document.getElementById('expenseMonth').value;
+
+            if (!description || !amount || !type || !month) {
                 Swal.showValidationMessage('Please fill out all fields');
                 return false;
             }
-            return { description, amount, type };
+
+            return { description, amount, type, month };
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Added!', `Expense: ${result.value.description} added successfully.`, 'success');
-            // You can add AJAX code here to send the data to the server.
+            Swal.fire('Added!', `Expense: ${result.value.description} added successfully for ${result.value.month}.`, 'success');
+            // You can add AJAX code here to send the data to the server, including the month.
         }
     });
 });
+
