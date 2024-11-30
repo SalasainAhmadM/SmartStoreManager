@@ -34,7 +34,7 @@ if (isset($_GET['logout'])) {
             <img src="../assets/logo.png" style="height: 25px;">
         </div>
         <div id="sidebarLogo"><span class="fs-4 mr-5 ms-1"><b>Manager</b></span></div>
-        <button class="btn btn-outline-dark" id="sidebarToggle" style="height: 40px;">
+        <button class="btn btn-outline-dark" id="sidebarToggle" style="height: 40px; transition: 0.45s;">
             <i class="fa-solid fa-bars"></i>
         </button>
     </div>
