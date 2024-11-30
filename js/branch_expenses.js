@@ -41,48 +41,48 @@ document.getElementById('branchSelect').addEventListener('change', function() {
         expenses = [{
                 description: 'Rent',
                 amount: '$3000',
-                type: 'Non-operating Expense'
+                type: 'Non-operating Expenses'
             },
             {
                 description: 'Utilities',
                 amount: '$150',
-                type: 'Variable Expense'
+                type: 'Variable Expenses'
             }
         ];
     } else if (branchName === 'Branch2') {
         expenses = [{
                 description: 'Marketing',
                 amount: '$1000',
-                type: 'Variable Expense'
+                type: 'Variable Expenses'
             },
             {
                 description: 'Salaries',
                 amount: '$5000',
-                type: 'Non-operating Expense'
+                type: 'Non-operating Expenses'
             }
         ];
     } else if (branchName === 'Branch3') {
         expenses = [{
                 description: 'Rent',
                 amount: '$2500',
-                type: 'Fixed Expense'
+                type: 'Fixed Expenses'
             },
             {
                 description: 'Utilities',
                 amount: '$200',
-                type: 'Fixed Expense'
+                type: 'Fixed Expenses'
             }
         ];
     } else if (branchName === 'Branch4') {
         expenses = [{
                 description: 'Salaries',
                 amount: '$6000',
-                type: 'Variable Expense'
+                type: 'Variable Expenses'
             },
             {
                 description: 'Supplies',
                 amount: '$800',
-                type: 'Variable Expense'
+                type: 'Variable Expenses'
             }
         ];
     }
@@ -116,11 +116,11 @@ document.getElementById('addExpenseBtn').addEventListener('click', function() {
             <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
             <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
             <select id="expenseType" class="swal2-input">
-                <option value="Fixed Expense">Fixed Expense</option>
-                <option value="Variable Expense">Variable Expense</option>
-                <option value="Operating Expense">Operating Expense</option>
-                <option value="Non-operating Expense">Non-operating Expense</option>
-                <option value="Capital Expense">Capital Expense</option>
+                <option value="Fixed Expense">Fixed Expenses</option>
+                <option value="Variable Expense">Variable Expenses</option>
+                <option value="Operating Expense">Operating Expenses</option>
+                <option value="Non-operating Expense">Non-operating Expenses</option>
+                <option value="Capital Expense">Capital Expenses</option>
             </select>
         `,
         focusConfirm: false,
