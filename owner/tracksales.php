@@ -1,14 +1,62 @@
 <?php
 session_start();
 require_once '../conn/auth.php';
-
+require_once '../conn/conn.php';
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
+// $conn->query("SET time_zone = '+08:00'");
 // Set the timezone to Philippine Time (Asia/Manila)
 date_default_timezone_set('Asia/Manila');
 $today = date("Y-m-d");
+
+// Fetch business data for the logged-in owner
+$query = "SELECT * FROM business WHERE owner_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$businesses = [];
+while ($row = $result->fetch_assoc()) {
+    $businesses[] = $row;
+}
+$stmt->close();
+
+// Fetch branches for each business
+$branches_by_business = [];
+$branch_query = "SELECT * FROM branch WHERE business_id = ?";
+$branch_stmt = $conn->prepare($branch_query);
+
+foreach ($businesses as $business) {
+    $branch_stmt->bind_param("i", $business['id']);
+    $branch_stmt->execute();
+    $branch_result = $branch_stmt->get_result();
+
+    while ($branch_row = $branch_result->fetch_assoc()) {
+        $branches_by_business[$business['id']][] = $branch_row;
+    }
+}
+
+$branch_stmt->close();
+
+// Fetch products for each business
+$products_by_business = [];
+$product_query = "SELECT * FROM products WHERE business_id = ?";
+$product_stmt = $conn->prepare($product_query);
+
+foreach ($businesses as $business) {
+    $product_stmt->bind_param("i", $business['id']);
+    $product_stmt->execute();
+    $product_result = $product_stmt->get_result();
+
+    while ($product_row = $product_result->fetch_assoc()) {
+        $products_by_business[$business['id']][] = $product_row;
+    }
+}
+
+$product_stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -36,10 +84,12 @@ $today = date("Y-m-d");
                     <!-- Search Bar for Sales -->
                     <div class="mt-5 position-relative">
                         <form class="d-flex" role="search">
-                            <input id="saleSearchBar" class="form-control me-2 w-50" type="search" placeholder="Search sale.." aria-label="Search" onkeyup="searchSales()">
+                            <input id="saleSearchBar" class="form-control me-2 w-50" type="search"
+                                placeholder="Search sale.." aria-label="Search" onkeyup="searchSales()">
                         </form>
                         <!-- Add Sale Button -->
-                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button" id="addSaleButton">
+                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button"
+                            id="addSaleButton">
                             <i class="fas fa-plus me-2"></i> Add Sale
                         </button>
                     </div>
