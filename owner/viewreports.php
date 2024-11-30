@@ -18,25 +18,6 @@ $owner_id = $_SESSION['user_id'];
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .swal2-print-btn {
-            background-color: #007bff !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .swal2-print-btn:hover {
-            background-color: #0056b3 !important;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-    </style>
 </head>
 
 <body class="d-flex">
@@ -73,7 +54,7 @@ $owner_id = $_SESSION['user_id'];
                                     <td>Business A</td>
                                     <td>₱11,000</td>
                                     <td>₱6,000</td>
-                                    <td><button class="swal2-print-btn" onclick="showBranchDetails('Business A', [
+                                    <td><button class="swal2-print-btn view-branches" onclick="showBranchDetails('Business A', [
                                         {branch: 'Branch A1', sales: 8000, expenses: 4000},
                                         {branch: 'Branch A2', sales: 3000, expenses: 2000}
                                     ])">View Branches</button></td>
@@ -82,7 +63,7 @@ $owner_id = $_SESSION['user_id'];
                                     <td>Business B</td>
                                     <td>₱4,000</td>
                                     <td>₱13,000</td>
-                                    <td><button class="swal2-print-btn" onclick="showBranchDetails('Business B', [
+                                    <td><button class="swal2-print-btn view-branches" onclick="showBranchDetails('Business B', [
                                         {branch: 'Branch B1', sales: 3000, expenses: 8000},
                                         {branch: 'Branch B2', sales: 1000, expenses: 5000}
                                     ])">View Branches</button></td>
@@ -91,7 +72,7 @@ $owner_id = $_SESSION['user_id'];
                                     <td>Business C</td>
                                     <td>₱9,000</td>
                                     <td>₱5,000</td>
-                                    <td><button class="swal2-print-btn" onclick="showBranchDetails('Business C', [
+                                    <td><button class="swal2-print-btn view-branches" onclick="showBranchDetails('Business C', [
                                         {branch: 'Branch C1', sales: 5000, expenses: 3000},
                                         {branch: 'Branch C2', sales: 4000, expenses: 2000}
                                     ])">View Branches</button></td>

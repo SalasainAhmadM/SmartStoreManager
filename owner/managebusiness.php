@@ -65,19 +65,6 @@ $product_stmt->close();
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
-    <style>
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .nav-link {
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body class="d-flex">
@@ -145,7 +132,7 @@ $product_stmt->close();
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Updated At <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
-                                        <th scope="col">Action</th>
+                                        <th class="text-center" scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="business-table-body">
@@ -158,7 +145,7 @@ $product_stmt->close();
                                             <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
                                             <td><?php echo htmlspecialchars($business['created_at']); ?></td>
                                             <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
-                                            <td>
+                                            <td class="text-center">
                                                 <a href="#" class="edit-button text-primary me-3" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
@@ -219,7 +206,7 @@ $product_stmt->close();
                                                                 class="fas fa-sort"></i></button></th>
                                                     <th>Updated At <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
-                                                    <th>Action</th>
+                                                    <th class="text-center">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -229,7 +216,7 @@ $product_stmt->close();
                                                             <td><?php echo htmlspecialchars($branch['location']); ?></td>
                                                             <td><?php echo $branch['created_at']; ?></td>
                                                             <td><?php echo $branch['updated_at']; ?></td>
-                                                            <td>
+                                                            <td class="text-center">
                                                                 <a href="#" class="text-primary me-3" title="Edit"
                                                                     onclick="editBranch(<?php echo $branch['id']; ?>)">
                                                                     <i class="fas fa-edit"></i>
@@ -243,7 +230,7 @@ $product_stmt->close();
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
                                                     <tr>
-                                                        <td colspan="4">No branches available</td>
+                                                        <td class="text-center" colspan="4">No branches available</td>
                                                     </tr>
                                                 <?php endif; ?>
                                             </tbody>
@@ -311,7 +298,7 @@ $product_stmt->close();
                                                                 class="fas fa-sort"></i></button></th>
                                                     <th>Updated At <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
-                                                    <th>Actions</th>
+                                                    <th class="text-center">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -327,7 +314,7 @@ $product_stmt->close();
                                                             <td><?php echo htmlspecialchars($product['description']); ?></td>
                                                             <td><?php echo htmlspecialchars($product['created_at']); ?></td>
                                                             <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
-                                                            <td>
+                                                            <td class="text-center">
                                                                 <a href="#" class="text-primary me-3"
                                                                     onclick="editProduct(<?php echo $product['id']; ?>)">
                                                                     <i class="fas fa-edit"></i>

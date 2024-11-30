@@ -118,8 +118,9 @@ while ($row = $result->fetch_assoc()) {
                                 </button>
                             </div>
 
+                            <div class="scrollable-table">
                             <table class="table table-striped table-hover mt-5">
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
@@ -129,7 +130,7 @@ while ($row = $result->fetch_assoc()) {
                                         </th>
                                         <th>Address <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
-                                        <th>Actions</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="manager-table-body">
@@ -146,7 +147,7 @@ while ($row = $result->fetch_assoc()) {
                                                 <td><?= htmlspecialchars($manager['email']) ?></td>
                                                 <td><?= htmlspecialchars($manager['contact_number']) ?></td>
                                                 <td><?= htmlspecialchars($manager['address']) ?></td>
-                                                <td>
+                                                <td class="text-center">
                                                     <a href="#" class="text-primary me-3 edit-manager"
                                                         data-id="<?= $manager['id'] ?>"
                                                         data-details='<?= json_encode($manager) ?>' title="Edit">
@@ -162,6 +163,9 @@ while ($row = $result->fetch_assoc()) {
                                     <?php endif; ?>
                                 </tbody>
                             </table>
+                            </div>
+
+
 
                         </div>
                     </div>
@@ -169,7 +173,7 @@ while ($row = $result->fetch_assoc()) {
                     <div id="assignmanager" class="tab-content">
                         <h1 class="mt-5"></h1>
 
-                        <div class="table-responsive mt-5">
+                        <div class="table-responsive mt-5 scrollable-table">
 
                             <table class="table table-striped table-hover mt-5">
 
@@ -179,7 +183,7 @@ while ($row = $result->fetch_assoc()) {
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Business Name <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
@@ -187,7 +191,7 @@ while ($row = $result->fetch_assoc()) {
                                                     class="fas fa-sort"></i></button></th>
                                         <th>Branches Locations <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
-                                        <th>Actions</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -208,7 +212,7 @@ while ($row = $result->fetch_assoc()) {
                                                     <?php endforeach; ?>
                                                 </ul>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <button class="btn btn-primary btn-sm assign-manager"
                                                     data-business-id="<?= htmlspecialchars($business_id) ?>"
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
@@ -393,7 +397,7 @@ while ($row = $result->fetch_assoc()) {
 
                         </script>
 
-                        <div class="table-responsive mt-5">
+                        <div class="table-responsive mt-5 scrollable-table">
                             <table class="table table-striped table-hover mt-5">
 
 
@@ -403,7 +407,7 @@ while ($row = $result->fetch_assoc()) {
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
 
-                                <thead class="table-dark">
+                                <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>

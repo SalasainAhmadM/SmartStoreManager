@@ -10,15 +10,45 @@ document.getElementById('businessSelect').addEventListener('change', function() 
         salesTitle.textContent = 'Sales for Business A';
         // Example Sales Data for Business A
         salesTableBody.innerHTML = `
-            <tr><td>Product 1</td><td>100</td><td>$1000</td></tr>
-            <tr><td>Product 2</td><td>50</td><td>$500</td></tr>
+
+            <tr>
+            <td>Product 1</td>
+            <td>₱150</td>
+            <td>300</td>
+            <td>₱45000</td>
+            <td>2024-09-29 00:06:49</td>
+            </tr>
+
+            <tr>
+            <td>Product 2</td>
+            <td>₱100</td>
+            <td>300</td>
+            <td>₱30000</td>
+            <td>2024-11-29 00:06:49</td>
+            </tr>
+
         `;
     } else if (selectedBusiness === 'B') {
         salesTitle.textContent = 'Sales for Business B';
         // Example Sales Data for Business B
         salesTableBody.innerHTML = `
-            <tr><td>Product 3</td><td>200</td><td>$2000</td></tr>
-            <tr><td>Product 4</td><td>75</td><td>$750</td></tr>
+
+            <tr>
+            <td>Product 3</td>
+            <td>₱250</td>
+            <td>50</td>
+            <td>₱12500</td>
+            <td>2024-05-29 00:06:49</td>
+            </tr>
+
+            <tr>
+            <td>Product 4</td>
+            <td>₱550</td>
+            <td>100</td>
+            <td>₱55000</td>
+            <td>2024-11-29 00:06:49</td>
+            </tr>
+
         `;
     }
 
@@ -30,6 +60,9 @@ document.getElementById('businessSelect').addEventListener('change', function() 
 });
 
 document.getElementById('addSaleBtn').addEventListener('click', function() {
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
     // SweetAlert for adding a sale
     Swal.fire({
         title: 'Add New Sale',
@@ -47,6 +80,10 @@ document.getElementById('addSaleBtn').addEventListener('click', function() {
                 <label for="quantitySold" class="form-label">Quantity Sold</label>
                 <input type="number" id="quantitySold" class="form-control" placeholder="Enter quantity">
             </div>
+            <div class="mb-3">
+                <label for="saleDate" class="form-label">Date</label>
+                <input type="date" id="saleDate" class="form-control" value="${today}">
+            </div>
         `,
         showCancelButton: true,
         confirmButtonText: 'Add Sale',
@@ -54,24 +91,25 @@ document.getElementById('addSaleBtn').addEventListener('click', function() {
         preConfirm: () => {
             const product = document.getElementById('productSelect').value;
             const quantity = document.getElementById('quantitySold').value;
-            if (!product || !quantity) {
+            const date = document.getElementById('saleDate').value;
+            if (!product || !quantity || !date) {
                 Swal.showValidationMessage('Please fill in all fields');
                 return false;
             }
             return {
                 product,
-                quantity
+                quantity,
+                date
             };
         }
     }).then((result) => {
         if (result.isConfirmed) {
             const {
                 product,
-                quantity
-            } = result.value;
-            // Here you can add logic to save the sale and update the table
-            Swal.fire('Sale Added!', `Product: ${product}, Quantity: ${quantity}`, 'success');
-            // You can add the sale data to the table dynamically here
+                quantity,
+                date
+            } = result.value;   
+            Swal.fire('Sale Added!', `Product: ${product}, Quantity: ${quantity}, Date: ${date}`, 'success');
         }
     });
 });

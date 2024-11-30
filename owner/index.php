@@ -46,12 +46,16 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
 }
 
 
+
+
+
 // SQL query to get the business and branch data
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
         FROM business b
         JOIN branch br ON b.id = br.business_id";
 $result = $conn->query($sql);
 
+// Business chart data
 $businessData = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -60,7 +64,19 @@ if ($result->num_rows > 0) {
 } else {
     echo "No data found";
 }
+
+// Generate derived data
+$processedData = [];
+foreach ($businessData as $businessName => $branches) {
+    $branchCount = count($branches); 
+    $processedData[$businessName] = [
+        'branches' => $branchCount,
+        'sales' => rand(50000, 150000), // Mock sales data
+        'expenses' => rand(20000, 100000), // Mock expenses data
+    ];
+}
 ?>
+
 <script>
     const ownerId = <?php echo json_encode($owner_id); ?>;
 
@@ -98,9 +114,9 @@ if ($result->num_rows > 0) {
                 formData.append('owner_id', ownerId);
 
                 fetch('../endpoints/add_business_prompt.php', {
-                    method: 'POST',
-                    body: formData
-                })
+                        method: 'POST',
+                        body: formData
+                    })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -149,10 +165,10 @@ if ($result->num_rows > 0) {
                             <div class="col-md-5">
                                 <h5 class="mt-5"><b>Select Business:</b></h5>
 
-                                <div class="scroll-container" style="height: 450px; overflow-y: auto;">
+                                <div class="scroll-container">
                                     <?php
                                     foreach ($businessData as $businessName => $branches) {
-                                        echo '<button class="col-md-12 card">';
+                                        echo '<button class="col-md-12 card" data-business-name="' . $businessName . '" onclick="showBusinessData(\'' . $businessName . '\')">';
                                         echo '<h5>' . $businessName . '</h5>';
                                         echo '<table class="table table-striped table-hover mt-4">';
                                         echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
@@ -173,6 +189,7 @@ if ($result->num_rows > 0) {
                                     }
                                     ?>
                                 </div>
+
                             </div>
 
                             <div class="col-md-7">
@@ -320,6 +337,9 @@ if ($result->num_rows > 0) {
 
     </div>
 
+    <script>
+        const businessData = <?php echo json_encode($processedData); ?>;
+    </script>
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>

@@ -74,7 +74,7 @@ $owner_id = $_SESSION['user_id'];
                                     <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                     </th>
                                     <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Action <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th class="text-center">Action</th>
                                 </tr>
                             </thead>
 

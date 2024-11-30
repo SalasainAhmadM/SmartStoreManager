@@ -1,54 +1,17 @@
-let chart;
+let financialChart = null;
 
-function updateChart(businessName) {
-    // Clear previous chart data
-    const salesData = [];
-    const expensesData = [];
-    const branchNames = [];
-
-    // Get rows under the clicked business name
-    const rows = document.querySelectorAll('#btn_' + businessName + ' .branch_row');
-    
-    rows.forEach(row => {
-        const branchName = row.querySelector('.branch_name').innerText;
-        const sales = parseInt(row.querySelector('.sales').innerText, 10);
-        const expenses = parseInt(row.querySelector('.expenses').innerText, 10);
-
-        // Push data to respective arrays
-        branchNames.push(branchName);
-        salesData.push(sales);
-        expensesData.push(expenses);
-    });
-
-    // Update chart data
-    if (chart) {
-        chart.data.labels = branchNames;
-        chart.data.datasets[0].data = salesData;
-        chart.data.datasets[1].data = expensesData;
-        chart.update();
-    }
-}
-
-// Initialize chart
+// Predefine the chart
 function initializeChart() {
-    const ctx = document.getElementById('chartCanvas').getContext('2d');
-    
-    chart = new Chart(ctx, {
-        type: 'bar',
+    const ctx = document.getElementById('financialChart').getContext('2d');
+    financialChart = new Chart(ctx, {
+        type: 'bar',  // Example chart type
         data: {
-            labels: [], // Branch names will go here
+            labels: ['Sales', 'Expenses'],
             datasets: [{
-                label: 'Sales (₱)',
-                data: [], // Sales data will go here
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            },
-            {
-                label: 'Expenses (₱)',
-                data: [], // Expenses data will go here
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
+                label: '',
+                data: [0, 0],
+                backgroundColor: ['#ade38b', '#ee786a'],  // Colors for Sales and Expenses
+                borderColor: ['#28a745', '#dc3545'],
                 borderWidth: 1
             }]
         },
@@ -63,4 +26,38 @@ function initializeChart() {
     });
 }
 
-window.onload = initializeChart;
+// This function will be called when a business is clicked
+function showBusinessData(businessName) {
+
+    const data = businessData[businessName];
+
+    // Update the chart data
+    if (financialChart) {
+
+        financialChart.data.datasets[0].label = businessName;
+        financialChart.data.datasets[0].data = [data.sales, data.expenses];
+
+        // Update the chart
+        financialChart.update();
+    }
+
+    // Remove active class from all buttons
+    document.querySelectorAll('.card').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Add active class to the clicked button
+    const activeButton = document.querySelector(`button[data-business-name="${businessName}"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+}
+
+
+initializeChart();
+
+
+window.onload = () => {
+    const firstBusinessName = Object.keys(businessData)[0];  // Get the first business name
+    showBusinessData(firstBusinessName);  // Display its data on the chart
+};
