@@ -119,50 +119,53 @@ while ($row = $result->fetch_assoc()) {
                             </div>
 
                             <div class="scrollable-table">
-                            <table class="table table-striped table-hover mt-5">
-                                <thead class="table-dark position-sticky top-0">
-                                    <tr>
-                                        <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
-                                        </th>
-                                        <th>Email <button class="btn text-white"><i class="fas fa-sort"></i></button>
-                                        </th>
-                                        <th>Phone <button class="btn text-white"><i class="fas fa-sort"></i></button>
-                                        </th>
-                                        <th>Address <button class="btn text-white"><i class="fas fa-sort"></i></button>
-                                        </th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="manager-table-body">
-                                    <?php if (empty($managers)): ?>
+                                <table class="table table-striped table-hover mt-5">
+                                    <thead class="table-dark position-sticky top-0">
                                         <tr>
-                                            <td colspan="5" class="text-center">No managers found.</td>
+                                            <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
+                                            </th>
+                                            <th>Email <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button>
+                                            </th>
+                                            <th>Phone <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button>
+                                            </th>
+                                            <th>Address <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button>
+                                            </th>
+                                            <th class="text-center">Actions</th>
                                         </tr>
-                                    <?php else: ?>
-                                        <?php foreach ($managers as $manager): ?>
+                                    </thead>
+                                    <tbody id="manager-table-body">
+                                        <?php if (empty($managers)): ?>
                                             <tr>
-                                                <td class="manager-name">
-                                                    <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
-                                                </td>
-                                                <td><?= htmlspecialchars($manager['email']) ?></td>
-                                                <td><?= htmlspecialchars($manager['contact_number']) ?></td>
-                                                <td><?= htmlspecialchars($manager['address']) ?></td>
-                                                <td class="text-center">
-                                                    <a href="#" class="text-primary me-3 edit-manager"
-                                                        data-id="<?= $manager['id'] ?>"
-                                                        data-details='<?= json_encode($manager) ?>' title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="text-danger delete-manager"
-                                                        data-id="<?= $manager['id'] ?>" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </td>
+                                                <td colspan="5" class="text-center">No managers found.</td>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                        <?php else: ?>
+                                            <?php foreach ($managers as $manager): ?>
+                                                <tr>
+                                                    <td class="manager-name">
+                                                        <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($manager['email']) ?></td>
+                                                    <td><?= htmlspecialchars($manager['contact_number']) ?></td>
+                                                    <td><?= htmlspecialchars($manager['address']) ?></td>
+                                                    <td class="text-center">
+                                                        <a href="#" class="text-primary me-3 edit-manager"
+                                                            data-id="<?= $manager['id'] ?>"
+                                                            data-details='<?= json_encode($manager) ?>' title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="#" class="text-danger delete-manager"
+                                                            data-id="<?= $manager['id'] ?>" title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
                             </div>
 
 
@@ -234,7 +237,7 @@ while ($row = $result->fetch_assoc()) {
 
                                 // Fetch managers and populate the list
                                 try {
-                                    const response = await fetch('fetch_managers.php');
+                                    const response = await fetch('../endpoints/assign/fetch_managers.php');
                                     const data = await response.json();
                                     if (data.success) {
                                         managers = data.managers;
@@ -354,7 +357,7 @@ while ($row = $result->fetch_assoc()) {
 
                                 async function assignManagerToBranch(branchId, managerId) {
                                     try {
-                                        const response = await fetch('assign_branch_manager.php', {
+                                        const response = await fetch('../endpoints/assign/assign_branch_manager.php', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ branch_id: branchId, manager_id: managerId })
@@ -374,7 +377,7 @@ while ($row = $result->fetch_assoc()) {
 
                                 async function assignManagerToBusiness(businessId, managerId) {
                                     try {
-                                        const response = await fetch('assign_business_manager.php', {
+                                        const response = await fetch('../endpoints/assign/assign_business_manager.php', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ business_id: businessId, manager_id: managerId })
