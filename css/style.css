@@ -408,7 +408,7 @@ table {
 }
 
 .scrollable-table-two {
-  max-height: 70vh;  /* Adjust the height to your preference */
+  max-height: 80vh;  /* Adjust the height to your preference */
   overflow-y: auto;  /* Enables scrolling when content exceeds the height */
 }
 
