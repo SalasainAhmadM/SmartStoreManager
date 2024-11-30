@@ -197,46 +197,46 @@ $product_stmt->close();
                                         </div>
 
                                         <div class="scrollable-table">
-                                        <table class="table">
-                                            <thead class="table-dark position-sticky top-0">
-                                                <tr>
-                                                    <th>Location <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Created At <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Updated At <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th class="text-center">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (isset($branches_by_business[$business['id']])): ?>
-                                                    <?php foreach ($branches_by_business[$business['id']] as $branch): ?>
-                                                        <tr>
-                                                            <td><?php echo htmlspecialchars($branch['location']); ?></td>
-                                                            <td><?php echo $branch['created_at']; ?></td>
-                                                            <td><?php echo $branch['updated_at']; ?></td>
-                                                            <td class="text-center">
-                                                                <a href="#" class="text-primary me-3" title="Edit"
-                                                                    onclick="editBranch(<?php echo $branch['id']; ?>)">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <a href="#" class="text-danger" title="Delete"
-                                                                    onclick="deleteBranch(<?php echo $branch['id']; ?>)">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
+                                            <table class="table">
+                                                <thead class="table-dark position-sticky top-0">
                                                     <tr>
-                                                        <td class="text-center" colspan="4">No branches available</td>
+                                                        <th>Location <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Created At <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Updated At <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th class="text-center">Action</th>
                                                     </tr>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (isset($branches_by_business[$business['id']])): ?>
+                                                        <?php foreach ($branches_by_business[$business['id']] as $branch): ?>
+                                                            <tr>
+                                                                <td><?php echo htmlspecialchars($branch['location']); ?></td>
+                                                                <td><?php echo $branch['created_at']; ?></td>
+                                                                <td><?php echo $branch['updated_at']; ?></td>
+                                                                <td class="text-center">
+                                                                    <a href="#" class="text-primary me-3" title="Edit"
+                                                                        onclick="editBranch(<?php echo $branch['id']; ?>)">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                    <a href="#" class="text-danger" title="Delete"
+                                                                        onclick="deleteBranch(<?php echo $branch['id']; ?>)">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr>
+                                                            <td class="text-center" colspan="4">No branches available</td>
+                                                        </tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
                                         </div>
-  
+
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -281,59 +281,59 @@ $product_stmt->close();
                                         </div>
 
                                         <div class="scrollable-table">
-                                        <table class="table" id="product-table">
-                                            <thead class="table-dark position-sticky top-0">
-                                                <tr>
-                                                    <th>Product ID <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Name <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Type <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Price <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Description <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Created At <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th>Updated At <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
-                                                    <th class="text-center">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (!empty($products_by_business[$business['id']])): ?>
-                                                    <?php foreach ($products_by_business[$business['id']] as $product): ?>
-                                                        <tr>
-                                                            <td><?php echo htmlspecialchars($product['id']); ?></td>
-                                                            <td class="product-name">
-                                                                <?php echo htmlspecialchars($product['name']); ?>
-                                                            </td>
-                                                            <td><?php echo htmlspecialchars($product['type']); ?></td>
-                                                            <td><?php echo htmlspecialchars($product['price']); ?></td>
-                                                            <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                            <td><?php echo htmlspecialchars($product['created_at']); ?></td>
-                                                            <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
-                                                            <td class="text-center">
-                                                                <a href="#" class="text-primary me-3"
-                                                                    onclick="editProduct(<?php echo $product['id']; ?>)">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <a href="#" class="text-danger"
-                                                                    onclick="deleteProduct(<?php echo $product['id']; ?>)">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
+                                            <table class="table" id="product-table">
+                                                <thead class="table-dark position-sticky top-0">
                                                     <tr>
-                                                        <td colspan="8" class="text-center">No products available for this
-                                                            business yet.</td>
+                                                        <th>Product ID <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Name <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Type <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Price <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Description <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Created At <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Updated At <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th class="text-center">Actions</th>
                                                     </tr>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (!empty($products_by_business[$business['id']])): ?>
+                                                        <?php foreach ($products_by_business[$business['id']] as $product): ?>
+                                                            <tr>
+                                                                <td><?php echo htmlspecialchars($product['id']); ?></td>
+                                                                <td class="product-name">
+                                                                    <?php echo htmlspecialchars($product['name']); ?>
+                                                                </td>
+                                                                <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                                <td><?php echo htmlspecialchars($product['price']); ?></td>
+                                                                <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                                <td><?php echo htmlspecialchars($product['created_at']); ?></td>
+                                                                <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
+                                                                <td class="text-center">
+                                                                    <a href="#" class="text-primary me-3"
+                                                                        onclick="editProduct(<?php echo $product['id']; ?>)">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                    <a href="#" class="text-danger"
+                                                                        onclick="deleteProduct(<?php echo $product['id']; ?>)">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <tr>
+                                                            <td colspan="8" class="text-center">No products available for this
+                                                                business yet.</td>
+                                                        </tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
                                         </div>
 
                                     </div>
@@ -510,7 +510,6 @@ $product_stmt->close();
             });
         });
 
-        // Branch 
         function addBranch(businessId) {
             Swal.fire({
                 title: 'Add Branch',
@@ -541,7 +540,7 @@ $product_stmt->close();
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire('Success', 'Branch added successfully!', 'success').then(() => {
+                                Swal.fire('Success', data.message, 'success').then(() => {
                                     location.reload();
                                 });
                             } else {
@@ -552,6 +551,7 @@ $product_stmt->close();
                 }
             });
         }
+
         function editBranch(branchId) {
             fetch(`../endpoints/branch/fetch_branch.php?id=${branchId}`)
                 .then(response => response.json())
