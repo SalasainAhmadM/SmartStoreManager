@@ -1,16 +1,15 @@
-// Data for products and their prices
 const businessProducts = {
-  A: [
+  A: [ // Name of the business
     {
-      name: "Product 1",
-      price: 10,
+      name: "Product 1", // Product name
+      price: 10, // Product price
     },
     {
       name: "Product 2",
       price: 15,
     },
   ],
-  B: [
+  B: [ // Name of the business
     {
       name: "Product 3",
       price: 20,
