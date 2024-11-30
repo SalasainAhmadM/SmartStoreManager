@@ -343,7 +343,9 @@ main {
 
 
 #sidebar.collapsed .nav-link {
-  padding-left: 10px;  /* Adjust to align the icons nicely */
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: center;
 }
 
 #sidebar.collapsed .nav-link span {
