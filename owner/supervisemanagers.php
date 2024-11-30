@@ -221,7 +221,12 @@ while ($row = $result->fetch_assoc()) {
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
                                                     Assign Manager
                                                 </button>
-                                                <button class="btn btn-info btn-sm">List of Manager(s)</button>
+                                                <button class="btn btn-info btn-sm list-managers"
+                                                    data-business-id="<?= htmlspecialchars($business_id) ?>"
+                                                    data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
+                                                    List of Manager(s)
+                                                </button>
+
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -480,14 +485,15 @@ while ($row = $result->fetch_assoc()) {
                                                 ?>
                                                 <button
                                                     class="list-group-item list-group-item-action d-flex-alt align-items-center manager-item"
-                                                    data-manager-id="<?= $manager['id'] ?>"
-                                                    onclick="loadMessages(<?= $manager['id'] ?>)" style="z-index: 0">
+                                                    data-manager-id="<?= $manager['id'] ?>" onclick="loadMessages(
+                                            <?= $manager['id'] ?>)" style="z-index: 0">
                                                     <img src="../assets/profiles/<?= !empty($manager['image']) ? $manager['image'] : 'profile.png' ?>"
                                                         alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;"
                                                         class="rounded-circle me-3">
-                                                    <div class="flex-grow-1">
-                                                        <strong
-                                                            class="manager-name"><?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?></strong>
+                                                    <div class=" flex-grow-1">
+                                                        <strong class="manager-name">
+                                                            <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
+                                                        </strong>
                                                         <p class="text-muted small mb-0">
                                                             <?= htmlspecialchars($lastMessage) ?>
                                                         </p>
@@ -572,14 +578,14 @@ while ($row = $result->fetch_assoc()) {
                     messages.forEach(msg => {
                         const isOwner = msg.sender_type === 'owner';
                         const messageElement = `
-                        <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
-                            <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
-                                <p class="mb-0">${msg.message}</p>
-                                <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
-                                    ${new Date(msg.timestamp).toLocaleString()}
-                                </small>
-                            </div>
-                        </div>`;
+                                                        <div class="d-flex ${isOwner ? 'justify-content-end' : 'justify-content-start'} mb-3">
+                                                            <div class="${isOwner ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
+                                                                <p class="mb-0">${msg.message}</p>
+                                                                <small class="d-block text-${isOwner ? 'end' : 'start'} text-muted">
+                                                                    ${new Date(msg.timestamp).toLocaleString()}
+                                                                </small>
+                                                            </div>
+                                                        </div>`;
                         chatMessages.innerHTML += messageElement;
                     });
 
@@ -684,15 +690,15 @@ while ($row = $result->fetch_assoc()) {
             Swal.fire({
                 title: 'Create Manager',
                 html: `
-        <input id="manager-email" class="form-control mb-2" placeholder="Email" type="email">
-        <input id="manager-username" class="form-control mb-2" placeholder="Username">
-        <input id="manager-firstname" class="form-control mb-2" placeholder="First Name">
-        <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name">
-        <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name">
-        <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number">
-        <input id="manager-address" class="form-control mb-2" placeholder="Address">
-        <input id="manager-password" class="form-control mb-2" placeholder="Password" type="password">
-    `,
+                                                        <input id="manager-email" class="form-control mb-2" placeholder="Email" type="email">
+                                                            <input id="manager-username" class="form-control mb-2" placeholder="Username">
+                                                                <input id="manager-firstname" class="form-control mb-2" placeholder="First Name">
+                                                                    <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name">
+                                                                        <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name">
+                                                                            <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number">
+                                                                                <input id="manager-address" class="form-control mb-2" placeholder="Address">
+                                                                                    <input id="manager-password" class="form-control mb-2" placeholder="Password" type="password">
+                                                                                        `,
                 confirmButtonText: 'Create',
                 showCancelButton: true,
                 cancelButtonText: 'Cancel',
@@ -928,50 +934,131 @@ while ($row = $result->fetch_assoc()) {
         //     });
         // });
 
-        document.querySelectorAll('.btn-primary').forEach(button => {
-            button.addEventListener('click', function () {
-                const isAssignManagerButton = this.textContent.includes('Assign a Manager');
+        document.addEventListener('DOMContentLoaded', () => {
+            const listManagerButtons = document.querySelectorAll('.list-managers');
 
-                if (isAssignManagerButton) {
-                    Swal.fire({
-                        title: 'Select a Manager',
-                        input: 'select',
-                        inputOptions: {
-                            'manager1': 'Nzro Mkrm',
-                            'manager2': 'Sam D Roger',
-                        },
-                        inputPlaceholder: 'Select a manager',
-                        showCancelButton: true,
-                        confirmButtonText: 'Next',
-                        cancelButtonText: 'Cancel',
-                    }).then((result) => {
-                        if (result.isConfirmed && result.value) {
-                            // Manager selected, now ask for assigning to business or branch
-                            Swal.fire({
-                                title: 'Assign Manager',
-                                text: 'Choose whether to assign the selected manager to a Business or Branch:',
-                                icon: 'question',
-                                showCancelButton: true,
-                                confirmButtonText: 'Assign to Business',
-                                cancelButtonText: 'Assign to Branch',
-                                reverseButtons: true
-                            }).then((assignResult) => {
-                                if (assignResult.isConfirmed) {
-                                    // Logic to assign to business
-                                    Swal.fire('Assigned to Business', '', 'success');
-                                } else if (assignResult.dismiss === Swal.DismissReason.cancel) {
-                                    // Logic to assign to branch
-                                    Swal.fire('Assigned to Branch', '', 'success');
-                                } else {
-                                    // Logic if the user cancels the assignment
-                                    Swal.fire('Action Cancelled', '', 'info');
-                                }
-                            });
-                        } else {
-                            Swal.fire('Action Cancelled', '', 'info');
+            listManagerButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const businessId = button.getAttribute('data-business-id');
+                    const branches = JSON.parse(button.getAttribute('data-branches') || '[]');
+
+                    let managersHtml = '';
+
+                    try {
+                        // Fetch Business Manager
+                        const businessResponse = await fetch(`../endpoints/assign/fetch_assign_managers.php?business_id=${businessId}`);
+                        const businessData = await businessResponse.json();
+
+                        if (businessData.success) {
+                            managersHtml += `<p><strong>Business Manager:</strong> ${businessData.managers.length > 0
+                                ? businessData.managers.map(manager => `
+                                        Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                        <button class="btn btn-danger btn-sm unassign-manager" 
+                                                data-manager-id="${manager.id}" 
+                                                data-type="business" 
+                                                data-business-id="${businessId}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    `).join('<br>')
+                                : 'None assigned'
+                                }</p>`;
                         }
-                    });
-                }
+
+                        // Fetch Branch Managers
+                        if (branches.length > 0) {
+                            for (const branch of branches) {
+                                const branchResponse = await fetch(`../endpoints/assign/fetch_assign_managers.php?branch_id=${branch.branch_id}`);
+                                const branchData = await branchResponse.json();
+
+                                if (branchData.success) {
+                                    managersHtml += `<p><strong>Branch ${branch.branch_id} (${branch.branch_location}):</strong> ${branchData.managers.length > 0
+                                        ? branchData.managers.map(manager => `
+                                                Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                                <button class="btn btn-danger btn-sm unassign-manager" 
+                                                        data-manager-id="${manager.id}" 
+                                                        data-type="branch" 
+                                                        data-branch-id="${branch.branch_id}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            `).join('<br>')
+                                        : 'None assigned'
+                                        }</p>`;
+                                }
+                            }
+                        }
+
+                        // Display SweetAlert with Managers
+                        Swal.fire({
+                            title: 'List of Managers',
+                            html: managersHtml || '<p>No managers found.</p>',
+                            confirmButtonText: 'Close'
+                        });
+
+                        // Add event listeners to unassign buttons
+                        document.querySelectorAll('.unassign-manager').forEach(unassignButton => {
+                            unassignButton.addEventListener('click', (event) => {
+                                const managerId = unassignButton.getAttribute('data-manager-id');
+                                const type = unassignButton.getAttribute('data-type');
+                                const id = type === 'business'
+                                    ? unassignButton.getAttribute('data-business-id')
+                                    : unassignButton.getAttribute('data-branch-id');
+
+                                // SweetAlert confirmation
+                                Swal.fire({
+                                    title: 'Are you sure?',
+                                    text: 'Do you really want to unassign this manager?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Yes, unassign',
+                                    cancelButtonText: 'Cancel'
+                                }).then(async (result) => {
+                                    if (result.isConfirmed) {
+                                        try {
+                                            const response = await fetch(`../endpoints/assign/unassign_manager.php`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ manager_id: managerId, type, id })
+                                            });
+                                            const data = await response.json();
+
+                                            if (data.success) {
+                                                Swal.fire({
+                                                    title: 'Success',
+                                                    text: data.message || 'Manager unassigned successfully!',
+                                                    icon: 'success',
+                                                    confirmButtonText: 'Close'
+                                                }).then(() => location.reload()); // Refresh page to update data
+                                            } else {
+                                                Swal.fire({
+                                                    title: 'Error',
+                                                    text: data.message || 'Failed to unassign manager.',
+                                                    icon: 'error',
+                                                    confirmButtonText: 'Close'
+                                                });
+                                            }
+                                        } catch (error) {
+                                            console.error('Error unassigning manager:', error);
+                                            Swal.fire({
+                                                title: 'Error',
+                                                text: 'Failed to unassign manager. Please try again.',
+                                                icon: 'error',
+                                                confirmButtonText: 'Close'
+                                            });
+                                        }
+                                    }
+                                });
+                            });
+                        });
+                    } catch (error) {
+                        console.error('Error fetching managers:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to fetch managers. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'Close'
+                        });
+                    }
+                });
             });
         });
 
