@@ -31,28 +31,37 @@ $conn->close();
 function handleLogin($conn)
 {
     session_start();
-    $email = $_POST['email'] ?? null;
+    $emailOrUsername = $_POST['email'] ?? null;
     $password = $_POST['password'] ?? null;
 
-    if (!$email || !$password) {
-        echo json_encode(['status' => 'error', 'message' => 'Email and password are required']);
+    if (!$emailOrUsername || !$password) {
+        echo json_encode(['status' => 'error', 'message' => 'Email/Username and password are required']);
         return;
     }
 
-    $stmt = $conn->prepare("SELECT id, password, 'owner' AS role FROM owner WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    // Check in the owner table for both email and user_name
+    $stmt = $conn->prepare("
+        SELECT id, password, 'owner' AS role 
+        FROM owner 
+        WHERE email = ? OR user_name = ?
+    ");
+    $stmt->bind_param("ss", $emailOrUsername, $emailOrUsername);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-
-        $stmt = $conn->prepare("SELECT id, password, 'manager' AS role FROM manager WHERE email = ?");
-        $stmt->bind_param("s", $email);
+        // Check in the manager table for both email and user_name
+        $stmt = $conn->prepare("
+            SELECT id, password, 'manager' AS role 
+            FROM manager 
+            WHERE email = ? OR user_name = ?
+        ");
+        $stmt->bind_param("ss", $emailOrUsername, $emailOrUsername);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
+            echo json_encode(['status' => 'error', 'message' => 'Invalid email/username or password']);
             return;
         }
     }
@@ -60,16 +69,18 @@ function handleLogin($conn)
     $user = $result->fetch_assoc();
 
     if (!password_verify($password, $user['password'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid email/username or password']);
         return;
     }
 
+    // Set session variables on successful login
     $_SESSION['login_success'] = true;
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_role'] = $user['role'];
 
     echo json_encode(['status' => 'success', 'role' => $user['role']]);
 }
+
 
 
 function handleRegister($conn)
@@ -95,6 +106,21 @@ function handleRegister($conn)
 
     if ($result->num_rows > 0) {
         echo json_encode(['status' => 'error', 'message' => 'Email is already registered']);
+        return;
+    }
+
+    // Check if the user_name exists in the owner table
+    $stmt = $conn->prepare("
+        SELECT id FROM owner WHERE user_name = ?
+        UNION 
+        SELECT id FROM manager WHERE user_name = ?
+    ");
+    $stmt->bind_param("ss", $userName, $userName);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Username is already taken']);
         return;
     }
 
