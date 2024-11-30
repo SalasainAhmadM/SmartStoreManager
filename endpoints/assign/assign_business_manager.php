@@ -66,6 +66,32 @@ if ($businessId && $managerId) {
         exit;
     }
 
+    // Check if the manager is already assigned to a branch
+    $checkBranchQuery = "SELECT id FROM branch WHERE manager_id = ?";
+    $stmt = $conn->prepare($checkBranchQuery);
+
+    if ($stmt) {
+        $stmt->bind_param("i", $managerId);
+        $stmt->execute();
+        $stmt->bind_result($branchId);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($branchId) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'This manager is already assigned to a branch and cannot be assigned to a business.'
+            ]);
+            exit;
+        }
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to check if manager is assigned to a branch.'
+        ]);
+        exit;
+    }
+
     // Proceed with the assignment
     $query = "UPDATE business SET manager_id = ? WHERE id = ?";
     $stmt = $conn->prepare($query);

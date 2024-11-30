@@ -20,7 +20,6 @@ if (isset($data['branch_id'], $data['manager_id'])) {
         $stmt->fetch();
         $stmt->close();
 
-        // Check if there is already a manager assigned to this branch
         if ($existingManagerId) {
             if ($existingManagerId == $manager_id) {
                 echo json_encode([
@@ -65,6 +64,32 @@ if (isset($data['branch_id'], $data['manager_id'])) {
         echo json_encode([
             'success' => false,
             'message' => 'Failed to check if the manager is assigned to another branch.'
+        ]);
+        exit;
+    }
+
+    // Check if the manager is assigned to a business
+    $checkBusinessQuery = "SELECT id FROM business WHERE manager_id = ?";
+    $stmt = $conn->prepare($checkBusinessQuery);
+
+    if ($stmt) {
+        $stmt->bind_param("i", $manager_id);
+        $stmt->execute();
+        $stmt->bind_result($businessId);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($businessId) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'This manager is already assigned to a business and cannot be assigned to a branch.'
+            ]);
+            exit;
+        }
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to check if the manager is assigned to a business.'
         ]);
         exit;
     }
