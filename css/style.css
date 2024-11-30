@@ -115,7 +115,7 @@ p {
 }
 
 .page-body {
-  transform: scale(0.9);
+  transform: scale(0.935);
 }
 
 @media (max-width: 768px) {

@@ -69,7 +69,7 @@ $owner_id = $_SESSION['user_id'];
 
                 <div id="expensesPanel" class="collapse scrollable-table" style="padding:0 2rem;">
 
-                    <div class="d-flex justify-content-between align-items-center mt-5">
+                    <div class="d-flex justify-content-between align-items-center mt-4">
 
                         <div class="w-50">
                             <h2>Expenses List for <span id="businessName"></span> for the month of 
