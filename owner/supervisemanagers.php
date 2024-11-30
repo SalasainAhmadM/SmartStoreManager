@@ -76,11 +76,11 @@ $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$managers = [];
+$assignmanagers = [];
 
 // Organize results
 while ($row = $result->fetch_assoc()) {
-    $managers[] = $row;
+    $assignmanagers[] = $row;
 }
 ?>
 
@@ -284,8 +284,8 @@ while ($row = $result->fetch_assoc()) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (!empty($managers)): ?>
-                                        <?php foreach ($managers as $manager): ?>
+                                    <?php if (!empty($assignmanagers)): ?>
+                                        <?php foreach ($assignmanagers as $manager): ?>
                                             <tr>
                                                 <td>
                                                     <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
