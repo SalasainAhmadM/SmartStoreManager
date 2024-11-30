@@ -566,6 +566,11 @@ tr:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important; /* Soft shadow */
 }
 
+
+.swal2-input {
+  margin: 0 auto;
+}
+
 .swal2-title {
   margin-bottom: 10px !important;
   text-align: center !important;
