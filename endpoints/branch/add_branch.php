@@ -33,15 +33,41 @@ if ($check_result->num_rows > 0) {
 }
 $check_stmt->close();
 
+// Check if the business has a manager
+$manager_check_sql = "SELECT manager_id FROM business WHERE id = ?";
+$manager_check_stmt = $conn->prepare($manager_check_sql);
+$manager_check_stmt->bind_param('i', $business_id);
+$manager_check_stmt->execute();
+$manager_check_stmt->bind_result($manager_id);
+$manager_check_stmt->fetch();
+$manager_check_stmt->close();
+
 // Prepare the SQL query to insert a new branch
-$sql = "INSERT INTO branch (location, business_id, created_at) 
-        VALUES (?, ?, NOW())";
+$sql = "INSERT INTO branch (location, business_id, manager_id, created_at) 
+        VALUES (?, ?, ?, NOW())";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('si', $location, $business_id);
+$stmt->bind_param('sii', $location, $business_id, $manager_id);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true]);
+    // If the business had a manager, clear it from the business table
+    if ($manager_id) {
+        $clear_manager_sql = "UPDATE business SET manager_id = NULL WHERE id = ?";
+        $clear_manager_stmt = $conn->prepare($clear_manager_sql);
+        $clear_manager_stmt->bind_param('i', $business_id);
+        $clear_manager_stmt->execute();
+        $clear_manager_stmt->close();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Branch added successfully! The business manager has been reassigned here.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Branch added successfully!'
+        ]);
+    }
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to add branch']);
 }
