@@ -1,6 +1,27 @@
 function printContent(tabId, title) {
-    // Get the content from the specific tab section (business, branch, or product)
-    var content = document.getElementById(tabId).getElementsByTagName('table')[0].outerHTML;
+    // Get the table from the specific tab section (business, branch, or product)
+    var table = document.getElementById(tabId).getElementsByTagName('table')[0];
+    
+    // Check if any <th> element contains the word "Action"
+    var headers = table.getElementsByTagName('th');
+    var shouldDeleteLastColumn = false;
+    for (var i = 0; i < headers.length; i++) {
+        if (headers[i].textContent.includes('Action')) {
+            shouldDeleteLastColumn = true;
+            break;
+        }
+    }
+
+    // If the condition is met, delete the last column
+    if (shouldDeleteLastColumn) {
+        var rows = table.rows;
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].deleteCell(rows[i].cells.length - 1);
+        }
+    }
+
+    // Get the modified table's outerHTML
+    var content = table.outerHTML;
 
     // Create a new window to show the printable content
     var printWindow = window.open('', '', 'height=600,width=800');
