@@ -128,6 +128,7 @@ foreach ($businessData as $businessName => $branches) {
                                     ?>
                                 </div>
 
+
                             </div>
 
                             <div class="col-md-7">
@@ -161,108 +162,124 @@ foreach ($businessData as $businessName => $branches) {
                                 </div>
                             </div>
 
-                            <div class="col-md-12 mt-5">
-                                <h1 class="section-title">
-                                    <b><i class="fas fa-boxes icon"></i> Popular Products</b>
-                                </h1>
-                                <div class="col-md-12 dashboard-content">
-                                    <table class="table table-hover" id="product-table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Product <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Branch <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Laptop</td>
-                                                <td>Business A</td>
-                                                <td>Location A</td>
-                                                <td>Services</td>
-                                                <td>₱5000</td>
-                                                <td>Awesome Service</td>
-                                                <td>₱1,000,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Custom T-Shirts</td>
-                                                <td>Business B</td>
-                                                <td>Location B</td>
-                                                <td>Products</td>
-                                                <td>₱4000</td>
-                                                <td>Awesome T-Shirts</td>
-                                                <td>₱500,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Coffee Beans</td>
-                                                <td>Business C</td>
-                                                <td>Location C</td>
-                                                <td>Products</td>
-                                                <td>₱2,000</td>
-                                                <td>Awesome Coffee Beans</td>
-                                                <td>₱10,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Coffee Beans</td>
-                                                <td>Business C</td>
-                                                <td>Location C</td>
-                                                <td>Products</td>
-                                                <td>₱777,000</td>
-                                                <td>Awesome Coffee Beans</td>
-                                                <td>₱222,210,000</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                            <div id="popularProductsSection">
+                                <div class="col-md-12 mt-5">
+                                    <h1 class="section-title">
+                                        <b><i class="fas fa-boxes icon"></i> Popular Products</b>
+                                    </h1>
+                                    <div class="col-md-12 dashboard-content">
+                                        <table class="table table-hover" id="product-table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Product <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Business <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Branch <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Type <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Price <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Description <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Total Sales <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Laptop</td>
+                                                    <td>Business A</td>
+                                                    <td>Location A</td>
+                                                    <td>Services</td>
+                                                    <td>₱5000</td>
+                                                    <td>Awesome Service</td>
+                                                    <td>₱1,000,000</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Custom T-Shirts</td>
+                                                    <td>Business B</td>
+                                                    <td>Location B</td>
+                                                    <td>Products</td>
+                                                    <td>₱4000</td>
+                                                    <td>Awesome T-Shirts</td>
+                                                    <td>₱500,000</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Coffee Beans</td>
+                                                    <td>Business C</td>
+                                                    <td>Location C</td>
+                                                    <td>Products</td>
+                                                    <td>₱2,000</td>
+                                                    <td>Awesome Coffee Beans</td>
+                                                    <td>₱10,000</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Coffee Beans</td>
+                                                    <td>Business C</td>
+                                                    <td>Location C</td>
+                                                    <td>Products</td>
+                                                    <td>₱777,000</td>
+                                                    <td>Awesome Coffee Beans</td>
+                                                    <td>₱222,210,000</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+
+                                        <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts" onclick="printTable('product-table', 'Popular Products')">
+                                            <i class="fas fa-print me-2"></i> Print Popular Products Report
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
 
 
-                            <div class="col-md-12 mt-5">
-                                <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b>
-                                </h1>
-                                <div class="col-md-12 dashboard-content">
-                                    <table class="table" id="product-table">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Activity <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Date <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Status <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>New User Registered</td>
-                                                <td>2024-11-20</td>
-                                                <td><i class="fas fa-check-circle icon"></i> Completed</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Report Generated</td>
-                                                <td>2024-11-21</td>
-                                                <td><i class="fas fa-spinner icon"></i> In Progress</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Product Ordered</td>
-                                                <td>2024-11-22</td>
-                                                <td><i class="fas fa-times-circle icon"></i> Failed</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                            <div id="recentActivitiesSection">
+                                <div class="col-md-12 mt-5">
+                                    <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b>
+                                    </h1>
+                                    <div class="col-md-12 dashboard-content">
+                                        <table class="table" id="recent-activities-table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Activity <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Date <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                    <th>Status <button class="btn text-white"><i
+                                                                class="fas fa-sort"></i></button></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>New User Registered</td>
+                                                    <td>2024-11-20</td>
+                                                    <td><i class="fas fa-check-circle icon"></i> Completed</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Report Generated</td>
+                                                    <td>2024-11-21</td>
+                                                    <td><i class="fas fa-spinner icon"></i> In Progress</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Product Ordered</td>
+                                                    <td>2024-11-22</td>
+                                                    <td><i class="fas fa-times-circle icon"></i> Failed</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <button class="btn btn-primary mt-2 mb-5" id="printRecentActivities" onclick="printTable('recent-activities-table', 'Recent Activities')">
+                                            <i class="fas fa-print me-2"></i> Print Recent Activities Report
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
+
 
                         </div>
                     </div>
@@ -290,6 +307,74 @@ foreach ($businessData as $businessName => $branches) {
             });
         };
     </script> -->
+
+
+    <script>
+        function printTable(tableId, title) {
+            const table = document.getElementById(tableId);
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.open();
+            printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Print Report</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                h1 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                table, th, td {
+                    border: 1px solid black;
+                }
+                th, td {
+                    padding: 10px;
+                    text-align: left;
+                }
+                thead {
+                    background-color: #333;
+                    color: #fff;
+                }
+                tfoot {
+                    background-color: #f1f1f1;
+                    font-weight: bold;
+                }
+                button, .btn, .fas.fa-sort {
+                    display: none; /* Hide sort icons and buttons in print */
+                }
+            </style>
+        </head>
+        <body>
+            <h1>${title}</h1>
+            ${table.outerHTML}               
+        </body>
+        </html>
+    `);
+            printWindow.print();
+            printWindow.document.close();
+        }
+
+        // Attach event listeners to print buttons
+        document.getElementById('printPopularProducts').addEventListener('click', () => {
+            printTable('product-table', 'Popular Products Report');
+        });
+
+        document.getElementById('printRecentActivities').addEventListener('click', () => {
+            printTable('recent-activities-table', 'Recent Activities Report');
+        });
+    </script>
 
     <script>
         const businessData = <?php echo json_encode($processedData); ?>;
@@ -330,9 +415,9 @@ foreach ($businessData as $businessName => $branches) {
                     formData.append('owner_id', ownerId);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
-                        method: 'POST',
-                        body: formData
-                    })
+                            method: 'POST',
+                            body: formData
+                        })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -351,10 +436,10 @@ foreach ($businessData as $businessName => $branches) {
             });
         }
     </script>
+
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
-
 
 </body>
 
