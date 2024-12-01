@@ -69,6 +69,55 @@ document.getElementById('expensesList').addEventListener('click', function (e) {
     }
 });
 
+document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+    const monthValue = e.target.getAttribute("data-value");
+    if (monthValue) {
+        const businessId = document.getElementById("businessSelect").value;
+
+        if (businessId) {
+            fetch(`../endpoints/expenses/fetch_expenses_business.php?category_id=${businessId}&month=${monthValue}`)
+                .then(response => response.json())
+                .then(data => {
+                    const expensesList = document.getElementById('expensesList');
+                    expensesList.innerHTML = ''; 
+
+                    if (!data.success) {
+                        console.error(data.message);
+                        return;
+                    }
+
+                    if (data.data.length === 0) {
+                        const noExpensesRow = document.createElement('tr');
+                        noExpensesRow.innerHTML = `
+                            <td colspan="4" style="text-align:center;">No expenses found for the selected month</td>
+                        `;
+                        expensesList.appendChild(noExpensesRow);
+                    } else {
+                        data.data.forEach(expense => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${expense.expense_type}</td>
+                                <td>${expense.description}</td>
+                                <td>${expense.amount}</td>
+                                <td style="text-align:center;">
+                                    <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
+                                    <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            `;
+                            expensesList.appendChild(row);
+                        });
+                    }
+                })
+                .catch(err => console.error('Error fetching expenses:', err));
+        }
+    }
+});
+
+document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+    const monthText = e.target.textContent;
+    document.getElementById("currentMonthYear").textContent = `${monthText} ${new Date().getFullYear()}`;
+});
+
 // Function to handle editing an expense
 function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
@@ -235,3 +284,17 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
         }
     });
 });
+
+
+function getCurrentDateInManila() {
+    const now = new Date();
+    const manilaOffset = 8 * 60 * 60 * 1000;
+    const manilaTime = new Date(now.getTime() + manilaOffset - now.getTimezoneOffset() * 60 * 1000);
+    // Format the date as YYYY-MM-DD
+    return manilaTime.toISOString().split("T")[0];
+  }
+  
+  function formatDate(date) {
+    const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+    return new Date(date).toLocaleDateString("en-US", options);
+  }

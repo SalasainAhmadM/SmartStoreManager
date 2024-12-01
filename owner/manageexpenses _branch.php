@@ -116,19 +116,19 @@ $stmt->close();
                                     Select Month
                                 </button>
 
-                                <ul class="dropdown-menu" aria-labelledby="monthDropdown">
-                                    <li><a class="dropdown-item" href="#">January</a></li>
-                                    <li><a class="dropdown-item" href="#">February</a></li>
-                                    <li><a class="dropdown-item" href="#">March</a></li>
-                                    <li><a class="dropdown-item" href="#">April</a></li>
-                                    <li><a class="dropdown-item" href="#">May</a></li>
-                                    <li><a class="dropdown-item" href="#">June</a></li>
-                                    <li><a class="dropdown-item" href="#">July</a></li>
-                                    <li><a class="dropdown-item" href="#">August</a></li>
-                                    <li><a class="dropdown-item" href="#">September</a></li>
-                                    <li><a class="dropdown-item" href="#">October</a></li>
-                                    <li><a class="dropdown-item" href="#">November</a></li>
-                                    <li><a class="dropdown-item" href="#">December</a></li>
+                                <ul class="dropdown-menu" aria-labelledby="monthDropdown" id="monthDropdownMenu">
+                                    <li><a class="dropdown-item" data-value="1" href="#">January</a></li>
+                                    <li><a class="dropdown-item" data-value="2" href="#">February</a></li>
+                                    <li><a class="dropdown-item" data-value="3" href="#">March</a></li>
+                                    <li><a class="dropdown-item" data-value="4" href="#">April</a></li>
+                                    <li><a class="dropdown-item" data-value="5" href="#">May</a></li>
+                                    <li><a class="dropdown-item" data-value="6" href="#">June</a></li>
+                                    <li><a class="dropdown-item" data-value="7" href="#">July</a></li>
+                                    <li><a class="dropdown-item" data-value="8" href="#">August</a></li>
+                                    <li><a class="dropdown-item" data-value="9" href="#">September</a></li>
+                                    <li><a class="dropdown-item" data-value="10" href="#">October</a></li>
+                                    <li><a class="dropdown-item" data-value="11" href="#">November</a></li>
+                                    <li><a class="dropdown-item" data-value="12" href="#">December</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -151,8 +151,9 @@ $stmt->close();
                         </table>
 
 
-                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable" onclick="printContent('expensesPanel', 'Expenses List')">
-                            <i class="fas fa-print me-2"></i> Print Report (Expenses List) 
+                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable"
+                            onclick="printContent('expensesPanel', 'Expenses List')">
+                            <i class="fas fa-print me-2"></i> Print Report (Expenses List)
                         </button>
 
                     </div>

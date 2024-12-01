@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Function to fetch and display sales data by date
 function fetchSalesByDate(date) {
-  fetch("./filter_sales.php", {
+  fetch("../endpoints/sales/filter_sales.php", {
       method: "POST",
       headers: {
           "Content-Type": "application/json",

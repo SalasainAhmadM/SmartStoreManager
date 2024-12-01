@@ -273,3 +273,72 @@ function handleDeleteExpense(row) {
         }
     });
 }
+
+document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+    const monthValue = e.target.getAttribute("data-value");
+    if (monthValue) {
+        const branchId = document.getElementById("branchSelect").value;
+        const branchNameElement = document.getElementById("branchName");
+        const selectedBranch = document.getElementById("branchSelect").selectedOptions[0].text;
+
+        branchNameElement.textContent = selectedBranch;
+        const expensesList = document.getElementById("expensesList");
+        const expensesPanel = document.getElementById("expensesPanel");
+
+        expensesList.innerHTML = ""; // Clear current list
+        expensesPanel.classList.remove("show");
+
+        if (branchId) {
+            fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}&month=${monthValue}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.data.length > 0) {
+                            data.data.forEach(expense => {
+                                const row = document.createElement("tr");
+                                row.setAttribute("data-expense-id", expense.id);
+                                row.innerHTML = `
+                                    <td>${expense.expense_type}</td>
+                                    <td>${expense.description}</td>
+                                    <td>${expense.amount}</td>
+                                    <td style="text-align:center;">
+                                        <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
+                                    </td>`;
+                                expensesList.appendChild(row);
+                            });
+                        } else {
+                            const noExpensesRow = document.createElement("tr");
+                            noExpensesRow.innerHTML = `
+                                <td colspan="4" style="text-align: center;">No expenses found for the selected month</td>`;
+                            expensesList.appendChild(noExpensesRow);
+                        }
+                        expensesPanel.classList.add("show");
+                    } else {
+                        console.error(data.message);
+                    }
+                })
+                .catch(err => console.error("Error fetching expenses:", err));
+        }
+    }
+});
+
+document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+    const monthText = e.target.textContent;
+    const currentYear = new Date().getFullYear();
+    document.getElementById("currentMonthYear").textContent = `${monthText} ${currentYear}`;
+});
+
+
+function getCurrentDateInManila() {
+    const now = new Date();
+    const manilaOffset = 8 * 60 * 60 * 1000;
+    const manilaTime = new Date(now.getTime() + manilaOffset - now.getTimezoneOffset() * 60 * 1000);
+    // Format the date as YYYY-MM-DD
+    return manilaTime.toISOString().split("T")[0];
+  }
+  
+  function formatDate(date) {
+    const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+    return new Date(date).toLocaleDateString("en-US", options);
+  }
