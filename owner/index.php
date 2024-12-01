@@ -229,7 +229,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
                                             onclick="printTable('product-table', 'Popular Products')">
-                                            <i class="fas fa-print me-2"></i> Print Popular Products Report
+                                            <i class="fas fa-print me-2"></i> Print Report (Popular Products) 
                                         </button>
 
                                     </div>
@@ -275,7 +275,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         <button class="btn btn-primary mt-2 mb-5" id="printRecentActivities"
                                             onclick="printTable('recent-activities-table', 'Recent Activities')">
-                                            <i class="fas fa-print me-2"></i> Print Recent Activities Report
+                                            <i class="fas fa-print me-2"></i> Print Report (Recent Activities) 
                                         </button>
 
                                     </div>
