@@ -174,8 +174,6 @@ foreach ($businessData as $businessName => $branches) {
                                                                 class="fas fa-sort"></i></button></th>
                                                     <th>Business <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
-                                                    <th>Branch <button class="btn text-white"><i
-                                                                class="fas fa-sort"></i></button></th>
                                                     <th>Type <button class="btn text-white"><i
                                                                 class="fas fa-sort"></i></button></th>
                                                     <th>Price <button class="btn text-white"><i
@@ -190,7 +188,6 @@ foreach ($businessData as $businessName => $branches) {
                                                 <tr>
                                                     <td>Laptop</td>
                                                     <td>Business A</td>
-                                                    <td>Location A</td>
                                                     <td>Services</td>
                                                     <td>₱5000</td>
                                                     <td>Awesome Service</td>
@@ -199,7 +196,6 @@ foreach ($businessData as $businessName => $branches) {
                                                 <tr>
                                                     <td>Custom T-Shirts</td>
                                                     <td>Business B</td>
-                                                    <td>Location B</td>
                                                     <td>Products</td>
                                                     <td>₱4000</td>
                                                     <td>Awesome T-Shirts</td>
@@ -208,7 +204,6 @@ foreach ($businessData as $businessName => $branches) {
                                                 <tr>
                                                     <td>Coffee Beans</td>
                                                     <td>Business C</td>
-                                                    <td>Location C</td>
                                                     <td>Products</td>
                                                     <td>₱2,000</td>
                                                     <td>Awesome Coffee Beans</td>
@@ -217,7 +212,6 @@ foreach ($businessData as $businessName => $branches) {
                                                 <tr>
                                                     <td>Coffee Beans</td>
                                                     <td>Business C</td>
-                                                    <td>Location C</td>
                                                     <td>Products</td>
                                                     <td>₱777,000</td>
                                                     <td>Awesome Coffee Beans</td>
