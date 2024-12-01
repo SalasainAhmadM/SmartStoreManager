@@ -150,7 +150,7 @@ if (!empty($businesses)) {
 
                     <div id="salesLogTableSection">
 
-                        <table id="salesLogTable" class="table table-striped table-hover">
+                        <table class="table table-striped table-hover" id="salesLogTable">
 
                             <div class="mt-4 mb-4 position-relative">
                                 <form class="d-flex" role="search">

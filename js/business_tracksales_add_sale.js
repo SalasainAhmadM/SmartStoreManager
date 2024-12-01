@@ -65,7 +65,7 @@ document.getElementById("businessSelect").addEventListener("change", function ()
                   </tfoot>
               </table>
           </div>
-          <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]}')">
+          <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
               <i class="fas fa-print me-2"></i> Print Today’s Sales for ${businesses[selectedBusiness]} Log Report
           </button>
       `;
@@ -80,20 +80,6 @@ document.getElementById("businessSelect").addEventListener("change", function ()
       salesDiv.style.display = "block";
   }
 });
-
-// Print functionality
-function printContent(elementId, businessName) {
-  const content = document.getElementById(elementId).outerHTML;
-  const printWindow = window.open('', '', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Print Sales Report</title>');
-  printWindow.document.write('<style>table {width: 100%; border-collapse: collapse;} th, td {border: 1px solid #ddd; padding: 8px;} th {background-color: #f2f2f2;}</style>');
-  printWindow.document.write('</head><body>');
-  printWindow.document.write(`<h2>${businessName} Sales Report</h2>`);
-  printWindow.document.write(content);
-  printWindow.document.write('</body></html>');
-  printWindow.document.close();
-  printWindow.print();
-}
 
 
 
