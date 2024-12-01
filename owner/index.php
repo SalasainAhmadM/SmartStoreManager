@@ -68,7 +68,7 @@ if ($result->num_rows > 0) {
 // Generate derived data
 $processedData = [];
 foreach ($businessData as $businessName => $branches) {
-    $branchCount = count($branches); 
+    $branchCount = count($branches);
     $processedData[$businessName] = [
         'branches' => $branchCount,
         'sales' => rand(50000, 150000), // Mock sales data
@@ -77,64 +77,6 @@ foreach ($businessData as $businessName => $branches) {
 }
 ?>
 
-<script>
-    const ownerId = <?php echo json_encode($owner_id); ?>;
-
-    function triggerAddBusinessModal() {
-        Swal.fire({
-            title: 'Add New Business',
-            html: `
-            <div>
-                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
-                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-            </div>
-        `,
-            confirmButtonText: 'Add Business',
-            showCancelButton: true,
-            cancelButtonText: 'Skip'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const businessName = document.getElementById('business-name').value.trim();
-                const businessDescription = document.getElementById('business-description').value.trim();
-                const businessAsset = document.getElementById('business-asset').value.trim();
-                const employeeCount = document.getElementById('employee-count').value.trim();
-
-                if (!businessName || !businessAsset || !employeeCount) {
-                    Swal.fire('Error', 'Please fill in all required fields.', 'error');
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('name', businessName);
-                formData.append('description', businessDescription);
-                formData.append('asset', businessAsset);
-                formData.append('employeeCount', employeeCount);
-                formData.append('owner_id', ownerId);
-
-                fetch('../endpoints/add_business_prompt.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire('Success', data.message, 'success').then(() => {
-                                location.reload(); // Reload page to reflect the added business
-                            });
-                        } else {
-                            Swal.fire('Error', data.message, 'error');
-                        }
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
-                        console.error(err);
-                    });
-            }
-        });
-    }
-</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -339,6 +281,63 @@ foreach ($businessData as $businessName => $branches) {
 
     <script>
         const businessData = <?php echo json_encode($processedData); ?>;
+
+        const ownerId = <?php echo json_encode($owner_id); ?>;
+
+        function triggerAddBusinessModal() {
+            Swal.fire({
+                title: 'Add New Business',
+                html: `
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+            </div>
+        `,
+                confirmButtonText: 'Add Business',
+                showCancelButton: true,
+                cancelButtonText: 'Skip'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const businessName = document.getElementById('business-name').value.trim();
+                    const businessDescription = document.getElementById('business-description').value.trim();
+                    const businessAsset = document.getElementById('business-asset').value.trim();
+                    const employeeCount = document.getElementById('employee-count').value.trim();
+
+                    if (!businessName || !businessAsset || !employeeCount) {
+                        Swal.fire('Error', 'Please fill in all required fields.', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('name', businessName);
+                    formData.append('description', businessDescription);
+                    formData.append('asset', businessAsset);
+                    formData.append('employeeCount', employeeCount);
+                    formData.append('owner_id', ownerId);
+
+                    fetch('../endpoints/business/add_business_prompt.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success', data.message, 'success').then(() => {
+                                    location.reload(); // Reload page to reflect the added business
+                                });
+                            } else {
+                                Swal.fire('Error', data.message, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                            console.error(err);
+                        });
+                }
+            });
+        }
     </script>
     <script src="../js/chart.js"></script>
     <script src="../js/sidebar.js"></script>

@@ -63,7 +63,8 @@ if (isset($_GET['logout'])) {
             data-bs-toggle="dropdown" aria-expanded="false">
             <img src="../assets/profiles/<?= !empty($manager['image']) ? $manager['image'] : 'profile.png' ?>" alt=""
                 width="32" height="32" class="rounded-circle me-2">
-            <strong id="sidebarLogo">mdo</strong>
+            <strong id="sidebarLogo"><?= ($manager['first_name']) ?> <?= ($manager['middle_name']) ?>
+                <?= ($manager['last_name']) ?></strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
             <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user-circle"></i> Profile</a></li>

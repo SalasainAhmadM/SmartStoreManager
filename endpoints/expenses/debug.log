@@ -1,0 +1,9 @@
+Array
+(
+    [category] => business
+    [category_id] => 2
+    [expense_type] => Variable Expense
+    [amount] => 5456
+    [description] => 4445
+    [user_id] => 1
+)

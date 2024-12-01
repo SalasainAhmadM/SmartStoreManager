@@ -11,52 +11,30 @@ $owner_id = $_SESSION['user_id'];
 date_default_timezone_set('Asia/Manila');
 $today = date("Y-m-d");
 
-// Fetch business data for the logged-in owner
-$query = "SELECT * FROM business WHERE owner_id = ?";
+// Fetch businesses owned by the logged-in user
+$query = "SELECT id, name FROM business WHERE owner_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $owner_id);
 $stmt->execute();
-$result = $stmt->get_result();
+$business_result = $stmt->get_result();
 
 $businesses = [];
-while ($row = $result->fetch_assoc()) {
-    $businesses[] = $row;
+while ($row = $business_result->fetch_assoc()) {
+    $businesses[$row['id']] = $row['name'];
 }
 $stmt->close();
 
-// Fetch branches for each business
-$branches_by_business = [];
-$branch_query = "SELECT * FROM branch WHERE business_id = ?";
-$branch_stmt = $conn->prepare($branch_query);
-
-foreach ($businesses as $business) {
-    $branch_stmt->bind_param("i", $business['id']);
-    $branch_stmt->execute();
-    $branch_result = $branch_stmt->get_result();
-
-    while ($branch_row = $branch_result->fetch_assoc()) {
-        $branches_by_business[$business['id']][] = $branch_row;
-    }
-}
-
-$branch_stmt->close();
-
 // Fetch products for each business
 $products_by_business = [];
-$product_query = "SELECT * FROM products WHERE business_id = ?";
-$product_stmt = $conn->prepare($product_query);
+if (!empty($businesses)) {
+    $business_ids = implode(",", array_keys($businesses));
+    $product_query = "SELECT id, name, price, business_id FROM products WHERE business_id IN ($business_ids)";
+    $product_result = $conn->query($product_query);
 
-foreach ($businesses as $business) {
-    $product_stmt->bind_param("i", $business['id']);
-    $product_stmt->execute();
-    $product_result = $product_stmt->get_result();
-
-    while ($product_row = $product_result->fetch_assoc()) {
-        $products_by_business[$business['id']][] = $product_row;
+    while ($product = $product_result->fetch_assoc()) {
+        $products_by_business[$product['business_id']][] = $product;
     }
 }
-
-$product_stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -97,14 +75,21 @@ $product_stmt->close();
                     <!-- Business Selection Dropdown -->
                     <div class="mt-4">
                         <div class="form-group">
-                            <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
+                            <label for="businessSelect"><i class="fas fa-briefcase me-2"></i> Select Business</label>
                             <select id="businessSelect" class="form-control">
                                 <option value=""><strong>Select Business</strong></option>
-                                <option value="A">Business A</option>
-                                <option value="B">Business B</option>
+                                <?php foreach ($businesses as $id => $name): ?>
+                                    <option value="<?php echo $id; ?>"><?php echo $name; ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
+
+                    <script>
+                        const businesses = <?php echo json_encode($businesses); ?>;
+                        const productsByBusiness = <?php echo json_encode($products_by_business); ?>;
+                    </script>
+
 
                     <!-- Sales Tables (Initially hidden) -->
                     <div id="businessA_sales" style="display:none;">

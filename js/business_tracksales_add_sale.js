@@ -37,114 +37,6 @@ document
       document.getElementById("businessB_sales").style.display = "none";
     }
   });
-
-// Handle "Add Sale" button click
-document.getElementById("addSaleButton").addEventListener("click", function () {
-  const selectedBusiness = document.getElementById("businessSelect").value;
-
-  if (!selectedBusiness) {
-    Swal.fire({
-      icon: "warning",
-      title: "No Business Selected",
-      text: "Please select a business first.",
-    });
-    return;
-  }
-
-  let productOptions = '<option value="">Select a Product</option>';
-  businessProducts[selectedBusiness].forEach((product) => {
-    productOptions += `<option value="${product.name}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
-  });
-
-  Swal.fire({
-    title: "Add Sale",
-    html: `
-                    <label for="productSelect">Product</label>
-                    <select id="productSelect" class="form-control mb-2">${productOptions}</select>
-                    <label for="amountSold">Amount Sold</label>
-                    <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
-                    <label for="totalSales">Total Sales</label>
-                    <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
-                    <input type="date" id="saleDate" class="form-control mb-2" value="${
-                      new Date().toISOString().split("T")[0]
-                    }" readonly>
-                `,
-    showCancelButton: true,
-    confirmButtonText: "Add Sale",
-    preConfirm: () => {
-      const product = document.getElementById("productSelect").value;
-      const amountSold = parseInt(
-        document.getElementById("amountSold").value,
-        10
-      );
-      const totalSales = parseFloat(
-        document.getElementById("totalSales").value.replace("₱", "")
-      );
-
-      if (!product || !amountSold || isNaN(totalSales)) {
-        Swal.showValidationMessage("Please complete all fields.");
-        return false;
-      }
-
-      return {
-        product,
-        amountSold,
-        totalSales,
-      };
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const { product, amountSold, totalSales } = result.value;
-      addSaleToTable(selectedBusiness, product, amountSold, totalSales);
-      addSaleToLog(selectedBusiness, product, amountSold, totalSales);
-    }
-  });
-
-  // Update total sales dynamically
-  document.addEventListener("input", (event) => {
-    if (event.target.id === "amountSold") {
-      const productSelect = document.getElementById("productSelect");
-      const selectedProduct = businessProducts[selectedBusiness].find(
-        (product) => product.name === productSelect.value
-      );
-      if (selectedProduct) {
-        const total = selectedProduct.price * parseInt(event.target.value, 10);
-        document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
-      }
-    }
-  });
-});
-
-// Add sale to the respective business table
-function addSaleToTable(business, product, amountSold, totalSales) {
-  const table = document
-    .getElementById(business === "A" ? "salesTableA" : "salesTableB")
-    .getElementsByTagName("tbody")[0];
-  const newRow = table.insertRow();
-  newRow.innerHTML = `
-                <td>${product}</td>
-                <td>${amountSold}</td>
-                <td>₱${totalSales.toFixed(2)}</td>
-                <td>${new Date().toLocaleDateString()}</td>
-            `;
-  updateFooter(business);
-}
-
-// Add sale to the sales log
-function addSaleToLog(business, product, amountSold, totalSales) {
-  const logTable = document
-    .getElementById("salesLogTable")
-    .getElementsByTagName("tbody")[0];
-  const newRow = logTable.insertRow();
-  newRow.innerHTML = `
-                <td>${product}</td>
-                <td>${amountSold}</td>
-                <td>₱${totalSales.toFixed(2)}</td>
-                <td>${business}</td>
-                <td>${new Date().toLocaleDateString()}</td>
-            `;
-}
-
 // Update footer with total sales
 function updateFooter(business) {
   const table = document.getElementById(
@@ -207,4 +99,122 @@ function filterSalesLog() {
       row.style.display = "";
     }
   }
+}
+
+
+// Handle "Add Sale" button click = functional
+document.getElementById("addSaleButton").addEventListener("click", function () {
+  const selectedBusiness = document.getElementById("businessSelect").value;
+
+  if (!selectedBusiness) {
+      Swal.fire({
+          icon: "warning",
+          title: "No Business Selected",
+          text: "Please select a business first.",
+      });
+      return;
+  }
+
+  const products = productsByBusiness[selectedBusiness] || [];
+  let productOptions = '<option value="">Select a Product</option>';
+  products.forEach((product) => {
+      productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
+  });
+
+  Swal.fire({
+      title: "Add Sale",
+      html: `
+          <label for="productSelect">Product</label>
+          <select id="productSelect" class="form-control mb-2">${productOptions}</select>
+          <label for="amountSold">Amount Sold</label>
+          <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
+          <label for="totalSales">Total Sales</label>
+          <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
+          <label for="saleDate">Sale Date</label>
+          <input type="date" id="saleDate" class="form-control mb-2" value="${new Date().toISOString().split("T")[0]}" readonly>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Add Sale",
+      preConfirm: () => {
+          const productSelect = document.getElementById("productSelect");
+          const productId = productSelect.value;
+          const amountSold = parseInt(document.getElementById("amountSold").value, 10);
+          const totalSales = parseFloat(document.getElementById("totalSales").value.replace("₱", ""));
+          const saleDate = document.getElementById("saleDate").value;
+
+          if (!productId || !amountSold || isNaN(totalSales)) {
+              Swal.showValidationMessage("Please complete all fields.");
+              return false;
+          }
+
+          return {
+              productId,
+              amountSold,
+              totalSales,
+              saleDate
+          };
+      },
+  }).then((result) => {
+      if (result.isConfirmed) {
+          const saleData = result.value;
+
+          fetch("../endpoints/sales/add_sales.php", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                  product_id: saleData.productId,
+                  quantity: saleData.amountSold,
+                  total_sales: saleData.totalSales,
+                  sale_date: saleData.saleDate,
+              }),
+          })
+              .then((response) => response.json())
+              .then((data) => {
+                  if (data.success) {
+                      Swal.fire("Success", data.message, "success");
+                      addSaleToTable(
+                          selectedBusiness,
+                          saleData.productId,
+                          saleData.amountSold,
+                          saleData.totalSales,
+                          saleData.saleDate
+                      );
+                  } else {
+                      Swal.fire("Error", data.message, "error");
+                  }
+              })
+              // .catch((error) => {
+              //     console.error("Fetch error:", error);
+              //     Swal.fire("Error", "An unexpected error occurred. Please try again later.", "error");
+              // });
+      }
+  });
+
+  document.addEventListener("input", (event) => {
+      if (event.target.id === "amountSold") {
+          const productSelect = document.getElementById("productSelect");
+          const selectedProduct = productsByBusiness[selectedBusiness].find(
+              (product) => product.id == productSelect.value
+          );
+          if (selectedProduct) {
+              const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
+              document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
+          }
+      }
+  });
+});
+
+// Function to add sale to the table dynamically
+function addSaleToTable(businessId, productId, amountSold, totalSales, saleDate) {
+  const table = document.getElementById(`salesTable${businessId}`).getElementsByTagName("tbody")[0];
+  const productName = productsByBusiness[businessId].find((product) => product.id == productId).name;
+  const newRow = table.insertRow();
+  newRow.innerHTML = `
+      <td>${productName}</td>
+      <td>${amountSold}</td>
+      <td>₱${totalSales.toFixed(2)}</td>
+      <td>${saleDate}</td> 
+  `;
 }

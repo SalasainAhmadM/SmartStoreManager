@@ -5,54 +5,54 @@ document.getElementById('businessRadio').addEventListener('click', function () {
 });
 
 document.getElementById('branchRadio').addEventListener('click', function () {
-    document.getElementById('branchPanel').style.display = 'none'; // Hide branch panel when selected
+    document.getElementById('branchPanel').style.display = 'none'; 
     document.getElementById('businessPanel').style.display = 'none';
-});
+}); 
 
 document.getElementById('businessSelect').addEventListener('change', function () {
-    var businessName = this.value;
+    const businessId = this.value;
+    const businessName = businesses[businessId]; 
     document.getElementById('businessName').textContent = businessName;
 
-    var expenses = businessName === 'A' ? [
-        {
-            description: 'Rent',
-            amount: '$5000',
-            type: 'Fixed Expenses'
-        },
-        {
-            description: 'Utilities',
-            amount: '$300',
-            type: 'Variable Expenses'
-        }
-    ] : businessName === 'B' ? [
-        {
-            description: 'Marketing',
-            amount: '$2000',
-            type: 'Operating Expenses'
-        },
-        {
-            description: 'Salaries',
-            amount: '$12000',
-            type: 'Non-operating Expenses'
-        }
-    ] : [];
+    if (businessId) {
+        // Fetch expenses for the selected business
+        fetch(`../endpoints/expenses/fetch_expenses_business.php?category_id=${businessId}`)
+            .then(response => response.json())
+            .then(data => {
+                const expensesList = document.getElementById('expensesList');
+                expensesList.innerHTML = ''; // Clear the current list
 
-    var expensesList = document.getElementById('expensesList');
-    expensesList.innerHTML = '';
-    expenses.forEach(function (expense) {
-        var row = document.createElement('tr');
-        row.setAttribute('type', expense.type); // Set the 'type' attribute
-        row.innerHTML = `<td>${expense.type}</td>
-                        <td>${expense.description}</td>
-                        <td>${expense.amount}</td>
-                        <td style="text-align:center;">
-                            <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
-                            <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
-                        </td>`;
-        expensesList.appendChild(row);
-    });
+                if (!data.success) {
+                    console.error(data.message);
+                    return;
+                }
 
-    if (businessName) {
+                // Check if there are expenses
+                if (data.data.length === 0) {
+                    const noExpensesRow = document.createElement('tr');
+                    noExpensesRow.innerHTML = `
+                        <td colspan="4" style="text-align:center;">No expenses found</td>
+                    `;
+                    expensesList.appendChild(noExpensesRow);
+                } else {
+                    // Populate the table with fetched expenses
+                    data.data.forEach(expense => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${expense.expense_type}</td>
+                            <td>${expense.description}</td>
+                            <td>${expense.amount}</td>
+                            <td style="text-align:center;">
+                                <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
+                            </td>
+                        `;
+                        expensesList.appendChild(row);
+                    });
+                }
+            })
+            .catch(err => console.error('Error fetching expenses:', err));
+
         document.getElementById('expensesPanel').classList.add('show');
     } else {
         document.getElementById('expensesPanel').classList.remove('show');
@@ -61,7 +61,7 @@ document.getElementById('businessSelect').addEventListener('change', function ()
 
 
 
-document.getElementById('addExpenseBtn').addEventListener('click', function() {
+document.getElementById('addExpenseBtn').addEventListener('click', function () {
     Swal.fire({
         title: 'Add Business Expenses',
         html: `
@@ -74,44 +74,51 @@ document.getElementById('addExpenseBtn').addEventListener('click', function() {
                 <option value="Non-operating Expense">Non-operating Expenses</option>
                 <option value="Capital Expense">Capital Expenses</option>
             </select>
-            <select id="expenseMonth" class="swal2-input">
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-            </select>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Add Expense',
         cancelButtonText: 'Close',
         preConfirm: () => {
-            const description = document.getElementById('expenseDescription').value;
-            const amount = document.getElementById('expenseAmount').value;
+            const description = document.getElementById('expenseDescription').value.trim();
+            const amount = document.getElementById('expenseAmount').value.trim();
             const type = document.getElementById('expenseType').value;
-            const month = document.getElementById('expenseMonth').value;
 
-            if (!description || !amount || !type || !month) {
+            if (!description || !amount || !type) {
                 Swal.showValidationMessage('Please fill out all fields');
                 return false;
             }
 
-            return { description, amount, type, month };
+            return { description, amount, type };
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Added!', `Expense: ${result.value.description} added successfully for ${result.value.month}.`, 'success');
-            // You can add AJAX code here to send the data to the server, including the month.
+            const businessId = document.getElementById('businessSelect').value;
+            fetch('../endpoints/expenses/add_expenses_business.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category: 'business',
+                    category_id: businessId,
+                    expense_type: result.value.type,
+                    amount: result.value.amount,
+                    description: result.value.description,
+                    user_id: ownerId 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Added!', 'Expense added successfully.', 'success');
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                console.error('Error:', err);
+            });
+            
         }
     });
 });
-
-

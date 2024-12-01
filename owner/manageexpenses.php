@@ -7,6 +7,19 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
+// Fetch businesses owned by the logged-in user
+$query = "SELECT id, name FROM business WHERE owner_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$business_result = $stmt->get_result();
+
+$businesses = [];
+while ($row = $business_result->fetch_assoc()) {
+    $businesses[$row['id']] = $row['name'];
+}
+$stmt->close();
+
 ?>
 
 <!DOCTYPE html>
@@ -55,16 +68,23 @@ $owner_id = $_SESSION['user_id'];
 
                 </div>
 
+
                 <div id="businessPanel" class="mt-3">
                     <div class="form-group">
                         <label for="businessSelect"><i class="fas fa-briefcase me-2"></i></label>
                         <select id="businessSelect" class="form-control">
-                            <option value="">Select Business</option>
-                            <option value="A">Business A</option>
-                            <option value="B">Business B</option>
+                            <option value=""><strong>Select Business</strong></option>
+                            <?php foreach ($businesses as $id => $name): ?>
+                                <option value="<?php echo $id; ?>"><?php echo $name; ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
+
+                <script>
+                    const businesses = <?php echo json_encode($businesses); ?>;
+                    const ownerId = <?php echo json_encode($_SESSION['user_id']); ?>;
+                </script>
 
 
                 <div id="expensesPanel" class="collapse scrollable-table" style="padding:0 2rem;">
@@ -72,8 +92,9 @@ $owner_id = $_SESSION['user_id'];
                     <div class="d-flex justify-content-between align-items-center mt-4">
 
                         <div class="w-50">
-                            <h2>Expenses List for <span id="businessName"></span> for the month of 
-                            <span id="currentMonthYear"></span></h2>
+                            <h2>Expenses List for <span id="businessName"></span> for the month of
+                                <span id="currentMonthYear"></span>
+                            </h2>
                         </div>
 
                         <button class="btn btn-success ms-auto m-1" id="addExpenseBtn" type="button">
@@ -81,7 +102,8 @@ $owner_id = $_SESSION['user_id'];
                         </button>
 
                         <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Select Month
                             </button>
 
@@ -135,7 +157,7 @@ $owner_id = $_SESSION['user_id'];
         document.getElementById('currentMonthYear').textContent = `${currentMonth} ${currentYear}`;
 
         // Update the business name when a business is selected
-        document.getElementById('businessSelect').addEventListener('change', function() {
+        document.getElementById('businessSelect').addEventListener('change', function () {
             const businessName = this.options[this.selectedIndex].text;
             document.getElementById('businessName').textContent = businessName;
         });

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 30, 2024 at 05:48 PM
+-- Generation Time: Dec 01, 2024 at 02:30 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -77,9 +77,6 @@ CREATE TABLE `business` (
   `description` varchar(255) DEFAULT NULL,
   `asset` varchar(255) NOT NULL,
   `employee_count` varchar(255) NOT NULL,
-  `expense_type` varchar(255) DEFAULT NULL,
-  `expenses` varchar(255) DEFAULT NULL,
-  `image` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `owner_id` int(11) NOT NULL,
@@ -100,32 +97,14 @@ INSERT INTO `business` (`id`, `name`, `description`, `asset`, `employee_count`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `employee`
---
-
-CREATE TABLE `employee` (
-  `id` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `first_name` varchar(255) NOT NULL,
-  `middle_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) NOT NULL,
-  `gender` varchar(255) NOT NULL,
-  `age` varchar(255) NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `contact_number` varchar(15) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `business_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `expenses`
 --
 
 CREATE TABLE `expenses` (
   `id` int(11) NOT NULL,
-  `type` varchar(255) NOT NULL,
+  `category` ENUM('business', 'branch') NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `expense_type` varchar(255) NOT NULL,
   `amount` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
@@ -266,6 +245,21 @@ INSERT INTO `products` (`id`, `name`, `description`, `price`, `type`, `created_a
 (3, 'T-shirt', 'Teessss', '499', 'Shirt', '2024-11-26 09:08:58', '2024-11-26 09:12:43', 2),
 (4, 'Hoodie', 'Long Sleeve Hoodie', '599', 'Sublimation', '2024-11-26 09:13:33', '2024-11-26 09:13:43', 2);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sales`
+--
+
+CREATE TABLE `sales` (
+  `id` int(11) NOT NULL,
+  `quantity` varchar(255) NOT NULL,
+  `total_sales` varchar(255) NOT NULL,
+  `date` date NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -291,13 +285,6 @@ ALTER TABLE `business`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_business_owner` (`owner_id`),
   ADD KEY `fk_business_manager` (`manager_id`);
-
---
--- Indexes for table `employee`
---
-ALTER TABLE `employee`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_employee_business` (`business_id`);
 
 --
 -- Indexes for table `expenses`
@@ -342,6 +329,12 @@ ALTER TABLE `products`
   ADD KEY `fk_products_business` (`business_id`);
 
 --
+-- Indexes for table `sales`
+--
+ALTER TABLE `sales`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -362,12 +355,6 @@ ALTER TABLE `branch`
 --
 ALTER TABLE `business`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `employee`
---
-ALTER TABLE `employee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -400,6 +387,12 @@ ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `sales`
+--
+ALTER TABLE `sales`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -416,12 +409,6 @@ ALTER TABLE `branch`
 ALTER TABLE `business`
   ADD CONSTRAINT `fk_business_manager` FOREIGN KEY (`manager_id`) REFERENCES `manager` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_business_owner` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `employee`
---
-ALTER TABLE `employee`
-  ADD CONSTRAINT `fk_employee_business` FOREIGN KEY (`business_id`) REFERENCES `business` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `expenses`
