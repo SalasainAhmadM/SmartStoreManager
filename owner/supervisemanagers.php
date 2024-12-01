@@ -18,7 +18,7 @@ $managers = $result->fetch_all(MYSQLI_ASSOC);
 // Query to fetch all businesses and their branches for the owner
 $query = "
     SELECT
-        b.id AS business_id,  -- Add business_id here
+        b.id AS business_id,  
         b.name AS business_name, 
         br.id AS branch_id, 
         br.location AS branch_location
