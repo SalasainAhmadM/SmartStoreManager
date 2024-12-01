@@ -6,6 +6,23 @@ require_once '../conn/auth.php';
 validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
+
+// Fetch businesses owned by the logged-in user
+$query = "SELECT DISTINCT b.id, b.name 
+          FROM business b
+          JOIN branch br ON b.id = br.business_id
+          WHERE b.owner_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$business_result = $stmt->get_result();
+
+$businesses = [];
+while ($row = $business_result->fetch_assoc()) {
+    $businesses[$row['id']] = $row['name'];
+}
+$stmt->close();
+
 ?>
 
 
@@ -58,9 +75,10 @@ $owner_id = $_SESSION['user_id'];
                     <div class="form-group">
                         <label for="businessSelect"><i class="fas fa-store me-2"></i></label>
                         <select id="businessSelect" class="form-control">
-                            <option value="">Select Business</option>
-                            <option value="A">Business A</option>
-                            <option value="B">Business B</option>
+                            <option value=""><strong>Select Business</strong></option>
+                            <?php foreach ($businesses as $id => $name): ?>
+                                <option value="<?php echo $id; ?>"><?php echo $name; ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
 
@@ -72,6 +90,10 @@ $owner_id = $_SESSION['user_id'];
                         </select>
                     </div>
 
+                    <script>
+                        const businesses = <?php echo json_encode($businesses); ?>;
+                        const ownerId = <?php echo json_encode($_SESSION['user_id']); ?>;
+                    </script>
 
 
                     <div id="expensesPanel" class="collapse mt-5 scrollable-table">
@@ -80,7 +102,8 @@ $owner_id = $_SESSION['user_id'];
                         <div class="d-flex justify-content-between align-items-center mt-4">
 
                             <div class="w-50">
-                                <h2>Expenses List for <span id="businessName"></span> - Branch: <span id="branchName"></span>
+                                <h2>Expenses List for <span id="businessName"></span> - Branch: <span
+                                        id="branchName"></span>
                                     for the month of <span id="currentMonthYear"></span></h2>
                             </div>
 
@@ -89,7 +112,8 @@ $owner_id = $_SESSION['user_id'];
                             </button>
 
                             <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="monthDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
                                     Select Month
                                 </button>
 
@@ -115,9 +139,11 @@ $owner_id = $_SESSION['user_id'];
                             <thead class="table-dark position-sticky top-0">
                                 <tr>
                                     <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button>
+                                    </th>
                                     <th>Amount <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th class="text-center">Action <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th class="text-center">Action <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
                                 </tr>
                             </thead>
                             <tbody id="expensesList">
@@ -143,7 +169,7 @@ $owner_id = $_SESSION['user_id'];
             document.getElementById('currentMonthYear').textContent = `${currentMonth} ${currentYear}`;
 
             // Update the business name when a business is selected
-            document.getElementById('businessSelect').addEventListener('change', function() {
+            document.getElementById('businessSelect').addEventListener('change', function () {
                 const businessName = this.options[this.selectedIndex].text;
                 document.getElementById('businessName').textContent = businessName;
             });
