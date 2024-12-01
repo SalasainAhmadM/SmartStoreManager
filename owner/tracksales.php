@@ -92,10 +92,10 @@ if (!empty($businesses)) {
 
 
                     <!-- Sales Tables (Initially hidden) -->
-                    <div id="businessA_sales" style="display:none;">
+                    <div id="businessNameSales" style="display:none;">
                         <h2 class="mt-5 mb-3"><b>Today’s Sales for Business A (<?php echo $today; ?>)</b></h2>
                         <div class="scrollable-table">
-                            <table id="salesTableA" class="table table-striped table-hover">
+                            <table id="salesTable(name)" class="table table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Product</th>
@@ -113,6 +113,11 @@ if (!empty($businesses)) {
                                     </tr>
                                 </tfoot>
                             </table>
+
+                            <button class="btn btn-primary mt-2 mb-5" id="salesTable(name)" onclick="printContent('businessNameSales', 'Business Name')">
+                                <i class="fas fa-print me-2"></i> Print Today’s Sales for (Business Name) Log Report
+                            </button>
+
                         </div>
                     </div>
 
@@ -144,60 +149,70 @@ if (!empty($businesses)) {
 
                     <h2 class="mt-5 mb-3"><b>Sales Log</b></h2>
 
-                    <table id="salesLogTable" class="table table-striped table-hover">
+                    <div id="salesLogTableSection">
 
-                        <div class="mt-4 mb-4 position-relative">
-                            <form class="d-flex" role="search">
-                                <input id="saleSearchBar" class="form-control me-2 w-50" type="search"
-                                    placeholder="Search branch.." aria-label="Search" style="visibility:hidden;">
-                            </form>
-                            <!-- Date Filter Button for Sales Log -->
-                            <div class="position-absolute top-0 end-0 mt-2 me-2">
-                                <button class="btn btn-success" id="filterDateButton">
-                                    <i class="fas fa-calendar-alt me-2"></i> Filter by Date
-                                </button>
-                                <button class="btn btn-danger" id="resetButton" onclick="resetFilter()">
-                                    <i class="fas fa-times-circle me-2"></i> Reset Filter
-                                </button>
+                        <table id="salesLogTable" class="table table-striped table-hover">
+
+                            <div class="mt-4 mb-4 position-relative">
+                                <form class="d-flex" role="search">
+                                    <input id="saleSearchBar" class="form-control me-2 w-50" type="search"
+                                        placeholder="Search branch.." aria-label="Search" style="visibility:hidden;">
+                                </form>
+                                <!-- Date Filter Button for Sales Log -->
+                                <div class="position-absolute top-0 end-0 mt-2 me-2">
+                                    <button class="btn btn-success" id="filterDateButton">
+                                        <i class="fas fa-calendar-alt me-2"></i> Filter by Date
+                                    </button>
+                                    <button class="btn btn-danger" id="resetButton" onclick="resetFilter()">
+                                        <i class="fas fa-times-circle me-2"></i> Reset Filter
+                                    </button>
+                                </div>
+
                             </div>
 
-                        </div>
 
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Amount Sold</th>
+                                    <th>Total Sales</th>
+                                    <th>Business</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
 
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Product</th>
-                                <th>Amount Sold</th>
-                                <th>Total Sales</th>
-                                <th>Business</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Product 1</td>
+                                    <td>₱100</td>
+                                    <td>₱10000</td>
+                                    <td>Business A</td>
+                                    <td>11/30/2024</td>
+                                </tr>
+                                <tr>
+                                    <td>Product 2</td>
+                                    <td>₱100</td>
+                                    <td>₱10000</td>
+                                    <td>Business A</td>
+                                    <td>11/05/2024</td>
+                                </tr>
+                            </tbody>
 
-                        <tbody>
-                            <tr>
-                                <td>Product 1</td>
-                                <td>₱100</td>
-                                <td>₱10000</td>
-                                <td>Business A</td>
-                                <td>11/30/2024</td>
-                            </tr>
-                            <tr>
-                                <td>Product 2</td>
-                                <td>₱100</td>
-                                <td>₱10000</td>
-                                <td>Business A</td>
-                                <td>11/05/2024</td>
-                            </tr>
-                        </tbody>
+                        </table>
 
-                    </table>
+                        <button class="btn btn-primary mt-2 mb-5" id="salesLogTable" onclick="printContent('salesLogTableSection', 'Sales Log Report')">
+                            <i class="fas fa-print me-2"></i> Print Sales Log Report
+                        </button>
+
+                    </div>
 
                 </div>
             </div>
         </div>
     </div>
     </div>
+
+    <script src="../js/print_report.js"></script>
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
