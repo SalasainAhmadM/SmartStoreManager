@@ -372,8 +372,8 @@ $product_stmt->close();
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+
     <script src="../js/print_report.js"></script>
-    
     <script>
         const ownerId = <?php echo json_encode($owner_id); ?>;
 

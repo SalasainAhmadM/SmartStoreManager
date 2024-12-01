@@ -25,7 +25,6 @@ $stmt->close();
 
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -135,7 +134,7 @@ $stmt->close();
                         </div>
 
 
-                        <table class="table table-striped table-hover mt-4">
+                        <table class="table table-striped table-hover mt-4" id="expensesListTable">
                             <thead class="table-dark position-sticky top-0">
                                 <tr>
                                     <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -150,6 +149,12 @@ $stmt->close();
                                 <script src="../js/branch_expenses.js"></script>
                             </tbody>
                         </table>
+
+
+                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable" onclick="printContent('expensesPanel', 'Expenses List')">
+                            <i class="fas fa-print me-2"></i> Print Expenses List Report
+                        </button>
+
                     </div>
 
 
@@ -171,10 +176,21 @@ $stmt->close();
             // Update the business name when a business is selected
             document.getElementById('businessSelect').addEventListener('change', function () {
                 const businessName = this.options[this.selectedIndex].text;
+                const businessId = this.value;
                 document.getElementById('businessName').textContent = businessName;
+
+                // Update the branch name in the print preview title
+                const branchName = document.getElementById('branchSelect').options[document.getElementById('branchSelect').selectedIndex].text || 'All Branches';
+                document.getElementById('branchName').textContent = branchName;
+
+                // Update the print report button to include the correct title in the onclick function
+                const printButton = document.getElementById('expensesListTable');
+                printButton.setAttribute('onclick', `printContent('expensesPanel', 'Expenses List for ${businessName} - Branch: ${branchName} for the month of ${currentMonth} ${currentYear}')`);
             });
         </script>
 
+
+        <script src="../js/print_report_two.js"></script>
         <script src="../js/sidebar.js"></script>
         <script src="../js/sort_items.js"></script>
 

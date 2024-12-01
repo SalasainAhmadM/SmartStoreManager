@@ -124,7 +124,7 @@ $stmt->close();
                         </div>
                     </div>
 
-                    <table class="table table-striped table-hover mt-4">
+                    <table class="table table-striped table-hover mt-4" id="expensesListTable">
                         <thead class="table-dark position-sticky top-0">
                             <tr>
                                 <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -139,6 +139,12 @@ $stmt->close();
                         </tbody>
 
                     </table>
+
+                    
+                    <button class="btn btn-primary mt-2 mb-5" id="expensesListTable" onclick="printContent('expensesPanel', 'Expenses List Report for <?php echo $name; ?>')">
+                            <i class="fas fa-print me-2"></i> Print Expenses List Report
+                    </button>
+
                 </div>
             </div>
         </div>
@@ -162,6 +168,8 @@ $stmt->close();
             document.getElementById('businessName').textContent = businessName;
         });
     </script>
+
+    <script src="../js/print_report.js"></script>
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
