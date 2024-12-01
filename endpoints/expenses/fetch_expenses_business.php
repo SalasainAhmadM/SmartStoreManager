@@ -18,7 +18,7 @@ $user_id = $_SESSION['user_id'];
 
 try {
     // Query to fetch expenses for the specified business
-    $query = "SELECT expense_type, description, amount 
+    $query = "SELECT id, expense_type, description, amount 
               FROM expenses 
               WHERE category = 'business' AND category_id = ? AND owner_id = ?";
     $stmt = $conn->prepare($query);

@@ -35,9 +35,9 @@ document.getElementById('businessSelect').addEventListener('change', function ()
                     `;
                     expensesList.appendChild(noExpensesRow);
                 } else {
-                    // Populate the table with fetched expenses
                     data.data.forEach(expense => {
                         const row = document.createElement('tr');
+                        row.setAttribute('data-expense-id', expense.id); 
                         row.innerHTML = `
                             <td>${expense.expense_type}</td>
                             <td>${expense.description}</td>
@@ -50,6 +50,7 @@ document.getElementById('businessSelect').addEventListener('change', function ()
                         expensesList.appendChild(row);
                     });
                 }
+                
             })
             .catch(err => console.error('Error fetching expenses:', err));
 
@@ -58,6 +59,118 @@ document.getElementById('businessSelect').addEventListener('change', function ()
         document.getElementById('expensesPanel').classList.remove('show');
     }
 });
+
+// Add event listeners for edit and delete actions
+document.getElementById('expensesList').addEventListener('click', function (e) {
+    if (e.target.closest('.fa-edit')) {
+        handleEditExpense(e.target.closest('tr'));
+    } else if (e.target.closest('.fa-trash')) {
+        handleDeleteExpense(e.target.closest('tr'));
+    }
+});
+
+// Function to handle editing an expense
+function handleEditExpense(row) {
+    const expenseType = row.children[0].textContent;
+    const description = row.children[1].textContent;
+    const amount = row.children[2].textContent;
+
+    Swal.fire({
+        title: 'Edit Expense',
+        html: `
+            <input type="text" id="editDescription" class="swal2-input" placeholder="Description" value="${description}">
+            <input type="number" id="editAmount" class="swal2-input" placeholder="Amount" value="${amount}">
+            <select id="editType" class="swal2-input">
+                <option value="Fixed Expense" ${expenseType === 'Fixed Expense' ? 'selected' : ''}>Fixed Expenses</option>
+                <option value="Variable Expense" ${expenseType === 'Variable Expense' ? 'selected' : ''}>Variable Expenses</option>
+                <option value="Operating Expense" ${expenseType === 'Operating Expense' ? 'selected' : ''}>Operating Expenses</option>
+                <option value="Non-operating Expense" ${expenseType === 'Non-operating Expense' ? 'selected' : ''}>Non-operating Expenses</option>
+                <option value="Capital Expense" ${expenseType === 'Capital Expense' ? 'selected' : ''}>Capital Expenses</option>
+            </select>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Save Changes',
+        cancelButtonText: 'Cancel',
+        preConfirm: () => {
+            const newDescription = document.getElementById('editDescription').value.trim();
+            const newAmount = document.getElementById('editAmount').value.trim();
+            const newType = document.getElementById('editType').value;
+
+            if (!newDescription || !newAmount || !newType) {
+                Swal.showValidationMessage('Please fill out all fields');
+                return false;
+            }
+
+            return { newDescription, newAmount, newType };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Assuming expense ID is stored in a data attribute
+            const expenseId = row.dataset.expenseId;
+
+            fetch('../endpoints/expenses/edit_expense_business.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    expense_id: expenseId,
+                    expense_type: result.value.newType,
+                    description: result.value.newDescription,
+                    amount: result.value.newAmount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Updated!', 'Expense updated successfully.', 'success');
+                    // Optionally, refresh the expenses list or update the row directly
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                console.error('Error:', err);
+            });
+        }
+    });
+}
+
+// Function to handle deleting an expense
+function handleDeleteExpense(row) {
+    const expenseId = row.dataset.expenseId; // Assuming expense ID is stored in a data attribute
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../endpoints/expenses/delete_expense_business.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expense_id: expenseId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', 'Expense deleted successfully.', 'success');
+                    // Optionally, remove the row from the table
+                    row.remove();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                console.error('Error:', err);
+            });
+        }
+    });
+}
 
 
 

@@ -15,7 +15,7 @@ $category_id = $data['category_id'];
 $expense_type = $data['expense_type'];
 $amount = $data['amount'];
 $description = $data['description'];
-$owner_id = $data['user_id']; // Rename to match `owner_id` in the database
+$owner_id = $data['user_id'];
 
 $query = "INSERT INTO expenses (category, category_id, expense_type, amount, description, owner_id) 
           VALUES (?, ?, ?, ?, ?, ?)";
