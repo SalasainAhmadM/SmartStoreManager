@@ -151,9 +151,11 @@ $stmt->close();
                         </table>
 
 
-                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable" onclick="printContent('expensesPanel', 'Expenses List')">
-                            <i class="fas fa-print me-2"></i> Print Report (Expenses List) 
+                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable"
+                            onclick="printContent('expensesPanel', `Expenses List Report for ${document.getElementById('businessSelect').options[document.getElementById('businessSelect').selectedIndex].text} <br> Branch: ${document.getElementById('branchSelect').options[document.getElementById('branchSelect').selectedIndex].text || 'All Branches'} for the month of ${currentMonth} ${currentYear}`)">
+                            <i class="fas fa-print me-2"></i> Print Report (Expenses List)
                         </button>
+
 
                     </div>
 
@@ -190,7 +192,7 @@ $stmt->close();
         </script>
 
 
-        <script src="../js/print_report_two.js"></script>
+        <script src="../js/print_report.js"></script>
         <script src="../js/sidebar.js"></script>
         <script src="../js/sort_items.js"></script>
 
