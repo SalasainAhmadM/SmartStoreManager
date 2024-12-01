@@ -145,8 +145,8 @@ while ($row = $result->fetch_assoc()) {
                                 </button>
                             </div>
 
-                            <div class="scrollable-table">
-                                <table class="table table-striped table-hover mt-5">
+                            <div class="scrollable-table" id="managerListTableSection">
+                                <table class="table table-striped table-hover mt-5" id="managerListTable">
                                     <thead class="table-dark position-sticky top-0">
                                         <tr>
                                             <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
@@ -193,6 +193,11 @@ while ($row = $result->fetch_assoc()) {
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
+
+                                <button class="btn btn-primary mt-2 mb-5" id="managerListTable" onclick="printContent('managerListTableSection', 'Manager List Report')">
+                                <i class="fas fa-print me-2"></i> Print Report (Manager List)
+                                </button>
+
                             </div>
 
 
@@ -203,9 +208,9 @@ while ($row = $result->fetch_assoc()) {
                     <div id="assignmanager" class="tab-content">
                         <h1 class="mt-5"></h1>
 
-                        <div class="table-responsive mt-5 scrollable-table">
+                        <div class="table-responsive mt-5 scrollable-table" id="assignManagerTableSection">
 
-                            <table class="table table-striped table-hover mt-5">
+                            <table class="table table-striped table-hover mt-5" id="assignManagerTable">
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
                                         placeholder="Search business or branch..." aria-label="Search">
@@ -258,10 +263,14 @@ while ($row = $result->fetch_assoc()) {
                                 </tbody>
                             </table>
 
+                            <button class="btn btn-primary mt-2 mb-5" id="assignManagerTable" onclick="printContent('assignManagerTableSection', 'Business Branches Report')">
+                            <i class="fas fa-print me-2"></i> Print Report (Business Branches) 
+                            </button>
+
                         </div>
 
-                        <div class="table-responsive mt-5 scrollable-table">
-                            <table class="table table-striped table-hover mt-5">
+                        <div class="table-responsive mt-5 scrollable-table" id="managerListTableSection">
+                            <table class="table table-striped table-hover mt-5" id="managerListTable">
                                 <form class="d-flex" role="search" id="search-form" onsubmit="return false;">
                                     <input class="form-control me-2 w-50" id="search-manager" type="search"
                                         placeholder="Search manager..." aria-label="Search">
@@ -305,6 +314,11 @@ while ($row = $result->fetch_assoc()) {
                                     <?php endif; ?>
                                 </tbody>
                             </table>
+
+
+                            <button class="btn btn-primary mt-2 mb-5" id="managerListTable" onclick="printContent('managerListTableSection', 'Manager Assigned Branches/Business Report')">
+                            <i class="fas fa-print me-2"></i> Print Report (Manager Assigned Branches/Business) 
+                            </button>
 
                         </div>
 
@@ -411,7 +425,7 @@ while ($row = $result->fetch_assoc()) {
         </div>
     </div>
 
-
+    <script src="../js/print_report.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
 

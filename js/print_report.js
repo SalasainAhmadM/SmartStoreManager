@@ -12,6 +12,7 @@ function printContent(tabId, title) {
     printWindow.document.write('th { background-color: #f4f4f4; font-weight: bold; }');
     printWindow.document.write('td { background-color: #fff; }');
     printWindow.document.write('button, .btn, .fas.fa-sort {display: none;}');
+    printWindow.document.write('ul {list-style-type: none; padding: 0}');
     printWindow.document.write('@media print {');
     printWindow.document.write('  body { width: 100%; padding: 0; }');
     printWindow.document.write('  th, td { font-size: 12px; }');
