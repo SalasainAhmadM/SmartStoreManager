@@ -6,7 +6,6 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-// $conn->query("SET time_zone = '+08:00'");
 // Set the timezone to Philippine Time (Asia/Manila)
 date_default_timezone_set('Asia/Manila');
 $today = date("Y-m-d");
@@ -24,18 +23,73 @@ while ($row = $business_result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Fetch products for each business
+// Fetch products and today's sales for each business
 $products_by_business = [];
-if (!empty($businesses)) {
-    $business_ids = implode(",", array_keys($businesses));
-    $product_query = "SELECT id, name, price, business_id FROM products WHERE business_id IN ($business_ids)";
-    $product_result = $conn->query($product_query);
+$sales_by_business = [];
 
-    while ($product = $product_result->fetch_assoc()) {
-        $products_by_business[$product['business_id']][] = $product;
+if (!empty($businesses)) {
+    $query = "
+        SELECT p.id AS product_id, p.name AS product_name, p.price, p.business_id,
+               s.quantity, s.total_sales, s.date
+        FROM products p
+        LEFT JOIN sales s ON p.id = s.product_id AND s.date = ? 
+        WHERE p.business_id IN (" . implode(",", array_keys($businesses)) . ")";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $today); // Bind the current date
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $products_by_business[$row['business_id']][] = [
+            'id' => $row['product_id'],
+            'name' => $row['product_name'],
+            'price' => $row['price']
+        ];
+        if (!empty($row['quantity'])) {
+            $sales_by_business[$row['business_id']][] = [
+                'product_name' => $row['product_name'],
+                'quantity' => $row['quantity'],
+                'total_sales' => $row['total_sales'],
+                'date' => $row['date']
+            ];
+        }
     }
+    $stmt->close();
+}
+
+// Fetch today's sales for all businesses
+$sales_data = [];
+if (!empty($businesses)) {
+    $query = "
+        SELECT 
+            p.name AS product_name,
+            p.price AS product_price,
+            s.quantity,
+            s.total_sales,
+            b.name AS business_name,
+            s.date
+        FROM sales s
+        JOIN products p ON s.product_id = p.id
+        JOIN business b ON p.business_id = b.id
+        WHERE b.owner_id = ? AND s.date = ?
+    ";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("is", $owner_id, $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $sales_data[] = $row;
+    }
+    $stmt->close();
 }
 ?>
+
+<script>
+    const businesses = <?php echo json_encode($businesses); ?>;
+    const productsByBusiness = <?php echo json_encode($products_by_business); ?>;
+    const salesByBusiness = <?php echo json_encode($sales_by_business); ?>;
+</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -85,65 +139,10 @@ if (!empty($businesses)) {
                         </div>
                     </div>
 
-                    <script>
-                        const businesses = <?php echo json_encode($businesses); ?>;
-                        const productsByBusiness = <?php echo json_encode($products_by_business); ?>;
-                    </script>
-
-
                     <!-- Sales Tables (Initially hidden) -->
-                    <div id="businessNameSales" style="display:none;">
-                        <h2 class="mt-5 mb-3"><b>Today’s Sales for Business A (<?php echo $today; ?>)</b></h2>
-                        <div class="scrollable-table">
-                            <table id="salesTable(name)" class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Amount Sold</th>
-                                        <th>Total Sales</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th><strong>Total</strong></th>
-                                        <th>0</th>
-                                        <th>₱0</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                    <div id="salesContainer" style="display: none;"></div>
 
-                            <button class="btn btn-primary mt-2 mb-5" id="salesTable(name)" onclick="printContent('businessNameSales', 'Business Name')">
-                                <i class="fas fa-print me-2"></i> Print Today’s Sales for (Business Name) Log Report
-                            </button>
 
-                        </div>
-                    </div>
-
-                    <div id="businessB_sales" style="display:none;">
-                        <h2 class="mt-5 mb-3"><b>Today’s Sales for Business B (<?php echo $today; ?>)</b></h2>
-                        <div class="scrollable-table">
-                            <table id="salesTableB" class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Amount Sold</th>
-                                        <th>Total Sales</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th><strong>Total</strong></th>
-                                        <th>0</th>
-                                        <th>₱0</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
 
 
 
@@ -182,25 +181,27 @@ if (!empty($businesses)) {
                             </thead>
 
                             <tbody>
-                                <tr>
-                                    <td>Product 1</td>
-                                    <td>₱100</td>
-                                    <td>₱10000</td>
-                                    <td>Business A</td>
-                                    <td>11/30/2024</td>
-                                </tr>
-                                <tr>
-                                    <td>Product 2</td>
-                                    <td>₱100</td>
-                                    <td>₱10000</td>
-                                    <td>Business A</td>
-                                    <td>11/05/2024</td>
-                                </tr>
+                                <?php if (empty($sales_data)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No Sales for Today</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($sales_data as $sale): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($sale['product_name']); ?></td>
+                                            <td><?= htmlspecialchars($sale['quantity']); ?></td>
+                                            <td>₱<?= number_format($sale['total_sales'], 2); ?></td>
+                                            <td><?= htmlspecialchars($sale['business_name']); ?></td>
+                                            <td><?= htmlspecialchars(date("m/d/Y", strtotime($sale['date']))); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
 
                         </table>
 
-                        <button class="btn btn-primary mt-2 mb-5" id="salesLogTable" onclick="printContent('salesLogTableSection', 'Sales Log Report')">
+                        <button class="btn btn-primary mt-2 mb-5" id="salesLogTable"
+                            onclick="printContent('salesLogTableSection', 'Sales Log Report')">
                             <i class="fas fa-print me-2"></i> Print Sales Log Report
                         </button>
 
@@ -212,6 +213,9 @@ if (!empty($businesses)) {
     </div>
     </div>
 
+    <script>
+
+    </script>
     <script src="../js/print_report.js"></script>
 
     <script src="../js/sidebar.js"></script>

@@ -1,42 +1,102 @@
-const businessProducts = {
-  A: [ // Name of the business
-    {
-      name: "Product 1", // Product name
-      price: 10, // Product price
-    },
-    {
-      name: "Product 2",
-      price: 15,
-    },
-  ],
-  B: [ // Name of the business
-    {
-      name: "Product 3",
-      price: 20,
-    },
-    {
-      name: "Product 4",
-      price: 25,
-    },
-  ],
-};
+document.getElementById("businessSelect").addEventListener("change", function () {
+  const selectedBusiness = this.value;
+  const salesDiv = document.getElementById("salesContainer");
+  salesDiv.innerHTML = "";
 
-// Handle business selection
-document
-  .getElementById("businessSelect")
-  .addEventListener("change", function () {
-    const selectedBusiness = this.value;
-    if (selectedBusiness === "A") {
-      document.getElementById("businessA_sales").style.display = "block";
-      document.getElementById("businessB_sales").style.display = "none";
-    } else if (selectedBusiness === "B") {
-      document.getElementById("businessB_sales").style.display = "block";
-      document.getElementById("businessA_sales").style.display = "none";
-    } else {
-      document.getElementById("businessA_sales").style.display = "none";
-      document.getElementById("businessB_sales").style.display = "none";
-    }
-  });
+  if (salesByBusiness[selectedBusiness]) {
+      // Get today's date in Asia/Manila timezone
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }); // YYYY-MM-DD format
+
+      // Filter sales data for today only
+      const salesData = salesByBusiness[selectedBusiness].filter(
+          (sale) => sale.date === today
+      );
+
+      if (salesData.length === 0) {
+          // No sales for today
+          salesDiv.innerHTML = `
+              <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
+              <p class="text-center mt-3">No Sales for Today</p>
+          `;
+          salesDiv.style.display = "block";
+          return;
+      }
+
+      let tableHTML = `
+          <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
+          <div class="scrollable-table" id="businessSalesTable">
+              <table class="table table-striped table-hover">
+                  <thead class="table-dark">
+                      <tr>
+                          <th>Product</th>
+                          <th>Amount Sold</th>
+                          <th>Total Sales</th>
+                          <th>Date</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+      `;
+
+      let totalQuantity = 0;
+      let totalSales = 0;
+
+      salesData.forEach((sale) => {
+          tableHTML += `
+              <tr>
+                  <td>${sale.product_name}</td>
+                  <td>${sale.quantity || "No Sales For Today"}</td>
+                  <td>${sale.total_sales ? `₱${sale.total_sales}` : "₱0.00"}</td>
+                  <td>${sale.date}</td>
+              </tr>
+          `;
+          totalQuantity += parseInt(sale.quantity || 0, 10);
+          totalSales += parseFloat(sale.total_sales || 0);
+      });
+
+      tableHTML += `
+                  </tbody>
+                  <tfoot>
+                      <tr>
+                          <th><strong>Total</strong></th>
+                          <th>${totalQuantity || "0"}</th>
+                          <th>₱${totalSales.toFixed(2)}</th>
+                          <th></th>
+                      </tr>
+                  </tfoot>
+              </table>
+          </div>
+          <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]}')">
+              <i class="fas fa-print me-2"></i> Print Today’s Sales for ${businesses[selectedBusiness]} Log Report
+          </button>
+      `;
+
+      salesDiv.innerHTML = tableHTML;
+      salesDiv.style.display = "block";
+  } else {
+      // No data for the selected business
+      salesDiv.innerHTML = `
+          <p class="text-center mt-3">No sales data found.</p>
+      `;
+      salesDiv.style.display = "block";
+  }
+});
+
+// Print functionality
+function printContent(elementId, businessName) {
+  const content = document.getElementById(elementId).outerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Print Sales Report</title>');
+  printWindow.document.write('<style>table {width: 100%; border-collapse: collapse;} th, td {border: 1px solid #ddd; padding: 8px;} th {background-color: #f2f2f2;}</style>');
+  printWindow.document.write('</head><body>');
+  printWindow.document.write(`<h2>${businessName} Sales Report</h2>`);
+  printWindow.document.write(content);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+
+
 // Update footer with total sales
 function updateFooter(business) {
   const table = document.getElementById(
@@ -62,22 +122,19 @@ function updateFooter(business) {
 
 // Sales search functionality
 function searchSales() {
-  const filter = document.getElementById("saleSearchBar").value.toLowerCase();
-  const tables = [
-    document.getElementById("salesTableA"),
-    document.getElementById("salesTableB"),
-    document.getElementById("salesLogTable"),
-  ];
-  tables.forEach((table) => {
-    const rows = table
-      .getElementsByTagName("tbody")[0]
-      .getElementsByTagName("tr");
-    for (let row of rows) {
-      const product = row.cells[0].textContent.toLowerCase();
-      row.style.display = product.includes(filter) ? "" : "none";
-    }
+  const filter = document.getElementById('saleSearchBar').value.toLowerCase();
+
+  const rows = document.querySelectorAll('tbody tr');
+
+  rows.forEach(row => {
+      const productCell = row.querySelector('td:first-child'); 
+      if (productCell) {
+          const productName = productCell.textContent.toLowerCase();
+          row.style.display = productName.includes(filter) ? '' : 'none'; 
+      }
   });
 }
+
 
 // Filter sales log by date
 function filterSalesLog() {
@@ -121,6 +178,11 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
       productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
   });
 
+  // Get the current date in Asia/Manila timezone
+  const today = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila",
+  });
+
   Swal.fire({
       title: "Add Sale",
       html: `
@@ -131,7 +193,7 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
           <label for="totalSales">Total Sales</label>
           <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
           <label for="saleDate">Sale Date</label>
-          <input type="date" id="saleDate" class="form-control mb-2" value="${new Date().toISOString().split("T")[0]}" readonly>
+          <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
       `,
       showCancelButton: true,
       confirmButtonText: "Add Sale",
@@ -184,11 +246,7 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                   } else {
                       Swal.fire("Error", data.message, "error");
                   }
-              })
-              // .catch((error) => {
-              //     console.error("Fetch error:", error);
-              //     Swal.fire("Error", "An unexpected error occurred. Please try again later.", "error");
-              // });
+              });
       }
   });
 
