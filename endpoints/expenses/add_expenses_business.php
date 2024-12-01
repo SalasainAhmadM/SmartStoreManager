@@ -2,7 +2,7 @@
 require_once '../../conn/conn.php';
 
 header('Content-Type: application/json');
-
+date_default_timezone_set('Asia/Manila');
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($data['category'], $data['category_id'], $data['expense_type'], $data['amount'], $data['description'], $data['user_id'])) {

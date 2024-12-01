@@ -2,7 +2,7 @@
 require_once '../../conn/conn.php';
 
 header('Content-Type: application/json');
-
+date_default_timezone_set('Asia/Manila');
 // Decode the incoming JSON payload
 $data = json_decode(file_get_contents('php://input'), true);
 

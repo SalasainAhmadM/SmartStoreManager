@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../conn/conn.php';
 require_once '../conn/auth.php';
+require_once '../conn/conn.php';
 
 validateSession('owner');
 
@@ -45,14 +45,10 @@ if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
     unset($_SESSION['login_success']);
 }
 
-
-
-
-
 // SQL query to get the business and branch data
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
-        FROM business b
-        JOIN branch br ON b.id = br.business_id";
+FROM business b
+JOIN branch br ON b.id = br.business_id";
 $result = $conn->query($sql);
 
 // Business chart data
@@ -295,6 +291,22 @@ foreach ($businessData as $businessName => $branches) {
 
 
     </div>
+    <!-- <script>
+        window.onload = function () {
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Welcome!',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                <?php unset($_SESSION['login_success']); ?>
+                <?php if ($isNewOwner): ?>
+                    triggerAddBusinessModal();
+                <?php endif; ?>
+            });
+        };
+    </script> -->
 
 
     <script>
