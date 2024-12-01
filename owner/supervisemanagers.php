@@ -135,7 +135,7 @@ while ($row = $result->fetch_assoc()) {
 
                             <div class="position-relative">
                                 <form class="d-flex" role="search" id="search-form">
-                                    <input class="form-control me-2 w-50" id="search-business" type="search"
+                                    <input class="form-control me-2 w-50" id="search-manager2" type="search"
                                         placeholder="Search manager..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
@@ -206,7 +206,6 @@ while ($row = $result->fetch_assoc()) {
                         <div class="table-responsive mt-5 scrollable-table">
 
                             <table class="table table-striped table-hover mt-5">
-
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
                                         placeholder="Search business or branch..." aria-label="Search">
@@ -224,7 +223,7 @@ while ($row = $result->fetch_assoc()) {
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="business-table-body">
                                     <?php foreach ($businesses as $business_id => $business): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($business['business_name']) ?></td>
@@ -253,24 +252,20 @@ while ($row = $result->fetch_assoc()) {
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
                                                     List of Manager(s)
                                                 </button>
-
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
-
-
                             </table>
+
                         </div>
 
                         <div class="table-responsive mt-5 scrollable-table">
                             <table class="table table-striped table-hover mt-5">
-                                <form class="d-flex" role="search" id="search-form">
-                                    <input class="form-control me-2 w-50" id="search-business" type="search"
+                                <form class="d-flex" role="search" id="search-form" onsubmit="return false;">
+                                    <input class="form-control me-2 w-50" id="search-manager" type="search"
                                         placeholder="Search manager..." aria-label="Search">
-                                    <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
@@ -283,7 +278,7 @@ while ($row = $result->fetch_assoc()) {
                                                     class="fas fa-sort"></i></button></th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="manager-table-body">
                                     <?php if (!empty($assignmanagers)): ?>
                                         <?php foreach ($assignmanagers as $manager): ?>
                                             <tr>
@@ -310,6 +305,7 @@ while ($row = $result->fetch_assoc()) {
                                     <?php endif; ?>
                                 </tbody>
                             </table>
+
                         </div>
 
                     </div>
@@ -734,7 +730,7 @@ while ($row = $result->fetch_assoc()) {
         });
 
         // manager search
-        document.getElementById('search-business').addEventListener('input', function () {
+        document.getElementById('search-manager2').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#manager-table-body tr');
 
@@ -744,6 +740,74 @@ while ($row = $result->fetch_assoc()) {
                     const name = nameCell.textContent.toLowerCase();
                     row.style.display = name.includes(filter) ? '' : 'none';
                 }
+            });
+        });
+        // Manager search functionality
+        document.getElementById('search-manager').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#manager-table-body tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:first-child');
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+        document.getElementById('search-business').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#business-table-body tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:first-child');
+                const locationCells = row.querySelectorAll('td:nth-child(3) li');
+
+                let matchFound = false;
+
+                if (nameCell && nameCell.textContent.toLowerCase().includes(filter)) {
+                    matchFound = true;
+                }
+
+                locationCells.forEach(locationCell => {
+                    if (locationCell.textContent.toLowerCase().includes(filter)) {
+                        matchFound = true;
+                    }
+                });
+
+                row.style.display = matchFound ? '' : 'none';
+            });
+        });
+        // Add an event listener to the search input field
+        document.getElementById('search-business').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#manager-table-body tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('td:first-child');
+                const locationCells = row.querySelectorAll('td:nth-child(3) ul li'); // Adjust to your branch location structure
+
+                let matchesName = false;
+                let matchesLocation = false;
+
+                // Check if the business name matches the filter
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    matchesName = name.includes(filter);
+                }
+
+                // Check if any branch location matches the filter
+                locationCells.forEach(locationCell => {
+                    if (locationCell) {
+                        const location = locationCell.textContent.toLowerCase();
+                        if (location.includes(filter)) {
+                            matchesLocation = true;
+                        }
+                    }
+                });
+
+                // Display the row if it matches either the name or any location
+                row.style.display = matchesName || matchesLocation ? '' : 'none';
             });
         });
 
