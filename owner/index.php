@@ -26,25 +26,24 @@ if ($result->num_rows > 0) {
     $isNewOwner = $row['is_new_owner'] == 1;
 }
 
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+if (isset($_GET['status']) && $_GET['status'] === 'success') {
     echo "
         <script>
-            window.onload = function() {
+            document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'success',
                     title: 'Login Successful',
-                    text: 'Welcome!',
+                    text: 'Welcome to the dashboard!',
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
                     " . ($isNewOwner ? "triggerAddBusinessModal();" : "") . "
                 });
-            };
+            });
         </script>
     ";
     unset($_SESSION['login_success']);
 }
-
 // SQL query to get the business and branch data
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
 FROM business b
@@ -228,7 +227,8 @@ foreach ($businessData as $businessName => $branches) {
                                         </table>
 
 
-                                        <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts" onclick="printTable('product-table', 'Popular Products')">
+                                        <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
+                                            onclick="printTable('product-table', 'Popular Products')">
                                             <i class="fas fa-print me-2"></i> Print Popular Products Report
                                         </button>
 
@@ -239,7 +239,8 @@ foreach ($businessData as $businessName => $branches) {
 
                             <div id="recentActivitiesSection">
                                 <div class="col-md-12 mt-5">
-                                    <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent Activities</b>
+                                    <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent
+                                            Activities</b>
                                     </h1>
                                     <div class="col-md-12 dashboard-content">
                                         <table class="table" id="recent-activities-table">
@@ -272,7 +273,8 @@ foreach ($businessData as $businessName => $branches) {
                                             </tbody>
                                         </table>
 
-                                        <button class="btn btn-primary mt-2 mb-5" id="printRecentActivities" onclick="printTable('recent-activities-table', 'Recent Activities')">
+                                        <button class="btn btn-primary mt-2 mb-5" id="printRecentActivities"
+                                            onclick="printTable('recent-activities-table', 'Recent Activities')">
                                             <i class="fas fa-print me-2"></i> Print Recent Activities Report
                                         </button>
 
@@ -415,9 +417,9 @@ foreach ($businessData as $businessName => $branches) {
                     formData.append('owner_id', ownerId);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
-                            method: 'POST',
-                            body: formData
-                        })
+                        method: 'POST',
+                        body: formData
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {

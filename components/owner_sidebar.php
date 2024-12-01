@@ -97,7 +97,6 @@ if (isset($_GET['logout'])) {
     </div>
 </div>
 
-
 <?php include '../components/js_cdn.php' ?>
 <script src="../js/particle.js"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
