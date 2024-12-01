@@ -30,8 +30,9 @@ function printContent(tabId, title) {
   printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; }');
   printWindow.document.write('table { width: 100%; border-collapse: collapse; margin: 20px 0; }');
   printWindow.document.write('th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }');
-  printWindow.document.write('th { background-color: #f4f4f4; font-weight: bold; }');
+  printWindow.document.write('th {background-color: #333;color: #fff; font-weight: bold; }');
   printWindow.document.write('td { background-color: #fff; }');
+  printWindow.document.write('h1 { text-align: center; }');
   printWindow.document.write('button, .btn, .fas.fa-sort {display: none;}');
   printWindow.document.write('ul {list-style-type: none; padding: 0}');
   printWindow.document.write('@media print {');
