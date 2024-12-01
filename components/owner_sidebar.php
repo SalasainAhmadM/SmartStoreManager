@@ -13,7 +13,7 @@ $stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-$ownersidebar = $result->fetch_assoc();
+$owner = $result->fetch_assoc();
 function logout()
 {
     session_unset();
@@ -82,8 +82,8 @@ if (isset($_GET['logout'])) {
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2"
             data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="../assets/profiles/<?= !empty($ownersidebar['image']) ? $ownersidebar['image'] : 'profile.png' ?>"
-                alt="" width="32" height="32" class="rounded-circle me-2">
+            <img src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : 'profile.png' ?>" alt=""
+                width="32" height="32" class="rounded-circle me-2">
             <strong id="sidebarLogo"><?= ($owner['first_name']) ?>
                 <?= ($owner['middle_name']) ?> <?= ($owner['last_name']) ?></strong>
         </a>
