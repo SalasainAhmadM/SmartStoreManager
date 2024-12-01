@@ -4,30 +4,32 @@ require_once '../../conn/conn.php';
 
 header('Content-Type: application/json');
 
-// Validate request parameters
 if (!isset($_GET['branch_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing branch_id parameter']);
     exit;
 }
 
-// Fetch the branch_id and sanitize it
+// Fetch and sanitize the branch ID
 $branch_id = intval($_GET['branch_id']);
 
-// Ensure the user is authorized to view these expenses
+// Optional month filter
+$selected_month = isset($_GET['month']) ? intval($_GET['month']) : date('m'); // Default to current month
+
+// Get the user ID from the session
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Query to fetch expenses for the specified branch
-    $query = "SELECT id, expense_type, description, amount 
+    // Query to fetch branch expenses filtered by month
+    $query = "SELECT id, expense_type, description, amount, created_at
               FROM expenses 
-              WHERE category = 'branch' AND category_id = ? AND owner_id = ?";
+              WHERE category = 'branch' AND category_id = ? AND owner_id = ? 
+              AND MONTH(created_at) = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ii", $branch_id, $user_id);
+    $stmt->bind_param("iii", $branch_id, $user_id, $selected_month);
     $stmt->execute();
 
     $result = $stmt->get_result();
     $expenses = [];
-
     while ($row = $result->fetch_assoc()) {
         $expenses[] = $row;
     }

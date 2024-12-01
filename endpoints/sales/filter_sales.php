@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once '../conn/auth.php';
-require_once '../conn/conn.php';
+require_once '../../conn/auth.php';
+require_once '../../conn/conn.php';
 validateSession('owner');
 
 header('Content-Type: application/json');

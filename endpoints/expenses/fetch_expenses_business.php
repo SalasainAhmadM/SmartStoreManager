@@ -3,31 +3,28 @@ session_start();
 require_once '../../conn/conn.php';
 
 header('Content-Type: application/json');
-
-// Validate request parameters
+date_default_timezone_set('Asia/Manila');
 if (!isset($_GET['category_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing category_id parameter']);
     exit;
 }
 
-// Fetch the category_id and sanitize it
 $category_id = intval($_GET['category_id']);
-
-// Ensure the user is authorized to view these expenses
+$selected_month = isset($_GET['month']) ? intval($_GET['month']) : date('m');
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Query to fetch expenses for the specified business
-    $query = "SELECT id, expense_type, description, amount 
+    // Query to fetch expenses for the specified business and month
+    $query = "SELECT id, expense_type, description, amount, created_at
               FROM expenses 
-              WHERE category = 'business' AND category_id = ? AND owner_id = ?";
+              WHERE category = 'business' AND category_id = ? AND owner_id = ? 
+              AND MONTH(created_at) = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ii", $category_id, $user_id);
+    $stmt->bind_param("iii", $category_id, $user_id, $selected_month);
     $stmt->execute();
 
     $result = $stmt->get_result();
     $expenses = [];
-
     while ($row = $result->fetch_assoc()) {
         $expenses[] = $row;
     }
