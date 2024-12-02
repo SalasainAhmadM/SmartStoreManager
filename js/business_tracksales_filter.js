@@ -16,12 +16,10 @@ function formatDateToMMDDYYYY(date) {
   return `${month}/${day}/${year}`;
 }
 
-// Filter by Date function
 document.getElementById("filterDateButton").addEventListener("click", function () {
-  // Get today's date in YYYY-MM-DD format
+  
   const today = new Date().toISOString().split("T")[0];
 
-  // Show SweetAlert with the date input field
   Swal.fire({
     title: "Select a Date",
     html: `
@@ -43,19 +41,19 @@ document.getElementById("filterDateButton").addEventListener("click", function (
     },
   }).then((result) => {
     if (result.isConfirmed && result.value) {
-      const selectedDate = result.value; // This is in YYYY-MM-DD format
+      const selectedDate = result.value; 
       const formattedSelectedDate = formatDateToMMDDYYYY(selectedDate);
 
       const rows = document.querySelectorAll("#salesLogTable tbody tr");
       let found = false;
 
       rows.forEach((row) => {
-        const dateCell = row.cells[4].innerText.trim(); // Assuming 5th column is the date
+        const dateCell = row.cells[4].innerText.trim(); 
         if (dateCell === formattedSelectedDate) {
-          row.style.display = ""; // Show row
+          row.style.display = ""; 
           found = true;
         } else {
-          row.style.display = "none"; // Hide row
+          row.style.display = "none"; 
         }
       });
 
