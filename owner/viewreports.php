@@ -7,24 +7,25 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-function fetchBusinessOverview($owner_id) {
+function fetchBusinessOverview($owner_id)
+{
     global $conn;
 
-    // SQL query to fetch businesses, their branches, total sales, and expenses
     $query = "
         SELECT b.id AS business_id, b.name AS business_name,
-               SUM(s.total_sales) AS total_sales,
-               SUM(CASE 
-                   WHEN e.category = 'business' AND e.category_id = b.id THEN e.amount
-                   WHEN e.category = 'branch' AND br.id = e.category_id THEN e.amount
-                   ELSE 0
-               END) AS total_expenses
+            SUM(DISTINCT CASE 
+                WHEN e.category = 'business' AND e.category_id = b.id THEN e.amount
+                ELSE 0
+            END) +
+            SUM(DISTINCT CASE 
+                WHEN e.category = 'branch' AND e.category_id = br.id THEN e.amount
+                ELSE 0
+            END) AS total_expenses
         FROM business b
         LEFT JOIN branch br ON b.id = br.business_id
         LEFT JOIN products p ON p.business_id = b.id
-        LEFT JOIN sales s ON p.id = s.product_id
         LEFT JOIN expenses e ON (e.category = 'business' AND e.category_id = b.id)
-                              OR (e.category = 'branch' AND e.category_id = br.id)
+                            OR (e.category = 'branch' AND e.category_id = br.id)
         WHERE b.owner_id = ?
         GROUP BY b.id, b.name
     ";
@@ -47,11 +48,52 @@ function fetchBusinessOverview($owner_id) {
     }
 }
 
+function fetchSalesData($owner_id)
+{
+    global $conn;
+
+    $query = "
+        SELECT 
+            sales.total_sales, 
+            sales.product_id,
+            COALESCE(branch.business_id, products.business_id) AS business_id
+        FROM 
+            sales
+        LEFT JOIN 
+            branch ON sales.branch_id = branch.id AND sales.branch_id != 0
+        LEFT JOIN 
+            products ON sales.product_id = products.id
+        WHERE 
+            (sales.branch_id != 0 AND branch.business_id IS NOT NULL)
+            OR (sales.branch_id = 0 AND products.business_id IS NOT NULL);
+    ";
+
+    // Execute the query
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $salesData = [];
+        while ($row = $result->fetch_assoc()) {
+            $salesData[] = $row;
+        }
+
+        $stmt->close();
+        return $salesData;
+    } else {
+        return false;
+    }
+}
+
 $businesses = fetchBusinessOverview($owner_id);
+$salesData = fetchSalesData($owner_id);
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,6 +101,7 @@ $businesses = fetchBusinessOverview($owner_id);
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+
 <body class="d-flex">
     <div id="particles-js"></div>
     <?php include '../components/owner_sidebar.php'; ?>
@@ -87,14 +130,23 @@ $businesses = fetchBusinessOverview($owner_id);
                                 <?php
                                 if ($businesses) {
                                     foreach ($businesses as $business) {
+                                        // Find the matching sales data for this business_id
+                                        $total_sales = 0; // Default to 0 if no matching sales data
+                                        foreach ($salesData as $sales) {
+                                            if ($sales['business_id'] == $business['business_id']) {
+                                                $total_sales = $sales['total_sales'];
+                                                break;
+                                            }
+                                        }
+
                                         echo "<tr>";
-                                        echo "<td>" . $business['business_name'] . "</td>";
-                                        echo "<td>₱" . number_format($business['total_sales'], 2) . "</td>";
+                                        echo "<td>" . htmlspecialchars($business['business_name']) . "</td>";
+                                        echo "<td>₱" . number_format($total_sales, 2) . "</td>";
                                         echo "<td>₱" . number_format($business['total_expenses'], 2) . "</td>";
-                                        echo "<td><button class='swal2-print-btn view-branches' onclick=\"showBranchDetails('{$business['business_name']}', [
-                                            {branch: 'Branch 1', sales: 5000, expenses: 2000},
-                                            {branch: 'Branch 2', sales: 6000, expenses: 3000}
-                                        ])\">View Branches</button></td>";
+                                        echo "<td><button class='swal2-print-btn view-branches' onclick=\"showBranchDetails('" . htmlspecialchars($business['business_name']) . "', [
+                                        {branch: 'Branch 1', sales: 5000, expenses: 2000},
+                                        {branch: 'Branch 2', sales: 6000, expenses: 3000}
+                                    ])\">View Branches</button></td>";
                                         echo "</tr>";
                                     }
                                 } else {
@@ -109,8 +161,10 @@ $businesses = fetchBusinessOverview($owner_id);
         </div>
     </div>
 
+
     <script src="../js/owner_view_reports.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
 </body>
+
 </html>
