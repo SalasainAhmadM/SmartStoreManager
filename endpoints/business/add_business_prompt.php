@@ -1,6 +1,5 @@
 <?php
 header('Content-Type: application/json');
-
 require_once '../../conn/conn.php';
 
 try {
@@ -19,8 +18,8 @@ try {
 
     // Insert business into the database
     $query = "
-        INSERT INTO business (name, branch, asset, employee_count, description, created_at, owner_id)
-        VALUES (?, NULL, ?, ?, ?, NOW(), ?)
+        INSERT INTO business (name, asset, employee_count, description, created_at, owner_id)
+        VALUES (?, ?, ?, ?, NOW(), ?)
     ";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('ssssi', $name, $asset, $employeeCount, $description, $owner_id);

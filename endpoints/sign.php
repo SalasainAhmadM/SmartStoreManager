@@ -78,8 +78,9 @@ function handleLogin($conn)
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_role'] = $user['role'];
 
-    echo json_encode(['status' => 'success', 'role' => $user['role']]);
+    echo json_encode(['status' => 'success', 'role' => $user['role'], 'id' => $user['id']]);
 }
+
 
 
 

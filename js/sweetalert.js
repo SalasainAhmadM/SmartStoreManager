@@ -39,11 +39,8 @@ function showLoginModal() {
                 .then(data => {
                     if (data.status === 'success') {
                         // Redirect based on role
-                        if (data.role === 'owner') {
-                            window.location.href = '../owner/index.php?status=success';
-                        } else if (data.role === 'manager') {
-                            window.location.href = '../manager/index.php';
-                        }
+                        const baseURL = data.role === 'owner' ? '../owner/index.php' : '../manager/index.php';
+                        window.location.href = `${baseURL}?id=${data.id}&status=success`;
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
@@ -59,6 +56,7 @@ function showLoginModal() {
         showForgotPasswordModal();
     });
 }
+
 
 
 function showForgotPasswordModal() {
