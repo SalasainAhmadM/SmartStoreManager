@@ -151,7 +151,7 @@ $stmt->close();
                         </table>
 
 
-                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable123"
+                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable"
                             onclick="printContent('expensesPanel', `Expenses List Report for ${document.getElementById('businessSelect').options[document.getElementById('businessSelect').selectedIndex].text} <br> Branch: ${document.getElementById('branchSelect').options[document.getElementById('branchSelect').selectedIndex].text || 'All Branches'} for the month of ${currentMonth} ${currentYear}`)">
                             <i class="fas fa-print me-2"></i> Print Report (Expenses List)
                         </button>
@@ -186,7 +186,7 @@ $stmt->close();
                 document.getElementById('branchName').textContent = branchName;
 
                 // Update the print report button to include the correct title in the onclick function
-                const printButton = document.getElementById('expensesListTable123');
+                const printButton = document.getElementById('expensesListTable');
                 printButton.setAttribute('onclick', `printContent('expensesPanel', 'Expenses List for ${businessName} - Branch: ${branchName} for the month of ${currentMonth} ${currentYear}')`);
             });
         </script>
