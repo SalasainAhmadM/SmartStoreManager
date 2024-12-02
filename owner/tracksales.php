@@ -181,9 +181,16 @@ if (!empty($businesses)) {
                             </thead>
 
                             <tbody>
+                                <?php
+
+                                $manila_time = new DateTime('now', new DateTimeZone('Asia/Manila'));
+                                $today_date = $manila_time->format('m/d/Y');
+                                ?>
                                 <?php if (empty($sales_data)): ?>
                                     <tr>
-                                        <td colspan="5" class="text-center">No Sales for Today</td>
+                                        <td colspan="5" class="text-center">No Sales for
+                                            <?= htmlspecialchars($today_date); ?>
+                                        </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($sales_data as $sale): ?>
@@ -192,11 +199,18 @@ if (!empty($businesses)) {
                                             <td><?= htmlspecialchars($sale['quantity']); ?></td>
                                             <td>₱<?= number_format($sale['total_sales'], 2, '.', ','); ?></td>
                                             <td><?= htmlspecialchars($sale['business_name']); ?></td>
-                                            <td><?= htmlspecialchars(date("m/d/Y", strtotime($sale['date']))); ?></td>
+                                            <td>
+                                                <?php
+                                                $date = new DateTime($sale['date'], new DateTimeZone('UTC'));
+                                                $date->setTimezone(new DateTimeZone('Asia/Manila'));
+                                                echo htmlspecialchars($date->format('m/d/Y h:i A'));
+                                                ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
+
 
 
                         </table>
