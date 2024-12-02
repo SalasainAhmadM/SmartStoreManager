@@ -84,37 +84,44 @@ function fetchSalesByDate(date) {
       },
       body: JSON.stringify({ date }),
   })
-      .then((response) => response.json())
-      .then((data) => {
-          const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
-          tableBody.innerHTML = "";
+  .then((response) => response.json())
+  .then((data) => {
+      const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
+      tableBody.innerHTML = "";
 
-          if (!data.sales || data.sales.length === 0) {
-              tableBody.innerHTML = `
-          <tr>
-              <td colspan="5" class="text-center">No Sales for ${formatDate(date)}</td>
-          </tr>
-      `;
-              return;
-          }
-
-          data.sales.forEach((sale) => {
-              tableBody.innerHTML += `
-          <tr>
-              <td>${sale.product_name}</td>
-              <td>${sale.quantity}</td>
-              <td>₱${parseFloat(sale.total_sales).toFixed(2)}</td>
-              <td>${sale.business_name}</td>
-              <td>${sale.date}</td>
-          </tr>
-      `;
-          });
-      })
-      .catch((error) => {
-          console.error("Error fetching sales data:", error);
-          Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
+      // Formatter for currency
+      const currencyFormatter = new Intl.NumberFormat('en-PH', {
+          style: 'currency',
+          currency: 'PHP',
       });
+
+      if (!data.sales || data.sales.length === 0) {
+          tableBody.innerHTML = `
+              <tr>
+                  <td colspan="5" class="text-center">No Sales for ${formatDate(date)}</td>
+              </tr>
+          `;
+          return;
+      }
+
+      data.sales.forEach((sale) => {
+          tableBody.innerHTML += `
+              <tr>
+                  <td>${sale.product_name}</td>
+                  <td>${sale.quantity}</td>
+                  <td>${currencyFormatter.format(sale.total_sales)}</td>
+                  <td>${sale.business_name}</td>
+                  <td>${sale.date}</td>
+              </tr>
+          `;
+      });
+  })
+  .catch((error) => {
+      console.error("Error fetching sales data:", error);
+      Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
+  });
 }
+
 
 // Date filter functionality
 document.getElementById("filterDateButton").addEventListener("click", function () {
