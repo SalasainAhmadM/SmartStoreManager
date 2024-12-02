@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 01, 2024 at 02:30 AM
+-- Generation Time: Dec 02, 2024 at 06:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -57,10 +57,6 @@ CREATE TABLE `branch` (
 
 INSERT INTO `branch` (`id`, `location`, `business_id`, `created_at`, `updated_at`, `manager_id`) VALUES
 (2, 'Pilar Street', 4, '2024-11-26 22:28:16', '2024-11-30 21:34:04', NULL),
-(3, 'San Jose Cawa Cawa 2', 2, '2024-11-26 22:46:38', '2024-11-30 21:40:55', NULL),
-(4, 'Pilar Street', 3, '2024-11-26 22:47:55', '2024-11-30 21:33:59', NULL),
-(8, 'Governor Lim Avenue', 2, '2024-11-28 20:43:21', '2024-11-30 23:25:31', 2),
-(9, 'Pilar Street', 2, '2024-11-28 20:49:03', '2024-11-29 09:52:36', NULL),
 (10, 'Pilar Street', 5, '2024-11-30 23:53:11', NULL, NULL),
 (11, 'Pershing', 5, '2024-11-30 23:56:29', NULL, NULL),
 (12, 'San Jose Cawa Cawa', 6, '2024-11-30 23:59:46', NULL, 3);
@@ -87,12 +83,17 @@ CREATE TABLE `business` (
 -- Dumping data for table `business`
 --
 
-INSERT INTO `business` (`id`, `name`, `description`, `asset`, `employee_count`, `expense_type`, `expenses`, `image`, `created_at`, `updated_at`, `owner_id`, `manager_id`) VALUES
-(2, 'Printing Shop                                                                                                                                                                                                                                                  ', 'Print and Sublimation', '20000', '20', NULL, NULL, NULL, '2024-11-25 23:07:18', '2024-11-30 21:30:25', 1, NULL),
-(3, 'Monkey Business', 'Print and Sublimation', '11', '11', NULL, NULL, NULL, '2024-11-25 23:13:19', '2024-11-25 23:17:05', 1, NULL),
-(4, 'Shoes                                           ', 'Print and Sublimation', '111', '11', NULL, NULL, NULL, '2024-11-25 23:59:48', '2024-11-26 00:59:06', 1, NULL),
-(5, 'Fast Food', 'Chicken Jjoy with Ricd', '2000000', '20', NULL, NULL, NULL, '2024-11-26 01:26:00', NULL, 1, NULL),
-(6, 'Freelance', 'Web and App Commissions', '1222', '2', NULL, NULL, NULL, '2024-11-30 21:45:34', NULL, 1, NULL);
+INSERT INTO `business` (`id`, `name`, `description`, `asset`, `employee_count`, `created_at`, `updated_at`, `owner_id`, `manager_id`) VALUES
+(2, 'Printing Shop                                                                                                                                                                                                                                                  ', 'Print and Sublimation', '20000', '20', '2024-11-25 23:07:18', '2024-11-30 21:30:25', 1, NULL),
+(3, 'Monkey Business', 'Print and Sublimation', '11', '11', '2024-11-25 23:13:19', '2024-11-25 23:17:05', 1, NULL),
+(4, 'Shoes                                           ', 'Print and Sublimation', '111', '11', '2024-11-25 23:59:48', '2024-11-26 00:59:06', 1, NULL),
+(5, 'Fast Food', 'Chicken Jjoy with Ricd', '2000000', '20', '2024-11-26 01:26:00', NULL, 1, NULL),
+(6, 'Freelance', 'Web and App Commissions', '1222', '2', '2024-11-30 21:45:34', NULL, 1, NULL),
+(9, 'Monkey Business', 'Print and Sublimation', '111', '121', '2024-12-02 09:52:20', NULL, 2, NULL),
+(10, 'Monkey Business', 'Print and Sublimation', '32423', '3423', '2024-12-02 09:53:30', NULL, 1, NULL),
+(11, 'Monkey Business', 'Print and Sublimation', '111', '12312', '2024-12-02 09:59:37', NULL, 1, NULL),
+(12, 'test promt', 'Print and Sublimation', '121412', '21312', '2024-12-02 10:02:18', NULL, 1, NULL),
+(13, 'Fast Food', 'Print and Sublimation', '111', '123', '2024-12-02 10:17:06', NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -102,14 +103,55 @@ INSERT INTO `business` (`id`, `name`, `description`, `asset`, `employee_count`, 
 
 CREATE TABLE `expenses` (
   `id` int(11) NOT NULL,
-  `category` ENUM('business', 'branch') NOT NULL,
-  `category_id` int(11) NOT NULL,
   `expense_type` varchar(255) NOT NULL,
   `amount` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `owner_id` int(11) NOT NULL
+  `owner_id` int(11) NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `category` enum('business','branch') NOT NULL,
+  `month` int(2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `expenses`
+--
+
+INSERT INTO `expenses` (`id`, `expense_type`, `amount`, `description`, `created_at`, `owner_id`, `category_id`, `category`, `month`) VALUES
+(2, 'Capital Expense', '69', 'monkey', '2024-11-29 12:03:30', 1, 3, 'business', 9),
+(3, 'Fixed Expense', '691', 'test', '2024-12-01 19:31:53', 1, 2, 'business', 4),
+(4, 'Operating Expense', '89', 'qwerty', '2024-11-28 19:32:07', 1, 2, 'business', 5),
+(7, 'Variable Expense', '22', 'test', '2024-12-01 14:35:40', 1, 8, 'branch', 2),
+(8, 'Operating Expense', '44', '44', '2024-12-01 14:46:04', 1, 9, 'branch', 4),
+(9, 'Operating Expense', '33', '55', '2024-11-28 14:50:16', 1, 3, 'branch', 1),
+(10, 'Variable Expense', '55', 'test', '2024-12-01 15:05:08', 1, 3, 'branch', 3),
+(11, 'Variable Expense', '12111114', 'test', '2024-12-02 22:38:30', 1, 11, 'branch', 3),
+(12, 'Fixed Expense1', '33', 'test', '2024-12-03 01:17:04', 1, 2, 'branch', 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `expense_type`
+--
+
+CREATE TABLE `expense_type` (
+  `id` int(11) NOT NULL,
+  `type_name` varchar(255) NOT NULL,
+  `is_custom` tinyint(4) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `owner_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `expense_type`
+--
+
+INSERT INTO `expense_type` (`id`, `type_name`, `is_custom`, `created_at`, `owner_id`) VALUES
+(1, 'Fixed Expense1', 0, '0000-00-00 00:00:00', NULL),
+(2, 'Variable Expense', 0, '0000-00-00 00:00:00', NULL),
+(3, 'Operating Expense', 0, '0000-00-00 00:00:00', NULL),
+(4, 'Non-operating Expense', 0, '0000-00-00 00:00:00', NULL),
+(5, 'Capital Expense', 0, '0000-00-00 00:00:00', NULL);
 
 -- --------------------------------------------------------
 
@@ -243,7 +285,8 @@ INSERT INTO `products` (`id`, `name`, `description`, `price`, `type`, `created_a
 (1, 'Basketball Jersey', 'For Basketball2', '399', 'Jersey', '2024-11-26 01:33:26', '2024-11-28 21:01:16', 2),
 (2, 'Secret', 'A secret product', '3000', 'Secret Product', '2024-11-26 09:00:22', '2024-11-26 09:03:51', 3),
 (3, 'T-shirt', 'Teessss', '499', 'Shirt', '2024-11-26 09:08:58', '2024-11-26 09:12:43', 2),
-(4, 'Hoodie', 'Long Sleeve Hoodie', '599', 'Sublimation', '2024-11-26 09:13:33', '2024-11-26 09:13:43', 2);
+(4, 'Hoodie', 'Long Sleeve Hoodie', '599', 'Sublimation', '2024-11-26 09:13:33', '2024-11-26 09:13:43', 2),
+(5, 'DRose Shoes', 'NBA', '399', 'Shoes', '2024-12-02 00:50:05', NULL, 4);
 
 -- --------------------------------------------------------
 
@@ -256,10 +299,27 @@ CREATE TABLE `sales` (
   `quantity` varchar(255) NOT NULL,
   `total_sales` varchar(255) NOT NULL,
   `date` date NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `product_id` int(11) NOT NULL,
-  `branch_id` int(11) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `branch_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `sales`
+--
+
+INSERT INTO `sales` (`id`, `quantity`, `total_sales`, `date`, `created_at`, `product_id`, `branch_id`) VALUES
+(11, '3', '1197', '2024-12-01', '2024-12-01 10:44:39', 1, NULL),
+(12, '2', '798', '2024-12-01', '2024-12-01 10:45:18', 1, NULL),
+(13, '3', '1197', '2024-12-02', '2024-12-01 10:46:22', 1, NULL),
+(14, '3', '1197', '2024-12-02', '2024-12-02 00:45:16', 1, NULL),
+(15, '6', '2394', '2024-12-02', '2024-12-02 00:50:21', 5, NULL),
+(16, '2', '998', '2024-12-02', '2024-12-02 00:50:42', 3, NULL),
+(17, '4', '2396', '2024-12-02', '2024-12-02 00:50:48', 4, NULL),
+(18, '4', '1596', '2024-12-02', '2024-12-02 01:20:13', 1, NULL),
+(19, '123', '49077', '2024-12-03', '2024-12-03 00:27:26', 5, 2),
+(25, '3', '1197', '2024-12-03', '2024-12-03 00:32:43', 5, 2),
+(26, '2', '798', '2024-12-03', '2024-12-03 00:39:14', 1, 0);
 
 --
 -- Indexes for dumped tables
@@ -293,6 +353,13 @@ ALTER TABLE `business`
 ALTER TABLE `expenses`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_expenses_owner` (`owner_id`);
+
+--
+-- Indexes for table `expense_type`
+--
+ALTER TABLE `expense_type`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_expense_type_owner` (`owner_id`);
 
 --
 -- Indexes for table `manager`
@@ -333,7 +400,9 @@ ALTER TABLE `products`
 -- Indexes for table `sales`
 --
 ALTER TABLE `sales`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_sales_product` (`product_id`),
+  ADD KEY `fk_sales_branch` (`branch_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -355,13 +424,19 @@ ALTER TABLE `branch`
 -- AUTO_INCREMENT for table `business`
 --
 ALTER TABLE `business`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `expense_type`
+--
+ALTER TABLE `expense_type`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `manager`
@@ -385,13 +460,13 @@ ALTER TABLE `owner`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- Constraints for dumped tables
@@ -418,6 +493,12 @@ ALTER TABLE `expenses`
   ADD CONSTRAINT `fk_expenses_owner` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `expense_type`
+--
+ALTER TABLE `expense_type`
+  ADD CONSTRAINT `fk_expense_type_owner` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `manager`
 --
 ALTER TABLE `manager`
@@ -428,6 +509,12 @@ ALTER TABLE `manager`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `fk_products_business` FOREIGN KEY (`business_id`) REFERENCES `business` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `sales`
+--
+ALTER TABLE `sales`
+  ADD CONSTRAINT `fk_sales_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
