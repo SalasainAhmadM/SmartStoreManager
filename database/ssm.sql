@@ -257,6 +257,7 @@ CREATE TABLE `sales` (
   `total_sales` varchar(255) NOT NULL,
   `date` date NOT NULL,
   `product_id` int(11) NOT NULL,
+  `branch_id` int(11) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 

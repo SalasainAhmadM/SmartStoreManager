@@ -211,7 +211,6 @@ function handleEditExpense(row) {
 }
 
 
-
 // Function to handle deleting an expense
 function handleDeleteExpense(row) {
     const expenseId = row.dataset.expenseId; // Assuming expense ID is stored in a data attribute

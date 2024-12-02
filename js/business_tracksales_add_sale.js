@@ -145,120 +145,163 @@ function filterSalesLog() {
 }
 
 
-// Handle "Add Sale" button click = functional
+// Handle "Add Sale" button click
 document.getElementById("addSaleButton").addEventListener("click", function () {
-  const selectedBusiness = document.getElementById("businessSelect").value;
+    const selectedBusiness = document.getElementById("businessSelect").value;
 
-  if (!selectedBusiness) {
-      Swal.fire({
-          icon: "warning",
-          title: "No Business Selected",
-          text: "Please select a business first.",
-      });
-      return;
-  }
+    if (!selectedBusiness) {
+        Swal.fire({
+            icon: "warning",
+            title: "No Business Selected",
+            text: "Please select a business first.",
+        });
+        return;
+    }
 
-  const products = productsByBusiness[selectedBusiness] || [];
-  let productOptions = '<option value="">Select a Product</option>';
-  products.forEach((product) => {
-      productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
+    // Fetch branches
+    fetch("../endpoints/sales/fetch_branches.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ business_id: selectedBusiness }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                const branches = data.branches;
+                const hasBranches = branches.length > 0;
+                let branchOptions = '<option value="">Select a Branch</option>';
+                if (hasBranches) {
+                    branches.forEach((branch) => {
+                        branchOptions += `<option value="${branch.id}">${branch.location}</option>`;
+                    });
+                }
+    
+                const products = productsByBusiness[selectedBusiness] || [];
+                let productOptions = '<option value="">Select a Product</option>';
+                products.forEach((product) => {
+                    productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
+                });
+    
+                // Get the current date in Asia/Manila timezone
+                const today = new Date().toLocaleDateString("en-CA", {
+                    timeZone: "Asia/Manila",
+                });
+    
+                Swal.fire({
+                    title: "Add Sales",
+                    html: `
+                        ${hasBranches ? `
+                            <label for="branchSelect">Branch</label>
+                            <select id="branchSelect" class="form-control mb-2">${branchOptions}</select>
+                        ` : `
+                            <p class="text-danger">No branches available for this business.</p>
+                        `}
+                        <label for="productSelect">Product</label>
+                        <select id="productSelect" class="form-control mb-2">${productOptions}</select>
+                        <label for="amountSold">Amount Sold</label>
+                        <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
+                        <label for="totalSales">Total Sales</label>
+                        <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
+                        <label for="saleDate">Sales Date</label>
+                        <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: "Add Sales",
+                    preConfirm: () => {
+                        const branchId = hasBranches ? document.getElementById("branchSelect").value : null;
+                        const productSelect = document.getElementById("productSelect");
+                        const productId = productSelect.value;
+                        const amountSold = parseInt(document.getElementById("amountSold").value, 10);
+                        const totalSales = parseFloat(document.getElementById("totalSales").value.replace("₱", ""));
+                        const saleDate = document.getElementById("saleDate").value;
+    
+                        if (!productId || !amountSold || isNaN(totalSales)) {
+                            Swal.showValidationMessage("Please complete all fields.");
+                            return false;
+                        }
+    
+                        return {
+                            branchId,
+                            productId,
+                            amountSold,
+                            totalSales,
+                            saleDate,
+                            businessId: selectedBusiness,
+                        };
+                    },
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const saleData = result.value;
+    
+                        fetch("../endpoints/sales/add_sales.php", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                branch_id: saleData.branchId,
+                                product_id: saleData.productId,
+                                quantity: saleData.amountSold,
+                                total_sales: saleData.totalSales,
+                                sale_date: saleData.saleDate,
+                                business_id: saleData.businessId,
+                            }),
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    Swal.fire("Success", data.message, "success");
+                                    addSaleToTable(
+                                        saleData.branchId,
+                                        saleData.productId,
+                                        saleData.amountSold,
+                                        saleData.totalSales,
+                                        saleData.saleDate
+                                    );
+                                } else {
+                                    Swal.fire("Error", data.message, "error");
+                                }
+                            });
+                    }
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        })
+        .catch(() => {
+            Swal.fire("Error", "Failed to fetch branches.", "error");
+        });
+    
+
+  
+    document.addEventListener("input", (event) => {
+        if (event.target.id === "amountSold") {
+            const productSelect = document.getElementById("productSelect");
+            const selectedProduct = productsByBusiness[selectedBusiness].find(
+                (product) => product.id == productSelect.value
+            );
+            if (selectedProduct) {
+                const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
+                document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
+            }
+        }
+    });
   });
+  
+  // Function to add sale to the table dynamically
+  function addSaleToTable(branchId, productId, amountSold, totalSales, saleDate) {
+    const table = document.getElementById(`salesTable${branchId}`).getElementsByTagName("tbody")[0];
+    const productName = productsByBusiness[branchId].find((product) => product.id == productId).name;
+    const branchName = document.querySelector(`#branchSelect option[value="${branchId}"]`).textContent;
 
-  // Get the current date in Asia/Manila timezone
-  const today = new Date().toLocaleDateString("en-CA", {
-      timeZone: "Asia/Manila",
-  });
-
-  Swal.fire({
-      title: "Add Sales",
-      html: `
-          <label for="productSelect">Product</label>
-          <select id="productSelect" class="form-control mb-2">${productOptions}</select>
-          <label for="amountSold">Amount Sold</label>
-          <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
-          <label for="totalSales">Total Sales</label>
-          <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
-          <label for="saleDate">Sales Date</label>
-          <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "Add Sales",
-      preConfirm: () => {
-          const productSelect = document.getElementById("productSelect");
-          const productId = productSelect.value;
-          const amountSold = parseInt(document.getElementById("amountSold").value, 10);
-          const totalSales = parseFloat(document.getElementById("totalSales").value.replace("₱", ""));
-          const saleDate = document.getElementById("saleDate").value;
-
-          if (!productId || !amountSold || isNaN(totalSales)) {
-              Swal.showValidationMessage("Please complete all fields.");
-              return false;
-          }
-
-          return {
-              productId,
-              amountSold,
-              totalSales,
-              saleDate
-          };
-      },
-  }).then((result) => {
-      if (result.isConfirmed) {
-          const saleData = result.value;
-
-          fetch("../endpoints/sales/add_sales.php", {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                  product_id: saleData.productId,
-                  quantity: saleData.amountSold,
-                  total_sales: saleData.totalSales,
-                  sale_date: saleData.saleDate,
-              }),
-          })
-              .then((response) => response.json())
-              .then((data) => {
-                  if (data.success) {
-                      Swal.fire("Success", data.message, "success");
-                      addSaleToTable(
-                          selectedBusiness,
-                          saleData.productId,
-                          saleData.amountSold,
-                          saleData.totalSales,
-                          saleData.saleDate
-                      );
-                  } else {
-                      Swal.fire("Error", data.message, "error");
-                  }
-              });
-      }
-  });
-
-  document.addEventListener("input", (event) => {
-      if (event.target.id === "amountSold") {
-          const productSelect = document.getElementById("productSelect");
-          const selectedProduct = productsByBusiness[selectedBusiness].find(
-              (product) => product.id == productSelect.value
-          );
-          if (selectedProduct) {
-              const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
-              document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
-          }
-      }
-  });
-});
-
-// Function to add sale to the table dynamically
-function addSaleToTable(businessId, productId, amountSold, totalSales, saleDate) {
-  const table = document.getElementById(`salesTable${businessId}`).getElementsByTagName("tbody")[0];
-  const productName = productsByBusiness[businessId].find((product) => product.id == productId).name;
-  const newRow = table.insertRow();
-  newRow.innerHTML = `
-      <td>${productName}</td>
-      <td>${amountSold}</td>
-      <td>₱${totalSales.toFixed(2)}</td>
-      <td>${saleDate}</td> 
-  `;
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+        <td>${branchName}</td>
+        <td>${productName}</td>
+        <td>${amountSold}</td>
+        <td>₱${totalSales.toFixed(2)}</td>
+        <td>${saleDate}</td>
+    `;
 }
