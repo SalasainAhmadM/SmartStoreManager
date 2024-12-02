@@ -22,11 +22,11 @@ $created_at = date('Y-m-d H:i:s'); // Set current timestamp
 $month = $data['month']; // Month field for reference
 
 // Prepare the SQL query to insert the expense
-$query = "INSERT INTO expenses (category, category_id, expense_type, amount, description, created_at, owner_id) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)";
-
+$query = "INSERT INTO expenses (category, category_id, expense_type, amount, description, created_at, owner_id, month) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("sissssi", $category, $branch_id, $expense_type, $amount, $description, $created_at, $user_id);
+$stmt->bind_param("sissssii", $category, $branch_id, $expense_type, $amount, $description, $created_at, $user_id, $month);
+
 
 try {
     if ($stmt->execute()) {

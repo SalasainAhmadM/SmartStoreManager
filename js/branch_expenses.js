@@ -36,10 +36,15 @@ document.getElementById('businessSelect').addEventListener('change', function ()
 
 document.getElementById('branchSelect').addEventListener('change', function () {
     const branchId = this.value;
-    const branchNameElement = document.getElementById('branchName');
-    const selectedBranch = this.selectedOptions[0].text;
+    
+    // Default to the current month if not explicitly set
+    const selectedMonth = document.getElementById("currentMonthYear").getAttribute("data-month-value") || (new Date().getMonth() + 1); 
 
-    branchNameElement.textContent = selectedBranch;
+    // Fetch branch expenses for the selected branch and month
+    fetchBranchExpenses(branchId, selectedMonth);
+});
+
+function fetchBranchExpenses(branchId, selectedMonth = new Date().getMonth() + 1) {
     const expensesList = document.getElementById('expensesList');
     const expensesPanel = document.getElementById('expensesPanel');
 
@@ -47,21 +52,19 @@ document.getElementById('branchSelect').addEventListener('change', function () {
     expensesPanel.classList.remove('show');
 
     if (branchId) {
-        fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}`)
+        fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}&month=${selectedMonth}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     if (data.data.length > 0) {
-                        // Formatter for currency
                         const currencyFormatter = new Intl.NumberFormat('en-PH', {
                             style: 'currency',
                             currency: 'PHP'
                         });
 
-                        // Populate expenses table
                         data.data.forEach(expense => {
                             const row = document.createElement('tr');
-                            row.setAttribute('data-expense-id', expense.id); // Add expense ID as a data attribute
+                            row.setAttribute('data-expense-id', expense.id);
                             row.innerHTML = `
                                 <td>${expense.expense_type}</td>
                                 <td>${expense.description}</td>
@@ -72,12 +75,9 @@ document.getElementById('branchSelect').addEventListener('change', function () {
                                 </td>`;
                             expensesList.appendChild(row);
                         });
-                        
                     } else {
-                        // Add "No expenses found!" row
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td colspan="4" style="text-align: center;">No expenses found</td>`;
+                        row.innerHTML = `<td colspan="4" style="text-align: center;">No expenses found for the selected month</td>`;
                         expensesList.appendChild(row);
                     }
                     expensesPanel.classList.add('show');
@@ -87,7 +87,8 @@ document.getElementById('branchSelect').addEventListener('change', function () {
             })
             .catch(err => console.error('Error fetching expenses:', err));
     }
-});
+}
+
 
 
 // Add event listeners for edit and delete actions
@@ -133,20 +134,20 @@ document.getElementById('addExpenseBtn').addEventListener('click', async functio
             <select id="expenseType" class="swal2-input">
                 ${expenseTypesOptions}
             </select>
-            <select id="expenseMonth" class="swal2-input">
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-            </select>
+           <select id="expenseMonth" class="swal2-input">
+    <option value="1">January</option>
+    <option value="2">February</option>
+    <option value="3">March</option>
+    <option value="4">April</option>
+    <option value="5">May</option>
+    <option value="6">June</option>
+    <option value="7">July</option>
+    <option value="8">August</option>
+    <option value="9">September</option>
+    <option value="10">October</option>
+    <option value="11">November</option>
+    <option value="12">December</option>
+</select>
         `,
         focusConfirm: false,
         showCancelButton: true,
@@ -202,9 +203,8 @@ function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
     const description = row.children[1].textContent;
     const formattedAmount = row.children[2].textContent;
-
-    // Remove currency formatting to get the plain numerical amount
     const amount = parseFloat(formattedAmount.replace(/[^0-9.-]+/g, ''));
+    const currentMonth = new Date().getMonth() + 1;
 
     fetchExpenseTypes().then(expenseTypes => {
         let expenseTypesOptions = '';
@@ -220,6 +220,9 @@ function handleEditExpense(row) {
                 <select id="editType" class="swal2-input">
                     ${expenseTypesOptions}
                 </select>
+                <select id="editMonth" class="swal2-input">
+                    ${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}" ${i + 1 === currentMonth ? 'selected' : ''}>${new Date(0, i).toLocaleString('default', { month: 'long' })}</option>`).join('')}
+                </select>
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -229,13 +232,14 @@ function handleEditExpense(row) {
                 const newDescription = document.getElementById('editDescription').value.trim();
                 const newAmount = document.getElementById('editAmount').value.trim();
                 const newType = document.getElementById('editType').value;
+                const newMonth = document.getElementById('editMonth').value;
 
-                if (!newDescription || !newAmount || !newType) {
+                if (!newDescription || !newAmount || !newType || !newMonth) {
                     Swal.showValidationMessage('Please fill out all fields');
                     return false;
                 }
 
-                return { newDescription, newAmount, newType };
+                return { newDescription, newAmount, newType, newMonth };
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -248,7 +252,8 @@ function handleEditExpense(row) {
                         expense_id: expenseId,
                         expense_type: result.value.newType,
                         description: result.value.newDescription,
-                        amount: result.value.newAmount
+                        amount: result.value.newAmount,
+                        month: result.value.newMonth
                     })
                 })
                     .then(response => response.json())
@@ -270,6 +275,7 @@ function handleEditExpense(row) {
         console.error('Error:', error);
     });
 }
+
 
 
 // Function to handle deleting an expense
@@ -322,6 +328,9 @@ document.getElementById("monthDropdownMenu").addEventListener("click", function 
         expensesList.innerHTML = ""; // Clear current list
         expensesPanel.classList.remove("show");
 
+        // Set selected month to the dropdown's value
+        document.getElementById("currentMonthYear").setAttribute("data-month-value", monthValue);
+
         if (branchId) {
             fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}&month=${monthValue}`)
                 .then(response => response.json())
@@ -358,9 +367,19 @@ document.getElementById("monthDropdownMenu").addEventListener("click", function 
 });
 
 document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+    const monthValue = e.target.getAttribute("data-value");
     const monthText = e.target.textContent;
     const currentYear = new Date().getFullYear();
-    document.getElementById("currentMonthYear").textContent = `${monthText} ${currentYear}`;
+    const branchId = document.getElementById("branchSelect").value;
+
+    if (monthValue) {
+        document.getElementById("currentMonthYear").textContent = `${monthText} ${currentYear}`;
+        document.getElementById("currentMonthYear").setAttribute("data-month-value", monthValue);
+
+        if (branchId) {
+            fetchBranchExpenses(branchId, monthValue);
+        }
+    }
 });
 
 

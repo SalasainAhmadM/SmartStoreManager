@@ -4,6 +4,7 @@ require_once '../../conn/conn.php';
 
 header('Content-Type: application/json');
 date_default_timezone_set('Asia/Manila');
+
 if (!isset($_GET['category_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing category_id parameter']);
     exit;
@@ -15,10 +16,9 @@ $user_id = $_SESSION['user_id'];
 
 try {
     // Query to fetch expenses for the specified business and month
-    $query = "SELECT id, expense_type, description, amount, created_at
+    $query = "SELECT id, expense_type, description, amount, month
               FROM expenses 
-              WHERE category = 'business' AND category_id = ? AND owner_id = ? 
-              AND MONTH(created_at) = ?";
+              WHERE category = 'business' AND category_id = ? AND owner_id = ? AND month = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("iii", $category_id, $user_id, $selected_month);
     $stmt->execute();

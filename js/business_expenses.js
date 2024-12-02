@@ -102,6 +102,8 @@ document.getElementById("monthDropdownMenu").addEventListener("click", function 
                     } else {
                         data.data.forEach(expense => {
                             const row = document.createElement('tr');
+                            row.setAttribute('data-expense-id', expense.id); 
+                            row.setAttribute('data-month', expense.month); // Store the month for editing
                             row.innerHTML = `
                                 <td>${expense.expense_type}</td>
                                 <td>${expense.description}</td>
@@ -125,6 +127,7 @@ document.getElementById("monthDropdownMenu").addEventListener("click", function 
     document.getElementById("currentMonthYear").textContent = `${monthText} ${new Date().getFullYear()}`;
 });
 
+
 function fetchExpenseTypes() {
     return fetch('../endpoints/expenses/get_expense_types.php')
         .then(response => response.json())
@@ -142,13 +145,20 @@ function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
     const description = row.children[1].textContent;
     const formattedAmount = row.children[2].textContent;
+    const currentMonth = row.dataset.month; 
 
-    // Remove currency formatting to get the plain numerical amount
     const amount = parseFloat(formattedAmount.replace(/[^0-9.-]+/g, ''));
 
     fetchExpenseTypes().then(expenseTypes => {
         const options = expenseTypes.map(type => 
             `<option value="${type}" ${type === expenseType ? 'selected' : ''}>${type}</option>`
+        ).join('');
+
+        const monthOptions = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ].map((month, index) => 
+            `<option value="${index + 1}" ${parseInt(currentMonth, 10) === index + 1 ? 'selected' : ''}>${month}</option>`
         ).join('');
 
         Swal.fire({
@@ -159,6 +169,9 @@ function handleEditExpense(row) {
                 <select id="editType" class="swal2-input">
                     ${options}
                 </select>
+                <select id="editMonth" class="swal2-input">
+                    ${monthOptions}
+                </select>
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -168,13 +181,14 @@ function handleEditExpense(row) {
                 const newDescription = document.getElementById('editDescription').value.trim();
                 const newAmount = document.getElementById('editAmount').value.trim();
                 const newType = document.getElementById('editType').value;
+                const newMonth = document.getElementById('editMonth').value;
 
-                if (!newDescription || !newAmount || !newType) {
+                if (!newDescription || !newAmount || !newType || !newMonth) {
                     Swal.showValidationMessage('Please fill out all fields');
                     return false;
                 }
 
-                return { newDescription, newAmount, newType };
+                return { newDescription, newAmount, newType, newMonth };
             }
         }).then(result => {
             if (result.isConfirmed) {
@@ -187,7 +201,8 @@ function handleEditExpense(row) {
                         expense_id: expenseId,
                         expense_type: result.value.newType,
                         description: result.value.newDescription,
-                        amount: result.value.newAmount // Send the normal amount format
+                        amount: result.value.newAmount,
+                        month: result.value.newMonth 
                     })
                 })
                 .then(response => response.json())
@@ -209,6 +224,7 @@ function handleEditExpense(row) {
         console.error('Error:', err);
     });
 }
+
 
 
 // Function to handle deleting an expense
@@ -261,6 +277,20 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
                 <select id="expenseType" class="swal2-input">
                     ${options}
                 </select>
+                <select id="expenseMonth" class="swal2-input">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -270,13 +300,14 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
                 const description = document.getElementById('expenseDescription').value.trim();
                 const amount = document.getElementById('expenseAmount').value.trim();
                 const type = document.getElementById('expenseType').value;
+                const month = document.getElementById('expenseMonth').value;
 
-                if (!description || !amount || !type) {
+                if (!description || !amount || !type || !month) {
                     Swal.showValidationMessage('Please fill out all fields');
                     return false;
                 }
 
-                return { description, amount, type };
+                return { description, amount, type, month };
             }
         }).then(result => {
             if (result.isConfirmed) {
@@ -290,6 +321,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
                         expense_type: result.value.type,
                         amount: result.value.amount,
                         description: result.value.description,
+                        month: result.value.month,
                         user_id: ownerId
                     })
                 })
@@ -312,7 +344,6 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
         console.error('Error:', err);
     });
 });
-
 
 
 function getCurrentDateInManila() {
