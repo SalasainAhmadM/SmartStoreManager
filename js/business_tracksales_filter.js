@@ -87,12 +87,14 @@ function fetchSalesByDate(date) {
       const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
       tableBody.innerHTML = "";
 
-      // Formatter for currency
+      // Formatter for PHP currency with desired format
       const currencyFormatter = new Intl.NumberFormat('en-PH', {
           style: 'currency',
           currency: 'PHP',
+          minimumFractionDigits: 2,
       });
 
+      // Fallback if no sales data exists
       if (!data.sales || data.sales.length === 0) {
           tableBody.innerHTML = `
               <tr>
@@ -102,6 +104,7 @@ function fetchSalesByDate(date) {
           return;
       }
 
+      // Populate the table with sales data
       data.sales.forEach((sale) => {
           tableBody.innerHTML += `
               <tr>

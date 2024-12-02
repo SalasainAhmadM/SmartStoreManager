@@ -1,85 +1,95 @@
 document.getElementById("businessSelect").addEventListener("change", function () {
-  const selectedBusiness = this.value;
-  const salesDiv = document.getElementById("salesContainer");
-  salesDiv.innerHTML = "";
-
-  if (salesByBusiness[selectedBusiness]) {
-      // Get today's date in Asia/Manila timezone
-      const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }); // YYYY-MM-DD format
-
-      // Filter sales data for today only
-      const salesData = salesByBusiness[selectedBusiness].filter(
-          (sale) => sale.date === today
-      );
-
-      if (salesData.length === 0) {
-          // No sales for today
-          salesDiv.innerHTML = `
-              <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
-              <p class="text-center mt-3">No Sales for Today</p>
-          `;
-          salesDiv.style.display = "block";
-          return;
-      }
-
-      let tableHTML = `
-          <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
-          <div class="scrollable-table" id="businessSalesTable">
-              <table class="table table-striped table-hover">
-                  <thead class="table-dark">
-                      <tr>
-                          <th>Product</th>
-                          <th>Amount Sold</th>
-                          <th>Total Sales</th>
-                          <th>Date</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-      `;
-
-      let totalQuantity = 0;
-      let totalSales = 0;
-
-      salesData.forEach((sale) => {
-          tableHTML += `
-              <tr>
-                  <td>${sale.product_name}</td>
-                  <td>${sale.quantity || "No Sales For Today"}</td>
-                  <td>${sale.total_sales ? `₱${sale.total_sales}` : "₱0.00"}</td>
-                  <td>${sale.date}</td>
-              </tr>
-          `;
-          totalQuantity += parseInt(sale.quantity || 0, 10);
-          totalSales += parseFloat(sale.total_sales || 0);
-      });
-
-      tableHTML += `
-                  </tbody>
-                  <tfoot>
-                      <tr>
-                          <th><strong>Total</strong></th>
-                          <th>${totalQuantity || "0"}</th>
-                          <th>₱${totalSales.toFixed(2)}</th>
-                          <th></th>
-                      </tr>
-                  </tfoot>
-              </table>
-          </div>
-          <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
-              <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
-          </button>
-      `;
-
-      salesDiv.innerHTML = tableHTML;
-      salesDiv.style.display = "block";
-  } else {
-      // No data for the selected business
-      salesDiv.innerHTML = `
-          <p class="text-center mt-3">No sales data found.</p>
-      `;
-      salesDiv.style.display = "block";
-  }
-});
+    const selectedBusiness = this.value;
+    const salesDiv = document.getElementById("salesContainer");
+    salesDiv.innerHTML = "";
+  
+    if (salesByBusiness[selectedBusiness]) {
+        // Get today's date in Asia/Manila timezone
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }); // YYYY-MM-DD format
+  
+        // Filter sales data for today only
+        const salesData = salesByBusiness[selectedBusiness].filter(
+            (sale) => sale.date === today
+        );
+  
+        if (salesData.length === 0) {
+            // No sales for today
+            salesDiv.innerHTML = `
+                <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
+                <p class="text-center mt-3">No Sales for Today</p>
+            `;
+            salesDiv.style.display = "block";
+            return;
+        }
+  
+        // Custom function to format numbers with commas and the peso sign
+        const formatNumberWithCommas = (number) => {
+            const num = parseFloat(number).toFixed(2); // Ensure two decimal places
+            const parts = num.split("."); // Split integer and decimal parts
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas to integer part
+            return `₱${parts.join(".")}`; // Join integer and decimal parts with peso sign
+        };
+  
+        let tableHTML = `
+            <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
+            <div class="scrollable-table" id="businessSalesTable">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product</th>
+                            <th>Amount Sold</th>
+                            <th>Total Sales</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+  
+        let totalQuantity = 0;
+        let totalSales = 0;
+  
+        salesData.forEach((sale) => {
+            const formattedTotalSales = formatNumberWithCommas(sale.total_sales || 0);
+            tableHTML += `
+                <tr>
+                    <td>${sale.product_name}</td>
+                    <td>${sale.quantity || "No Sales For Today"}</td>
+                    <td>${formattedTotalSales}</td>
+                    <td>${sale.date}</td>
+                </tr>
+            `;
+            totalQuantity += parseInt(sale.quantity || 0, 10);
+            totalSales += parseFloat(sale.total_sales || 0);
+        });
+  
+        tableHTML += `
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th><strong>Total</strong></th>
+                            <th>${totalQuantity || "0"}</th>
+                            <th>${formatNumberWithCommas(totalSales)}</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
+                <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
+            </button>
+        `;
+  
+        salesDiv.innerHTML = tableHTML;
+        salesDiv.style.display = "block";
+    } else {
+        // No data for the selected business
+        salesDiv.innerHTML = `
+            <p class="text-center mt-3">No sales data found.</p>
+        `;
+        salesDiv.style.display = "block";
+    }
+  });
+  
 
 
 
