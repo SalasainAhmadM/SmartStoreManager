@@ -66,7 +66,7 @@ document.getElementById("businessSelect").addEventListener("change", function ()
               </table>
           </div>
           <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
-              <i class="fas fa-print me-2"></i> Print Today’s Sales for ${businesses[selectedBusiness]} Log Report
+              <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
           </button>
       `;
 

@@ -134,7 +134,7 @@ $stmt->close();
                         </div>
 
 
-                        <table class="table table-striped table-hover mt-4" id="expensesListTable">
+                        <table class="table table-striped table-hover mt-4" id="expensesListTableBranch">
                             <thead class="table-dark position-sticky top-0">
                                 <tr>
                                     <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
@@ -151,7 +151,7 @@ $stmt->close();
                         </table>
 
 
-                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTable123"
+                        <button class="btn btn-primary mt-2 mb-5" id="expensesListTableBranch"
                             onclick="printContent('expensesPanel', `Expenses List Report for ${document.getElementById('businessSelect').options[document.getElementById('businessSelect').selectedIndex].text} <br> Branch: ${document.getElementById('branchSelect').options[document.getElementById('branchSelect').selectedIndex].text || 'All Branches'} for the month of ${currentMonth} ${currentYear}`)">
                             <i class="fas fa-print me-2"></i> Print Report (Expenses List)
                         </button>
@@ -186,9 +186,24 @@ $stmt->close();
                 document.getElementById('branchName').textContent = branchName;
 
                 // Update the print report button to include the correct title in the onclick function
-                const printButton = document.getElementById('expensesListTable123');
+                const printButton = document.getElementById('expensesListTable');
                 printButton.setAttribute('onclick', `printContent('expensesPanel', 'Expenses List for ${businessName} - Branch: ${branchName} for the month of ${currentMonth} ${currentYear}')`);
             });
+        </script>
+
+
+        <script>
+        function getPrintReportTitle() {
+        const businessSelect = document.getElementById('businessSelect');
+        const branchSelect = document.getElementById('branchSelect');
+        const currentMonth = new Date().toLocaleString('default', { month: 'long' }); // e.g., 'December'
+        const currentYear = new Date().getFullYear(); // e.g., 2024
+
+        const businessName = businessSelect.options[businessSelect.selectedIndex]?.text || 'All Businesses';
+        const branchName = branchSelect.options[branchSelect.selectedIndex]?.text || 'All Branches';
+
+        return `Expenses List Report for ${businessName} <br> Branch: ${branchName} for the month of ${currentMonth} ${currentYear}`;
+        }
         </script>
 
 
