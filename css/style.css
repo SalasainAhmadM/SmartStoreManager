@@ -171,6 +171,7 @@ p {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   /* text-align: center; */
+  cursor: pointer;
 }
 
 .card-one {
@@ -672,6 +673,7 @@ ol, ul {
   color: white;
   border: 2px solid #1a1a1a;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 
 
