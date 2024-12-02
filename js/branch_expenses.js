@@ -34,7 +34,6 @@ document.getElementById('businessSelect').addEventListener('change', function ()
 });
 
 
-
 document.getElementById('branchSelect').addEventListener('change', function () {
     const branchId = this.value;
     const branchNameElement = document.getElementById('branchName');
@@ -53,6 +52,12 @@ document.getElementById('branchSelect').addEventListener('change', function () {
             .then(data => {
                 if (data.success) {
                     if (data.data.length > 0) {
+                        // Formatter for currency
+                        const currencyFormatter = new Intl.NumberFormat('en-PH', {
+                            style: 'currency',
+                            currency: 'PHP'
+                        });
+
                         // Populate expenses table
                         data.data.forEach(expense => {
                             const row = document.createElement('tr');
@@ -60,7 +65,7 @@ document.getElementById('branchSelect').addEventListener('change', function () {
                             row.innerHTML = `
                                 <td>${expense.expense_type}</td>
                                 <td>${expense.description}</td>
-                                <td>${expense.amount}</td>
+                                <td>${currencyFormatter.format(expense.amount)}</td>
                                 <td style="text-align:center;">
                                     <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
                                     <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
@@ -83,6 +88,7 @@ document.getElementById('branchSelect').addEventListener('change', function () {
             .catch(err => console.error('Error fetching expenses:', err));
     }
 });
+
 
 // Add event listeners for edit and delete actions
 document.getElementById('expensesList').addEventListener('click', function (e) {
@@ -195,7 +201,10 @@ document.getElementById('addExpenseBtn').addEventListener('click', async functio
 function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
     const description = row.children[1].textContent;
-    const amount = row.children[2].textContent;
+    const formattedAmount = row.children[2].textContent;
+
+    // Remove currency formatting to get the plain numerical amount
+    const amount = parseFloat(formattedAmount.replace(/[^0-9.-]+/g, ''));
 
     fetchExpenseTypes().then(expenseTypes => {
         let expenseTypesOptions = '';

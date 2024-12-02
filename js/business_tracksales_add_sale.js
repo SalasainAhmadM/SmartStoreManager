@@ -170,7 +170,7 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
   });
 
   Swal.fire({
-      title: "Add Sale",
+      title: "Add Sales",
       html: `
           <label for="productSelect">Product</label>
           <select id="productSelect" class="form-control mb-2">${productOptions}</select>
@@ -178,11 +178,11 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
           <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
           <label for="totalSales">Total Sales</label>
           <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
-          <label for="saleDate">Sale Date</label>
+          <label for="saleDate">Sales Date</label>
           <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
       `,
       showCancelButton: true,
-      confirmButtonText: "Add Sale",
+      confirmButtonText: "Add Sales",
       preConfirm: () => {
           const productSelect = document.getElementById("productSelect");
           const productId = productSelect.value;

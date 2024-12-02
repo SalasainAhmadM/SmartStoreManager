@@ -190,13 +190,14 @@ if (!empty($businesses)) {
                                         <tr>
                                             <td><?= htmlspecialchars($sale['product_name']); ?></td>
                                             <td><?= htmlspecialchars($sale['quantity']); ?></td>
-                                            <td>₱<?= number_format($sale['total_sales'], 2); ?></td>
+                                            <td>₱<?= number_format($sale['total_sales'], 2, '.', ','); ?></td>
                                             <td><?= htmlspecialchars($sale['business_name']); ?></td>
                                             <td><?= htmlspecialchars(date("m/d/Y", strtotime($sale['date']))); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
+
 
                         </table>
 

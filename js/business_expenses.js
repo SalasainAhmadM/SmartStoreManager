@@ -27,6 +27,12 @@ document.getElementById('businessSelect').addEventListener('change', function ()
                     return;
                 }
 
+                // Formatter for currency
+                const currencyFormatter = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP'
+                });
+
                 // Check if there are expenses
                 if (data.data.length === 0) {
                     const noExpensesRow = document.createElement('tr');
@@ -41,7 +47,7 @@ document.getElementById('businessSelect').addEventListener('change', function ()
                         row.innerHTML = `
                             <td>${expense.expense_type}</td>
                             <td>${expense.description}</td>
-                            <td>${expense.amount}</td>
+                            <td>${currencyFormatter.format(expense.amount)}</td>
                             <td style="text-align:center;">
                                 <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
                                 <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
@@ -59,6 +65,7 @@ document.getElementById('businessSelect').addEventListener('change', function ()
         document.getElementById('expensesPanel').classList.remove('show');
     }
 });
+
 
 // Add event listeners for edit and delete actions
 document.getElementById('expensesList').addEventListener('click', function (e) {
@@ -134,7 +141,10 @@ function fetchExpenseTypes() {
 function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
     const description = row.children[1].textContent;
-    const amount = row.children[2].textContent;
+    const formattedAmount = row.children[2].textContent;
+
+    // Remove currency formatting to get the plain numerical amount
+    const amount = parseFloat(formattedAmount.replace(/[^0-9.-]+/g, ''));
 
     fetchExpenseTypes().then(expenseTypes => {
         const options = expenseTypes.map(type => 
@@ -177,7 +187,7 @@ function handleEditExpense(row) {
                         expense_id: expenseId,
                         expense_type: result.value.newType,
                         description: result.value.newDescription,
-                        amount: result.value.newAmount
+                        amount: result.value.newAmount // Send the normal amount format
                     })
                 })
                 .then(response => response.json())
@@ -199,6 +209,7 @@ function handleEditExpense(row) {
         console.error('Error:', err);
     });
 }
+
 
 
 // Function to handle deleting an expense
