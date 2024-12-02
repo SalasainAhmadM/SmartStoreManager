@@ -33,84 +33,6 @@ document.getElementById('businessSelect').addEventListener('change', function ()
     }
 });
 
-document.getElementById('addExpenseBtn').addEventListener('click', function() {
-    Swal.fire({
-        title: 'Add Expenses',
-        html: `
-            <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
-            <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
-            <select id="expenseType" class="swal2-input">
-                <option value="Fixed Expense">Fixed Expenses</option>
-                <option value="Variable Expense">Variable Expenses</option>
-                <option value="Operating Expense">Operating Expenses</option>
-                <option value="Non-operating Expense">Non-operating Expenses</option>
-                <option value="Capital Expense">Capital Expenses</option>
-            </select>
-            <select id="expenseMonth" class="swal2-input">
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-            </select>
-        `,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Add Expense',
-        cancelButtonText: 'Close',
-        preConfirm: () => {
-            const branchId = document.getElementById('branchSelect').value; 
-            const branchName = document.getElementById('branchSelect').selectedOptions[0].text; 
-            const description = document.getElementById('expenseDescription').value;
-            const amount = document.getElementById('expenseAmount').value;
-            const type = document.getElementById('expenseType').value;
-            const month = document.getElementById('expenseMonth').value;
-
-            if (!branchId || !description || !amount || !type || !month) {
-                Swal.showValidationMessage('Please fill out all fields');
-                return false;
-            }
-
-            return { branchId, branchName, description, amount, type, month };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Send data to the backend
-            fetch('../endpoints/expenses/add_expenses_branch.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    branch_id: result.value.branchId, 
-                    branch_name: result.value.branchName, 
-                    description: result.value.description,
-                    amount: result.value.amount,
-                    expense_type: result.value.type,
-                    user_id: ownerId, 
-                    month: result.value.month
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Added!', data.message, 'success');
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    Swal.fire('Error!', 'An unexpected error occurred', 'error');
-                    console.error('Error:', error);
-                });
-        }
-    });
-});
 
 
 document.getElementById('branchSelect').addEventListener('change', function () {
@@ -171,72 +93,175 @@ document.getElementById('expensesList').addEventListener('click', function (e) {
     }
 });
 
-// Function to handle editing an expense
+function fetchExpenseTypes() {
+    return fetch('../endpoints/expenses/get_expense_types.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                return data.types; // Return the list of types
+            } else {
+                throw new Error('Failed to fetch expense types');
+            }
+        });
+}
+
+document.getElementById('addExpenseBtn').addEventListener('click', async function () {
+    let expenseTypesOptions = '<option value="">Select Expense Type</option>';
+    
+    try {
+        const expenseTypes = await fetchExpenseTypes();
+        expenseTypes.forEach(type => {
+            expenseTypesOptions += `<option value="${type}">${type}</option>`;
+        });
+    } catch (error) {
+        console.error('Error fetching expense types:', error);
+        Swal.fire('Error', 'Failed to load expense types. Please try again.', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Add Expenses',
+        html: `
+            <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
+            <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
+            <select id="expenseType" class="swal2-input">
+                ${expenseTypesOptions}
+            </select>
+            <select id="expenseMonth" class="swal2-input">
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Add Expense',
+        cancelButtonText: 'Close',
+        preConfirm: () => {
+            const branchId = document.getElementById('branchSelect').value;
+            const branchName = document.getElementById('branchSelect').selectedOptions[0].text;
+            const description = document.getElementById('expenseDescription').value;
+            const amount = document.getElementById('expenseAmount').value;
+            const type = document.getElementById('expenseType').value;
+            const month = document.getElementById('expenseMonth').value;
+
+            if (!branchId || !description || !amount || !type || !month) {
+                Swal.showValidationMessage('Please fill out all fields');
+                return false;
+            }
+
+            return { branchId, branchName, description, amount, type, month };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../endpoints/expenses/add_expenses_branch.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    branch_id: result.value.branchId,
+                    branch_name: result.value.branchName,
+                    description: result.value.description,
+                    amount: result.value.amount,
+                    expense_type: result.value.type,
+                    user_id: ownerId,
+                    month: result.value.month
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Added!', data.message, 'success');
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error!', 'An unexpected error occurred', 'error');
+                    console.error('Error:', error);
+                });
+        }
+    });
+});
+
 function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
     const description = row.children[1].textContent;
     const amount = row.children[2].textContent;
 
-    Swal.fire({
-        title: 'Edit Expense',
-        html: `
-            <input type="text" id="editDescription" class="swal2-input" placeholder="Description" value="${description}">
-            <input type="number" id="editAmount" class="swal2-input" placeholder="Amount" value="${amount}">
-            <select id="editType" class="swal2-input">
-                <option value="Fixed Expense" ${expenseType === 'Fixed Expense' ? 'selected' : ''}>Fixed Expenses</option>
-                <option value="Variable Expense" ${expenseType === 'Variable Expense' ? 'selected' : ''}>Variable Expenses</option>
-                <option value="Operating Expense" ${expenseType === 'Operating Expense' ? 'selected' : ''}>Operating Expenses</option>
-                <option value="Non-operating Expense" ${expenseType === 'Non-operating Expense' ? 'selected' : ''}>Non-operating Expenses</option>
-                <option value="Capital Expense" ${expenseType === 'Capital Expense' ? 'selected' : ''}>Capital Expenses</option>
-            </select>
-        `,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Save Changes',
-        cancelButtonText: 'Cancel',
-        preConfirm: () => {
-            const newDescription = document.getElementById('editDescription').value.trim();
-            const newAmount = document.getElementById('editAmount').value.trim();
-            const newType = document.getElementById('editType').value;
+    fetchExpenseTypes().then(expenseTypes => {
+        let expenseTypesOptions = '';
+        expenseTypes.forEach(type => {
+            expenseTypesOptions += `<option value="${type}" ${type === expenseType ? 'selected' : ''}>${type}</option>`;
+        });
 
-            if (!newDescription || !newAmount || !newType) {
-                Swal.showValidationMessage('Please fill out all fields');
-                return false;
-            }
+        Swal.fire({
+            title: 'Edit Expense',
+            html: `
+                <input type="text" id="editDescription" class="swal2-input" placeholder="Description" value="${description}">
+                <input type="number" id="editAmount" class="swal2-input" placeholder="Amount" value="${amount}">
+                <select id="editType" class="swal2-input">
+                    ${expenseTypesOptions}
+                </select>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Save Changes',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                const newDescription = document.getElementById('editDescription').value.trim();
+                const newAmount = document.getElementById('editAmount').value.trim();
+                const newType = document.getElementById('editType').value;
 
-            return { newDescription, newAmount, newType };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Assuming expense ID is stored in a data attribute
-            const expenseId = row.dataset.expenseId;
-
-            fetch('../endpoints/expenses/edit_expense_branch.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    expense_id: expenseId,
-                    expense_type: result.value.newType,
-                    description: result.value.newDescription,
-                    amount: result.value.newAmount
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Updated!', 'Expense updated successfully.', 'success');
-                    // Optionally, refresh the expenses list or update the row directly
-                } else {
-                    Swal.fire('Error', data.message, 'error');
+                if (!newDescription || !newAmount || !newType) {
+                    Swal.showValidationMessage('Please fill out all fields');
+                    return false;
                 }
-            })
-            .catch(err => {
-                Swal.fire('Error', 'An unexpected error occurred.', 'error');
-                console.error('Error:', err);
-            });
-        }
+
+                return { newDescription, newAmount, newType };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const expenseId = row.dataset.expenseId;
+
+                fetch('../endpoints/expenses/edit_expense_branch.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        expense_id: expenseId,
+                        expense_type: result.value.newType,
+                        description: result.value.newDescription,
+                        amount: result.value.newAmount
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Updated!', 'Expense updated successfully.', 'success');
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                        console.error('Error:', err);
+                    });
+            }
+        });
+    }).catch(error => {
+        Swal.fire('Error', 'Failed to load expense types. Please try again.', 'error');
+        console.error('Error:', error);
     });
 }
+
 
 // Function to handle deleting an expense
 function handleDeleteExpense(row) {
