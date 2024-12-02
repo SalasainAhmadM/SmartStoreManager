@@ -57,11 +57,15 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
     ";
     unset($_SESSION['login_success']);
 }
-// SQL query to get the business and branch data
+
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
-FROM business b
-JOIN branch br ON b.id = br.business_id";
-$result = $conn->query($sql);
+        FROM business b
+        JOIN branch br ON b.id = br.business_id
+        WHERE b.owner_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Business chart data
 $businessData = [];
@@ -84,78 +88,6 @@ foreach ($businessData as $businessName => $branches) {
     ];
 }
 ?>
-<script>
-    const ownerId = <?= json_encode(isset($_GET['id']) ? $_GET['id'] : $_SESSION['user_id']); ?>;
-
-    const businessData = <?php echo json_encode($processedData); ?>;
-
-    function triggerAddBusinessModal(ownerId) {
-        Swal.fire({
-            title: 'Add New Business',
-            html: `
-        <div>
-            <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-            <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
-            <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-            <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-        </div>
-        `,
-            confirmButtonText: 'Add Business',
-            showCancelButton: true,
-            cancelButtonText: 'Skip'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const businessName = document.getElementById('business-name').value.trim();
-                const businessDescription = document.getElementById('business-description').value.trim();
-                const businessAsset = document.getElementById('business-asset').value.trim();
-                const employeeCount = document.getElementById('employee-count').value.trim();
-
-                if (!businessName || !businessAsset || !employeeCount) {
-                    Swal.fire('Error', 'Please fill in all required fields.', 'error');
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('name', businessName);
-                formData.append('description', businessDescription);
-                formData.append('asset', businessAsset);
-                formData.append('employeeCount', employeeCount);
-                formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
-
-                fetch('../endpoints/business/add_business_prompt.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire('Success', data.message, 'success').then(() => {
-                                const url = new URL(window.location.href);
-                                url.search = '';
-                                history.replaceState(null, '', url);
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire('Error', data.message, 'error');
-                        }
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
-                        console.error(err);
-                    });
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                // Trigger update to set is_new_owner = 0
-                fetch('../endpoints/business/skip_business_prompt.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ owner_id: ownerId || <?= json_encode($_SESSION['user_id']); ?> })
-                })
-            }
-        });
-    }
-
-
-</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -387,6 +319,82 @@ foreach ($businessData as $businessName => $branches) {
             });
         };
     </script> -->
+
+
+    <script>
+        const ownerId = <?= json_encode(isset($_GET['id']) ? $_GET['id'] : $_SESSION['user_id']); ?>;
+
+        const businessData = <?php echo json_encode($processedData); ?>;
+
+        function triggerAddBusinessModal(ownerId) {
+            Swal.fire({
+                title: 'Add New Business',
+                html: `
+        <div>
+            <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+            <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+            <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
+            <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+        </div>
+        `,
+                confirmButtonText: 'Add Business',
+                showCancelButton: true,
+                cancelButtonText: 'Skip'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const businessName = document.getElementById('business-name').value.trim();
+                    const businessDescription = document.getElementById('business-description').value.trim();
+                    const businessAsset = document.getElementById('business-asset').value.trim();
+                    const employeeCount = document.getElementById('employee-count').value.trim();
+
+                    if (!businessName || !businessAsset || !employeeCount) {
+                        Swal.fire('Error', 'Please fill in all required fields.', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('name', businessName);
+                    formData.append('description', businessDescription);
+                    formData.append('asset', businessAsset);
+                    formData.append('employeeCount', employeeCount);
+                    formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
+
+                    fetch('../endpoints/business/add_business_prompt.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success', data.message, 'success').then(() => {
+                                    const url = new URL(window.location.href);
+                                    url.search = '';
+                                    history.replaceState(null, '', url);
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.message, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                            console.error(err);
+                        });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Trigger update to set is_new_owner = 0
+                    fetch('../endpoints/business/skip_business_prompt.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            owner_id: ownerId || <?= json_encode($_SESSION['user_id']); ?>
+                        })
+                    })
+                }
+            });
+        }
+    </script>
 
 
     <script>
