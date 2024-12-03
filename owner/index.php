@@ -58,7 +58,7 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
     unset($_SESSION['login_success']);
 }
 
-// Query to fetch businesses and their branches for the owner
+
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
         FROM business b
         JOIN branch br ON b.id = br.business_id
@@ -78,16 +78,56 @@ if ($result->num_rows > 0) {
     echo "No data found";
 }
 
+
+
+// Query to fetch popular products
+$sql = " 
+    SELECT 
+        p.name, 
+        b.name AS business_name, 
+        p.type, 
+        p.price, 
+        p.description, 
+        SUM(s.total_sales) AS total_sales
+    FROM 
+        sales s
+    LEFT JOIN branch br ON s.branch_id = br.id
+    LEFT JOIN business b ON br.business_id = b.id
+    JOIN products p ON s.product_id = p.id
+    WHERE s.total_sales > 0
+    GROUP BY p.name, b.name, p.type, p.price, p.description
+    ORDER BY total_sales DESC
+    LIMIT 10"; // Limit to top 10 products
+
+
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Initialize an array to store popular products data
+$popularProducts = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $popularProducts[] = $row;
+    }
+} else {
+    echo "No popular products found.";
+}
+
+
+
+
 // Modify to fetch expenses for each branch
 $processedData = [];
 foreach ($businessData as $businessName => $branches) {
     foreach ($branches as $branchLocation) {
-        
+
+        // Fetch total expenses for the branch
         $sqlExpenses = "SELECT SUM(e.amount) AS total_expenses
                         FROM expenses e
                         JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
                         WHERE br.location = ?";
-                        
+
         $stmtExpenses = $conn->prepare($sqlExpenses);
         $stmtExpenses->bind_param("s", $branchLocation);
         $stmtExpenses->execute();
@@ -98,9 +138,26 @@ foreach ($businessData as $businessName => $branches) {
             $totalExpenses = $rowExpenses['total_expenses'];
         }
 
+        // Fetch total sales for the branch
+        $sqlSales = "SELECT SUM(s.total_sales) AS total_sales
+                FROM sales s
+                JOIN branch br ON s.branch_id = br.id
+                JOIN business b ON br.business_id = b.id
+                WHERE br.location = ?";
+
+        $stmtSales = $conn->prepare($sqlSales);
+        $stmtSales->bind_param("s", $branchLocation);
+        $stmtSales->execute();
+        $resultSales = $stmtSales->get_result();
+        $totalSales = 0;
+        if ($resultSales->num_rows > 0) {
+            $rowSales = $resultSales->fetch_assoc();
+            $totalSales = $rowSales['total_sales'];
+        }
+
         // Store processed data with business name, branch, expenses and sales
         $processedData[$businessName][$branchLocation] = [
-            'sales' => rand(50000, 150000),
+            'sales' => $totalSales,
             'expenses' => $totalExpenses,
         ];
     }
@@ -151,12 +208,15 @@ foreach ($businessData as $businessName => $branches) {
                                         // Loop through each branch of the business and display the expenses
                                         foreach ($branches as $branchLocation) {
                                             $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'];
+                                            $totalSales = $processedData[$businessName][$branchLocation]['sales'];
+
                                             echo '<tr>';
                                             echo '<td>' . $branchLocation . '</td>';
-                                            echo '<td> 8000 </td>';
+                                            echo '<td>' . number_format($totalSales, 2) . '</td>';
                                             echo '<td>' . number_format($totalExpenses, 2) . '</td>';
                                             echo '</tr>';
                                         }
+
 
                                         echo '</tbody>';
                                         echo '</table>';
@@ -212,65 +272,35 @@ foreach ($businessData as $businessName => $branches) {
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>Laptop</td>
-                                                <td>Business A</td>
-                                                <td>Services</td>
-                                                <td>₱5000</td>
-                                                <td>Awesome Service</td>
-                                                <td>₱1,000,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Custom T-Shirts</td>
-                                                <td>Business B</td>
-                                                <td>Products</td>
-                                                <td>₱4000</td>
-                                                <td>Awesome T-Shirts</td>
-                                                <td>₱500,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Coffee Beans</td>
-                                                <td>Business C</td>
-                                                <td>Products</td>
-                                                <td>₱2,000</td>
-                                                <td>Awesome Coffee Beans</td>
-                                                <td>₱10,000</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Coffee Beans</td>
-                                                <td>Business C</td>
-                                                <td>Products</td>
-                                                <td>₱777,000</td>
-                                                <td>Awesome Coffee Beans</td>
-                                                <td>₱222,210,000</td>
-                                            </tr>
+                                            <?php foreach ($popularProducts as $product): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($product['name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['business_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
                                         </tbody>
                                     </table>
 
-
-                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
-                                        onclick="printTable('product-table', 'Popular Products')">
+                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts" onclick="printTable('product-table', 'Popular Products')">
                                         <i class="fas fa-print me-2"></i> Print Report (Popular Products)
                                     </button>
-
                                 </div>
                             </div>
                         </div>
+
 
 
                         <div id="recentActivitiesSection">
