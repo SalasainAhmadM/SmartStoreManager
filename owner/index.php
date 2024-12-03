@@ -58,7 +58,9 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
     unset($_SESSION['login_success']);
 }
 
-// Query to fetch businesses and their branches for the owner
+
+
+
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
         FROM business b
         JOIN branch br ON b.id = br.business_id
@@ -82,12 +84,12 @@ if ($result->num_rows > 0) {
 $processedData = [];
 foreach ($businessData as $businessName => $branches) {
     foreach ($branches as $branchLocation) {
-        
+
         $sqlExpenses = "SELECT SUM(e.amount) AS total_expenses
                         FROM expenses e
                         JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
                         WHERE br.location = ?";
-                        
+
         $stmtExpenses = $conn->prepare($sqlExpenses);
         $stmtExpenses->bind_param("s", $branchLocation);
         $stmtExpenses->execute();
@@ -98,9 +100,26 @@ foreach ($businessData as $businessName => $branches) {
             $totalExpenses = $rowExpenses['total_expenses'];
         }
 
+        // Fetch total sales for the branch
+        $sqlSales = "SELECT SUM(s.total_sales) AS total_sales
+                FROM sales s
+                JOIN branch br ON s.branch_id = br.id
+                JOIN business b ON br.business_id = b.id
+                WHERE br.location = ?";
+
+        $stmtSales = $conn->prepare($sqlSales);
+        $stmtSales->bind_param("s", $branchLocation);
+        $stmtSales->execute();
+        $resultSales = $stmtSales->get_result();
+        $totalSales = 0;
+        if ($resultSales->num_rows > 0) {
+            $rowSales = $resultSales->fetch_assoc();
+            $totalSales = $rowSales['total_sales'];
+        }
+
         // Store processed data with business name, branch, expenses and sales
         $processedData[$businessName][$branchLocation] = [
-            'sales' => rand(50000, 150000),
+            'sales' => $totalSales,
             'expenses' => $totalExpenses,
         ];
     }
@@ -151,12 +170,15 @@ foreach ($businessData as $businessName => $branches) {
                                         // Loop through each branch of the business and display the expenses
                                         foreach ($branches as $branchLocation) {
                                             $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'];
+                                            $totalSales = $processedData[$businessName][$branchLocation]['sales']; 
+                                        
                                             echo '<tr>';
                                             echo '<td>' . $branchLocation . '</td>';
-                                            echo '<td> 8000 </td>';
-                                            echo '<td>' . number_format($totalExpenses, 2) . '</td>';
+                                            echo '<td>' . number_format($totalSales, 2) . '</td>'; 
+                                            echo '<td>' . number_format($totalExpenses, 2) . '</td>'; 
                                             echo '</tr>';
                                         }
+                                        
 
                                         echo '</tbody>';
                                         echo '</table>';
