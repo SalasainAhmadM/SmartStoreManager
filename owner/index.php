@@ -85,6 +85,7 @@ $processedData = [];
 foreach ($businessData as $businessName => $branches) {
     foreach ($branches as $branchLocation) {
 
+          // Fetch total expenses for the branch
         $sqlExpenses = "SELECT SUM(e.amount) AS total_expenses
                         FROM expenses e
                         JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
