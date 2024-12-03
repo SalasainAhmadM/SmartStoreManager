@@ -137,6 +137,7 @@ $salesData = fetchSalesData($owner_id);
                                     foreach ($businesses as $business) {
                                         // Find the matching sales data for this business_id
                                         $total_sales = 0; // Default to 0 if no matching sales data
+                                        $total_expenses = 0;
                                         foreach ($salesData as $sales) {
                                             if ($sales['business_id'] == $business['business_id']) {
                                                 $total_sales = $sales['total_sales'];
