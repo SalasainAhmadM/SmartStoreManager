@@ -55,9 +55,15 @@ $stmt->close();
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
                                 </label>
 
-                                <label for="branchRadio" onclick="window.location.href='manageexpenses _branch.php'">
+                                <label style="margin-right: 2rem;" for="branchRadio"
+                                    onclick="window.location.href='manageexpenses_branch.php'">
                                     <input type="radio" name="selection" value="branch" id="branchRadio">
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
+                                </label>
+
+                                <label for="typesRadio" onclick="window.location.href='manageexpense_types.php'">
+                                    <input type="radio" name="selection" value="branch" id="typesRadio">
+                                    <i class="fa-solid fa-money-check-dollar"></i><strong>Expense Types</strong>
                                 </label>
                             </div>
 

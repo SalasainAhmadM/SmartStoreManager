@@ -58,9 +58,15 @@ $stmt->close();
                                     <i class="fas fa-briefcase me-2"></i> <strong>Business</strong>
                                 </label>
 
-                                <label for="branchRadio" checked>
+                                <label style="margin-right: 2rem;" for="branchRadio" checked>
                                     <input type="radio" name="selection" value="branch" id="branchRadio">
                                     <i class="fas fa-store me-2"></i> <strong>Branch</strong>
+                                </label>
+
+                                <label style="margin-right: 2rem;"
+                                    onclick="window.location.href='manageexpense_types.php'">
+                                    <input type="radio" name="selection" value="business" id="typesRadio" checked>
+                                    <i class="fa-solid fa-money-check-dollar"></i> <strong>Expense Types</strong>
                                 </label>
                             </div>
 
@@ -193,17 +199,17 @@ $stmt->close();
 
 
         <script>
-        function getPrintReportTitle() {
-        const businessSelect = document.getElementById('businessSelect');
-        const branchSelect = document.getElementById('branchSelect');
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' }); // e.g., 'December'
-        const currentYear = new Date().getFullYear(); // e.g., 2024
+            function getPrintReportTitle() {
+                const businessSelect = document.getElementById('businessSelect');
+                const branchSelect = document.getElementById('branchSelect');
+                const currentMonth = new Date().toLocaleString('default', { month: 'long' }); // e.g., 'December'
+                const currentYear = new Date().getFullYear(); // e.g., 2024
 
-        const businessName = businessSelect.options[businessSelect.selectedIndex]?.text || 'All Businesses';
-        const branchName = branchSelect.options[branchSelect.selectedIndex]?.text || 'All Branches';
+                const businessName = businessSelect.options[businessSelect.selectedIndex]?.text || 'All Businesses';
+                const branchName = branchSelect.options[branchSelect.selectedIndex]?.text || 'All Branches';
 
-        return `Expenses List Report for ${businessName} <br> Branch: ${branchName} for the month of ${currentMonth} ${currentYear}`;
-        }
+                return `Expenses List Report for ${businessName} <br> Branch: ${branchName} for the month of ${currentMonth} ${currentYear}`;
+            }
         </script>
 
 

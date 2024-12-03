@@ -133,12 +133,16 @@ function fetchExpenseTypes() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                return data.types; // Return the list of types
+                return data.types; // Return the list of expense types
             } else {
                 throw new Error('Failed to fetch expense types');
             }
+        })
+        .catch(error => {
+            console.error('Error fetching expense types:', error);
         });
 }
+
 
 // Function to handle editing an expense
 function handleEditExpense(row) {
@@ -264,8 +268,12 @@ function handleDeleteExpense(row) {
 }
 
 
-
 document.getElementById('addExpenseBtn').addEventListener('click', function () {
+    // Get the current date in Asia/Manila timezone
+    const currentDate = new Date();
+    const options = { timeZone: 'Asia/Manila', month: 'numeric' };
+    const currentMonth = new Intl.DateTimeFormat('en-US', options).format(currentDate);
+
     fetchExpenseTypes().then(expenseTypes => {
         const options = expenseTypes.map(type => `<option value="${type}">${type}</option>`).join('');
 
@@ -278,18 +286,18 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
                     ${options}
                 </select>
                 <select id="expenseMonth" class="swal2-input">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    <option value="1" ${currentMonth == 1 ? 'selected' : ''}>January</option>
+                    <option value="2" ${currentMonth == 2 ? 'selected' : ''}>February</option>
+                    <option value="3" ${currentMonth == 3 ? 'selected' : ''}>March</option>
+                    <option value="4" ${currentMonth == 4 ? 'selected' : ''}>April</option>
+                    <option value="5" ${currentMonth == 5 ? 'selected' : ''}>May</option>
+                    <option value="6" ${currentMonth == 6 ? 'selected' : ''}>June</option>
+                    <option value="7" ${currentMonth == 7 ? 'selected' : ''}>July</option>
+                    <option value="8" ${currentMonth == 8 ? 'selected' : ''}>August</option>
+                    <option value="9" ${currentMonth == 9 ? 'selected' : ''}>September</option>
+                    <option value="10" ${currentMonth == 10 ? 'selected' : ''}>October</option>
+                    <option value="11" ${currentMonth == 11 ? 'selected' : ''}>November</option>
+                    <option value="12" ${currentMonth == 12 ? 'selected' : ''}>December</option>
                 </select>
             `,
             focusConfirm: false,
@@ -344,6 +352,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
         console.error('Error:', err);
     });
 });
+
 
 
 function getCurrentDateInManila() {

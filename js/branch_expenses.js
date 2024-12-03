@@ -105,16 +105,25 @@ function fetchExpenseTypes() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                return data.types; // Return the list of types
+                return data.types; // Return the list of expense types
             } else {
                 throw new Error('Failed to fetch expense types');
             }
+        })
+        .catch(error => {
+            console.error('Error fetching expense types:', error);
         });
 }
 
+
 document.getElementById('addExpenseBtn').addEventListener('click', async function () {
     let expenseTypesOptions = '<option value="">Select Expense Type</option>';
-    
+
+    // Get the current date and time in Asia/Manila
+    const currentDate = new Date();
+    const options = { timeZone: 'Asia/Manila', month: 'numeric' };
+    const currentMonth = new Intl.DateTimeFormat('en-US', options).format(currentDate);
+
     try {
         const expenseTypes = await fetchExpenseTypes();
         expenseTypes.forEach(type => {
@@ -134,20 +143,20 @@ document.getElementById('addExpenseBtn').addEventListener('click', async functio
             <select id="expenseType" class="swal2-input">
                 ${expenseTypesOptions}
             </select>
-           <select id="expenseMonth" class="swal2-input">
-    <option value="1">January</option>
-    <option value="2">February</option>
-    <option value="3">March</option>
-    <option value="4">April</option>
-    <option value="5">May</option>
-    <option value="6">June</option>
-    <option value="7">July</option>
-    <option value="8">August</option>
-    <option value="9">September</option>
-    <option value="10">October</option>
-    <option value="11">November</option>
-    <option value="12">December</option>
-</select>
+            <select id="expenseMonth" class="swal2-input">
+                <option value="1" ${currentMonth == 1 ? 'selected' : ''}>January</option>
+                <option value="2" ${currentMonth == 2 ? 'selected' : ''}>February</option>
+                <option value="3" ${currentMonth == 3 ? 'selected' : ''}>March</option>
+                <option value="4" ${currentMonth == 4 ? 'selected' : ''}>April</option>
+                <option value="5" ${currentMonth == 5 ? 'selected' : ''}>May</option>
+                <option value="6" ${currentMonth == 6 ? 'selected' : ''}>June</option>
+                <option value="7" ${currentMonth == 7 ? 'selected' : ''}>July</option>
+                <option value="8" ${currentMonth == 8 ? 'selected' : ''}>August</option>
+                <option value="9" ${currentMonth == 9 ? 'selected' : ''}>September</option>
+                <option value="10" ${currentMonth == 10 ? 'selected' : ''}>October</option>
+                <option value="11" ${currentMonth == 11 ? 'selected' : ''}>November</option>
+                <option value="12" ${currentMonth == 12 ? 'selected' : ''}>December</option>
+            </select>
         `,
         focusConfirm: false,
         showCancelButton: true,
@@ -198,6 +207,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', async functio
         }
     });
 });
+
 
 function handleEditExpense(row) {
     const expenseType = row.children[0].textContent;
@@ -314,57 +324,7 @@ function handleDeleteExpense(row) {
     });
 }
 
-document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
-    const monthValue = e.target.getAttribute("data-value");
-    if (monthValue) {
-        const branchId = document.getElementById("branchSelect").value;
-        const branchNameElement = document.getElementById("branchName");
-        const selectedBranch = document.getElementById("branchSelect").selectedOptions[0].text;
 
-        branchNameElement.textContent = selectedBranch;
-        const expensesList = document.getElementById("expensesList");
-        const expensesPanel = document.getElementById("expensesPanel");
-
-        expensesList.innerHTML = ""; // Clear current list
-        expensesPanel.classList.remove("show");
-
-        // Set selected month to the dropdown's value
-        document.getElementById("currentMonthYear").setAttribute("data-month-value", monthValue);
-
-        if (branchId) {
-            fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}&month=${monthValue}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.data.length > 0) {
-                            data.data.forEach(expense => {
-                                const row = document.createElement("tr");
-                                row.setAttribute("data-expense-id", expense.id);
-                                row.innerHTML = `
-                                    <td>${expense.expense_type}</td>
-                                    <td>${expense.description}</td>
-                                    <td>${expense.amount}</td>
-                                    <td style="text-align:center;">
-                                        <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
-                                        <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
-                                    </td>`;
-                                expensesList.appendChild(row);
-                            });
-                        } else {
-                            const noExpensesRow = document.createElement("tr");
-                            noExpensesRow.innerHTML = `
-                                <td colspan="4" style="text-align: center;">No expenses found for the selected month</td>`;
-                            expensesList.appendChild(noExpensesRow);
-                        }
-                        expensesPanel.classList.add("show");
-                    } else {
-                        console.error(data.message);
-                    }
-                })
-                .catch(err => console.error("Error fetching expenses:", err));
-        }
-    }
-});
 
 document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
     const monthValue = e.target.getAttribute("data-value");
@@ -395,3 +355,56 @@ function getCurrentDateInManila() {
     const options = { year: "numeric", month: "2-digit", day: "2-digit" };
     return new Date(date).toLocaleDateString("en-US", options);
   }
+
+
+  // document.getElementById("monthDropdownMenu").addEventListener("click", function (e) {
+//     const monthValue = e.target.getAttribute("data-value");
+//     if (monthValue) {
+//         const branchId = document.getElementById("branchSelect").value;
+//         const branchNameElement = document.getElementById("branchName");
+//         const selectedBranch = document.getElementById("branchSelect").selectedOptions[0].text;
+
+//         branchNameElement.textContent = selectedBranch;
+//         const expensesList = document.getElementById("expensesList");
+//         const expensesPanel = document.getElementById("expensesPanel");
+
+//         expensesList.innerHTML = ""; // Clear current list
+//         expensesPanel.classList.remove("show");
+
+//         // Set selected month to the dropdown's value
+//         document.getElementById("currentMonthYear").setAttribute("data-month-value", monthValue);
+
+//         if (branchId) {
+//             fetch(`../endpoints/expenses/fetch_expenses_branch.php?branch_id=${branchId}&month=${monthValue}`)
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     if (data.success) {
+//                         if (data.data.length > 0) {
+//                             data.data.forEach(expense => {
+//                                 const row = document.createElement("tr");
+//                                 row.setAttribute("data-expense-id", expense.id);
+//                                 row.innerHTML = `
+//                                     <td>${expense.expense_type}</td>
+//                                     <td>${expense.description}</td>
+//                                     <td>${expense.amount}</td>
+//                                     <td style="text-align:center;">
+//                                         <a href="#" class="text-primary me-3"><i class="fas fa-edit"></i></a>
+//                                         <a href="#" class="text-danger"><i class="fas fa-trash"></i></a>
+//                                     </td>`;
+//                                 expensesList.appendChild(row);
+//                             });
+//                         } else {
+//                             const noExpensesRow = document.createElement("tr");
+//                             noExpensesRow.innerHTML = `
+//                                 <td colspan="4" style="text-align: center;">No expenses found for the selected month</td>`;
+//                             expensesList.appendChild(noExpensesRow);
+//                         }
+//                         expensesPanel.classList.add("show");
+//                     } else {
+//                         console.error(data.message);
+//                     }
+//                 })
+//                 .catch(err => console.error("Error fetching expenses:", err));
+//         }
+//     }
+// });
