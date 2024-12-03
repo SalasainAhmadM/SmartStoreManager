@@ -48,15 +48,18 @@ function fetchBusinessOverview($owner_id)
     }
 }
 
+
+
+
 function fetchSalesData($owner_id)
 {
     global $conn;
 
     $query = "
         SELECT 
-            sales.total_sales, 
+            COALESCE(branch.business_id, products.business_id) AS business_id,
             sales.product_id,
-            COALESCE(branch.business_id, products.business_id) AS business_id
+            SUM(sales.total_sales) AS total_sales
         FROM 
             sales
         LEFT JOIN 
@@ -65,8 +68,10 @@ function fetchSalesData($owner_id)
             products ON sales.product_id = products.id
         WHERE 
             (sales.branch_id != 0 AND branch.business_id IS NOT NULL)
-            OR (sales.branch_id = 0 AND products.business_id IS NOT NULL);
-    ";
+            OR (sales.branch_id = 0 AND products.business_id IS NOT NULL)
+        GROUP BY 
+            COALESCE(branch.business_id, products.business_id), sales.product_id;
+            ";
 
     // Execute the query
     if ($stmt = $conn->prepare($query)) {
@@ -135,6 +140,7 @@ $salesData = fetchSalesData($owner_id);
                                         foreach ($salesData as $sales) {
                                             if ($sales['business_id'] == $business['business_id']) {
                                                 $total_sales = $sales['total_sales'];
+                                                $total_expenses = $business['total_expenses']; 
                                                 break;
                                             }
                                         }
@@ -144,14 +150,13 @@ $salesData = fetchSalesData($owner_id);
                                         echo "<td>₱" . number_format($total_sales, 2) . "</td>";
                                         echo "<td>₱" . number_format($business['total_expenses'], 2) . "</td>";
                                         echo "<td><button class='swal2-print-btn view-branches' onclick=\"showBranchDetails('" . htmlspecialchars($business['business_name']) . "', [
-                                        {branch: 'Branch 1', sales: 5000, expenses: 2000},
-                                        {branch: 'Branch 2', sales: 6000, expenses: 3000}
-                                    ])\">View Branches</button></td>";
-                                        echo "</tr>";
+                                            {branch: 'N/A', sales: 0, expenses: 0}
+                                        ])\">View Branches</button></td>";
+                                            echo "</tr>";
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='4'>No data available</td></tr>";
                                     }
-                                } else {
-                                    echo "<tr><td colspan='4'>No data available</td></tr>";
-                                }
                                 ?>
                             </tbody>
                         </table>
@@ -159,8 +164,7 @@ $salesData = fetchSalesData($owner_id);
                 </div>
             </div>
         </div>
-    </div>
-
+    </div>                             
 
     <script src="../js/owner_view_reports.js"></script>
     <script src="../js/sidebar.js"></script>
