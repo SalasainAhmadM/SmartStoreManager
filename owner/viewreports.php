@@ -148,7 +148,7 @@ $salesData = fetchSalesData($owner_id);
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($business['business_name']) . "</td>";
                                         echo "<td>₱" . number_format($total_sales, 2) . "</td>";
-                                        echo "<td>₱" . number_format($business['total_expenses'], 2) . "</td>";
+                                        echo "<td>₱" . number_format($total_expenses, 2) . "</td>";
                                         echo "<td><button class='swal2-print-btn view-branches' onclick=\"showBranchDetails('" . htmlspecialchars($business['business_name']) . "', [
                                             {branch: 'N/A', sales: 0, expenses: 0}
                                         ])\">View Branches</button></td>";
