@@ -125,9 +125,12 @@ $salesData = fetchSalesData($owner_id);
                         <table class="table table-striped table-hover mt-4">
                             <thead class="table-dark position-sticky top-0">
                                 <tr>
-                                    <th>Business Name <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Total Sales (₱) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                    <th>Total Expenses (₱) <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                    <th>Business Name <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
+                                    <th>Total Sales (₱) <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
+                                    <th>Total Expenses (₱) <button class="btn text-white"><i
+                                                class="fas fa-sort"></i></button></th>
                                     <th>Details</th>
                                 </tr>
                             </thead>
@@ -141,7 +144,7 @@ $salesData = fetchSalesData($owner_id);
                                         foreach ($salesData as $sales) {
                                             if ($sales['business_id'] == $business['business_id']) {
                                                 $total_sales = $sales['total_sales'];
-                                                $total_expenses = $business['total_expenses']; 
+                                                $total_expenses = $business['total_expenses'];
                                                 break;
                                             }
                                         }
@@ -150,14 +153,16 @@ $salesData = fetchSalesData($owner_id);
                                         echo "<td>" . htmlspecialchars($business['business_name']) . "</td>";
                                         echo "<td>₱" . number_format($total_sales, 2) . "</td>";
                                         echo "<td>₱" . number_format($total_expenses, 2) . "</td>";
-                                        echo "<td><button class='swal2-print-btn view-branches' onclick=\"showBranchDetails('" . htmlspecialchars($business['business_name']) . "', [
-                                            {branch: 'N/A', sales: 0, expenses: 0}
-                                        ])\">View Branches</button></td>";
-                                            echo "</tr>";
-                                        }
-                                    } else {
-                                        echo "<tr><td colspan='4'>No data available</td></tr>";
+                                        echo "<td><button class='swal2-print-btn view-branches' 
+        data-business-id='" . $business['business_id'] . "' 
+        onclick=\"fetchAndShowBranchDetails(" . $business['business_id'] . ")\">
+        View Branches
+    </button></td>";
+
                                     }
+                                } else {
+                                    echo "<tr><td colspan='4'>No data available</td></tr>";
+                                }
                                 ?>
                             </tbody>
                         </table>
@@ -165,7 +170,102 @@ $salesData = fetchSalesData($owner_id);
                 </div>
             </div>
         </div>
-    </div>                             
+    </div>
+    <script>
+        async function fetchAndShowBranchDetails(businessId) {
+            try {
+                const response = await fetch(`../endpoints/reports/fetch_expenses_and_sales.php?business_id=${businessId}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const { business, branches } = data;
+
+                // Initialize combined totals
+                let combinedSales = business.total_sales || 0;
+                let combinedExpenses = business.total_expenses || 0;
+
+                // Create branch table rows
+                let branchDetails = '';
+                if (branches.length > 0) {
+                    branches.forEach(branch => {
+                        branchDetails += `
+                    <tr>
+                        <td>${branch.location}</td>
+                        <td>₱${branch.sales.toLocaleString()}</td>
+                        <td>₱${branch.expenses.toLocaleString()}</td>
+                    </tr>
+                `;
+                        combinedSales += branch.sales;
+                        combinedExpenses += branch.expenses;
+                    });
+                } else {
+                    // Display "No Branch Found."
+                    branchDetails = `
+                <tr>
+                    <td colspan="3" style="text-align: center;">No Branch Found.</td>
+                </tr>
+            `;
+                }
+
+                // Construct UI
+                const content = `
+            <div>
+                <h3>${business.name}</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Total Business Sales</th>
+                            <th>Total Business Expenses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>₱${business.total_sales.toLocaleString()}</td>
+                            <td>₱${business.total_expenses.toLocaleString()}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <hr>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Sales (₱)</th>
+                            <th>Expenses (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${branchDetails}
+                    </tbody>
+                </table>
+                <hr>
+                <p><b>Total Business/Branch Sales:</b> ₱${combinedSales.toLocaleString()}</p>
+                <p><b>Total Business/Branch Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
+                <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(branches)})'>
+                    <i class="fas fa-print me-2"></i> Print Report
+                </button>
+            </div>
+        `;
+
+                // Use SweetAlert2 or any modal library to display the content
+                Swal.fire({
+                    title: 'Business Details',
+                    html: content,
+                    width: '50%',
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error('Error fetching branch details:', error);
+                alert('Failed to fetch branch details.');
+            }
+        }
+
+    </script>
 
     <script src="../js/owner_view_reports.js"></script>
     <script src="../js/sidebar.js"></script>
