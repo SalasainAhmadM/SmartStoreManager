@@ -2,7 +2,6 @@
 session_start();
 require_once '../../conn/conn.php';
 
-// Check for valid JSON input
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!$data) {
@@ -10,7 +9,6 @@ if (!$data) {
     exit;
 }
 
-// Extract data
 $email = $data['email'];
 $username = $data['username'];
 $firstName = $data['firstName'];
@@ -21,7 +19,6 @@ $address = $data['address'];
 $password = password_hash($data['password'], PASSWORD_BCRYPT);
 $ownerId = $data['ownerId'];
 
-// Check if email already exists in manager or owner table
 $checkQuery = "SELECT id FROM manager WHERE email = ? UNION SELECT id FROM owner WHERE email = ?";
 $checkStmt = $conn->prepare($checkQuery);
 $checkStmt->bind_param("ss", $email, $email);
@@ -41,7 +38,20 @@ $stmt = $conn->prepare($query);
 $stmt->bind_param("ssssssssi", $email, $username, $firstName, $middleName, $lastName, $phone, $address, $password, $ownerId);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Manager created successfully']);
+
+    $currentDateTime = date('Y-m-d H:i:s');
+
+    $fullName = trim("$firstName $middleName $lastName");
+
+    $activityQuery = "INSERT INTO activity (message, created_at, status, user, user_id) 
+                      VALUES (?, ?, 'Completed', 'owner', ?)";
+
+    $activityMessage = "New Manager Added: $fullName";
+    $activityStmt = $conn->prepare($activityQuery);
+    $activityStmt->bind_param("ssi", $activityMessage, $currentDateTime, $ownerId);
+    $activityStmt->execute();
+
+    echo json_encode(['success' => true, 'message' => 'Manager created successfully and activity logged']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to create manager']);
 }
