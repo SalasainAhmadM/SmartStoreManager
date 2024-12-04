@@ -26,6 +26,31 @@ $stmt->bind_param("sisssii", $category, $category_id, $expense_type, $amount, $d
 
 try {
     if ($stmt->execute()) {
+        $businessQuery = "SELECT biz.name AS business_name 
+                          FROM branch b 
+                          JOIN business biz ON b.business_id = biz.id 
+                          WHERE b.id = ?";
+        $businessStmt = $conn->prepare($businessQuery);
+        $businessStmt->bind_param("i", $category_id);
+        $businessStmt->execute();
+        $businessResult = $businessStmt->get_result();
+
+        if ($businessResult->num_rows > 0) {
+            $businessRow = $businessResult->fetch_assoc();
+            $businessName = $businessRow['business_name'];
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Business not found']);
+            exit;
+        }
+
+        $currentDateTime = date('Y-m-d H:i:s');
+        $activityQuery = "INSERT INTO activity (message, created_at, status, user, user_id) 
+                          VALUES (?, ?, 'Completed', 'owner', ?)";
+        $activityMessage = "Expense Added to Business: $businessName for $expense_type amounting to $amount";
+        $activityStmt = $conn->prepare($activityQuery);
+        $activityStmt->bind_param("ssi", $activityMessage, $currentDateTime, $owner_id);
+        $activityStmt->execute();
+
         echo json_encode(['success' => true, 'message' => 'Expense added successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to add expense']);
@@ -36,6 +61,4 @@ try {
 
 $stmt->close();
 $conn->close();
-
-
 ?>

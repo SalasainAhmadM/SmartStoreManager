@@ -59,6 +59,7 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
 }
 
 
+// Query to fetch business and its branches
 $sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
         FROM business b
         JOIN branch br ON b.id = br.business_id
@@ -74,30 +75,26 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $businessData[$row['business_name']][] = $row['branch_location'];
     }
-} else {
-    echo "No data found";
 }
 
 
 
 // Query to fetch popular products
-$sql = " 
-    SELECT 
-        p.name, 
-        b.name AS business_name, 
-        p.type, 
-        p.price, 
-        p.description, 
-        SUM(s.total_sales) AS total_sales
-    FROM 
-        sales s
-    LEFT JOIN branch br ON s.branch_id = br.id
-    LEFT JOIN business b ON br.business_id = b.id
-    JOIN products p ON s.product_id = p.id
-    WHERE s.total_sales > 0
-    GROUP BY p.name, b.name, p.type, p.price, p.description
-    ORDER BY total_sales DESC
-    LIMIT 10"; // Limit to top 10 products
+$sql = "SELECT
+    p.name AS product_name,
+    COALESCE(b.name, 'Direct Business') AS business_name,
+    p.type,
+    p.price,
+    p.description,
+    SUM(s.total_sales) AS total_sales
+FROM
+    sales s
+JOIN products p ON s.product_id = p.id
+LEFT JOIN business b ON p.business_id = b.id  -- Join business table through products.business_id
+WHERE s.total_sales > 0
+GROUP BY p.name, b.name, p.type, p.price, p.description
+ORDER BY total_sales DESC
+LIMIT 10"; // Limit to top 10 products
 
 
 $stmt = $conn->prepare($sql);
@@ -112,6 +109,26 @@ if ($result->num_rows > 0) {
     }
 }
 
+
+
+// Query to fetch activities for the owner
+$sql = "SELECT id, message, created_at, status, user, user_id 
+        FROM activity 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Initialize an array to store activity data
+$activities = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $activities[] = $row;  // Fetch all activities
+    }
+}
 
 
 
@@ -249,7 +266,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         // Main Branch Table
                                         echo '<table class="table table-striped table-hover mt-4">';
-                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">Main Branch</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses/Main Branch</th></tr></thead>';
                                         echo '<thead class="table-dark"><tr><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
                                         echo '<tr>';
@@ -261,7 +278,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         // Branch-Level Table
                                         echo '<table class="table table-striped table-hover mt-4">';
-                                        echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th>Branches</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
 
                                         // Loop through each branch of the business and display the expenses
@@ -343,7 +360,7 @@ foreach ($businessData as $businessName => $branches) {
                                         <tbody>
                                             <?php foreach ($popularProducts as $product): ?>
                                                 <tr>
-                                                    <td><?php echo htmlspecialchars($product['name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
                                                     <td><?php echo htmlspecialchars($product['business_name']); ?></td>
                                                     <td><?php echo htmlspecialchars($product['type']); ?></td>
                                                     <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
@@ -365,47 +382,53 @@ foreach ($businessData as $businessName => $branches) {
 
                         <div id="recentActivitiesSection">
                             <div class="col-md-12 mt-5">
-                                <h1 class="section-title"><b><i class="fas fa-history icon"></i> Recent
-                                        Activities</b>
-                                </h1>
+                                <h1><b><i class="fas fa-bell"></i> Activity Log</b></h1>
                                 <div class="col-md-12 dashboard-content">
-                                    <table class="table" id="recent-activities-table">
+                                    <table class="table table-hover">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Activity <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Date <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Status <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Activity</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>New User Registered</td>
-                                                <td>2024-11-20</td>
-                                                <td><i class="fas fa-check-circle icon"></i> Completed</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Report Generated</td>
-                                                <td>2024-11-21</td>
-                                                <td><i class="fas fa-spinner icon"></i> In Progress</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Product Ordered</td>
-                                                <td>2024-11-22</td>
-                                                <td><i class="fas fa-times-circle icon"></i> Failed</td>
-                                            </tr>
+                                            <?php if (empty($activities)): ?>
+                                                <tr>
+                                                    <td colspan="3" class="text-center">No activities found.</td>
+                                                </tr>
+                                            <?php else: ?>
+                                                <?php foreach ($activities as $activity): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <?php
+                                                            $message = htmlspecialchars($activity['message']);
+
+                                                            // Define the FontAwesome icon based on the message
+                                                            if (strpos($message, 'Manager Added') !== false || strpos($message, 'Manager Deleted') !== false) {
+                                                                echo '<i class="fas fa-user-plus"></i> ' . $message;  // Manager icon
+                                                            } elseif (strpos($message, 'Sale Added') !== false) {
+                                                                echo '<i class="fas fa-cart-plus"></i> ' . $message;  // Sale icon
+                                                            } elseif (strpos($message, 'Expense Added') !== false) {
+                                                                echo '<i class="fas fa-dollar-sign"></i> ' . $message;  // Expense icon
+                                                            } else {
+                                                                echo $message;  // No icon if no match
+                                                            }
+                                                            ?>
+                                                        </td>
+
+                                                        <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?></td>
+                                                        <td>
+                                                            <?php echo $activity['status']; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
                                         </tbody>
                                     </table>
-
-                                    <button class="btn btn-primary mt-2 mb-5" id="printRecentActivities"
-                                        onclick="printTable('recent-activities-table', 'Recent Activities')">
-                                        <i class="fas fa-print me-2"></i> Print Report (Recent Activities)
-                                    </button>
-
                                 </div>
                             </div>
+
                         </div>
 
 
