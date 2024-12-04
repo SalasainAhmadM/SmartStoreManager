@@ -249,7 +249,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         // Main Branch Table
                                         echo '<table class="table table-striped table-hover mt-4">';
-                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses/Main Branch</th></tr></thead>';
                                         echo '<thead class="table-dark"><tr><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
                                         echo '<tr>';
@@ -261,7 +261,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         // Branch-Level Table
                                         echo '<table class="table table-striped table-hover mt-4">';
-                                        echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th>Branches</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
 
                                         // Loop through each branch of the business and display the expenses
