@@ -170,7 +170,7 @@ foreach ($businessData as $businessName => $branches) {
     }
 
     // Store processed data for the business-level transactions
-    $processedData[$businessName]['business'] = [
+    $processedData[$businessName]['Business/Main Branch'] = [
         'sales' => $businessSales,
         'expenses' => $businessExpenses,
     ];
@@ -261,8 +261,8 @@ foreach ($businessData as $businessName => $branches) {
                                         echo '<h5>' . $businessName . '</h5>';
 
                                         // Fetch business-level sales and expenses
-                                        $businessSales = $processedData[$businessName]['business']['sales'] ?? 0;
-                                        $businessExpenses = $processedData[$businessName]['business']['expenses'] ?? 0;
+                                        $businessSales = $processedData[$businessName]['Business/Main Branch']['sales'] ?? 0;
+                                        $businessExpenses = $processedData[$businessName]['Business/Main Branch']['expenses'] ?? 0;
 
                                         // Main Branch Table
                                         echo '<table class="table table-striped table-hover mt-4">';
