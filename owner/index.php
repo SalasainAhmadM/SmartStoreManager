@@ -249,7 +249,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                         // Main Branch Table
                                         echo '<table class="table table-striped table-hover mt-4">';
-                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">Main Branch</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses</th></tr></thead>';
                                         echo '<thead class="table-dark"><tr><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
                                         echo '<tr>';
