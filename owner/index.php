@@ -400,7 +400,23 @@ foreach ($businessData as $businessName => $branches) {
                                             <?php else: ?>
                                                 <?php foreach ($activities as $activity): ?>
                                                     <tr>
-                                                        <td><?php echo htmlspecialchars($activity['message']); ?></td>
+                                                        <td>
+                                                            <?php
+                                                            $message = htmlspecialchars($activity['message']);
+
+                                                            // Define the FontAwesome icon based on the message
+                                                            if (strpos($message, 'Manager Added') !== false || strpos($message, 'Manager Deleted') !== false) {
+                                                                echo '<i class="fas fa-user-plus"></i> ' . $message;  // Manager icon
+                                                            } elseif (strpos($message, 'Sale Added') !== false) {
+                                                                echo '<i class="fas fa-cart-plus"></i> ' . $message;  // Sale icon
+                                                            } elseif (strpos($message, 'Expense Added') !== false) {
+                                                                echo '<i class="fas fa-dollar-sign"></i> ' . $message;  // Expense icon
+                                                            } else {
+                                                                echo $message;  // No icon if no match
+                                                            }
+                                                            ?>
+                                                        </td>
+
                                                         <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?></td>
                                                         <td>
                                                             <?php echo $activity['status']; ?>
