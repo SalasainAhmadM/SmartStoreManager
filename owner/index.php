@@ -115,7 +115,8 @@ if ($result->num_rows > 0) {
 $sql = "SELECT id, message, created_at, status, user, user_id 
         FROM activity 
         WHERE user_id = ? 
-        ORDER BY created_at DESC";
+        ORDER BY created_at DESC 
+        LIMIT 5";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $owner_id);
