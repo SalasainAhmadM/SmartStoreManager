@@ -30,6 +30,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        // Fetch product name
+        $productQuery = "SELECT name FROM products WHERE id = ?";
+        $productStmt = $conn->prepare($productQuery);
+        $productStmt->bind_param("i", $product_id);
+        $productStmt->execute();
+        $productResult = $productStmt->get_result();
+
+        if ($productResult->num_rows > 0) {
+            $productRow = $productResult->fetch_assoc();
+            $productName = $productRow['name'];
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Product not found']);
+            exit;
+        }
+
+        // Get branch or business information
         if ($branch_id > 0) {
             $branchQuery = "SELECT b.location, biz.name AS business_name 
                             FROM branch b 
@@ -44,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $branchRow = $branchResult->fetch_assoc();
                 $branchName = $branchRow['location'];
                 $businessName = $branchRow['business_name'];
-                $activityMessage = "Sale Added at Branch: $branchName (Business: $businessName)";
+                $activityMessage = "Sale Added at Branch: $branchName (Business: $businessName) - Product: $productName, Quantity: $quantity, Total Sales: $total_sales";
             } else {
                 echo json_encode(['success' => false, 'message' => 'Branch not found']);
                 exit;
@@ -59,13 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($businessResult->num_rows > 0) {
                 $businessRow = $businessResult->fetch_assoc();
                 $businessName = $businessRow['name'];
-                $activityMessage = "Sale Added at Business: $businessName";
+                $activityMessage = "Sale Added at Business: $businessName - Product: $productName, Quantity: $quantity, Total Sales: $total_sales";
             } else {
                 echo json_encode(['success' => false, 'message' => 'Business not found']);
                 exit;
             }
         }
 
+        // Insert sale data into sales table
         $query = "INSERT INTO sales (product_id, quantity, total_sales, date, branch_id, created_at) 
                   VALUES (?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($query);
