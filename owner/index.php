@@ -110,8 +110,6 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $popularProducts[] = $row;
     }
-} else {
-    echo "No popular products found.";
 }
 
 
@@ -120,48 +118,91 @@ if ($result->num_rows > 0) {
 // Modify to fetch expenses for each branch
 $processedData = [];
 foreach ($businessData as $businessName => $branches) {
+    // Initialize totals for the business-level transactions
+    $businessSales = 0;
+    $businessExpenses = 0;
+
+    // Fetch total expenses directly made by the business
+    $sqlBusinessExpenses = "SELECT SUM(e.amount) AS total_expenses
+                            FROM expenses e
+                            JOIN business b ON e.category = 'business' AND e.category_id = b.id
+                            WHERE b.name = ?";
+    $stmtBusinessExpenses = $conn->prepare($sqlBusinessExpenses);
+    $stmtBusinessExpenses->bind_param("s", $businessName);
+    $stmtBusinessExpenses->execute();
+    $resultBusinessExpenses = $stmtBusinessExpenses->get_result();
+    if ($resultBusinessExpenses->num_rows > 0) {
+        $rowBusinessExpenses = $resultBusinessExpenses->fetch_assoc();
+        $businessExpenses = $rowBusinessExpenses['total_expenses'] ?? 0;
+    }
+
+    // Fetch total sales directly made by the business
+    $sqlBusinessSales = "
+            SELECT SUM(s.total_sales) AS total_sales
+            FROM sales s
+            JOIN products p ON s.product_id = p.id
+            JOIN business b ON p.business_id = b.id
+            WHERE s.branch_id = 0 AND b.name = ?";
+    $stmtBusinessSales = $conn->prepare($sqlBusinessSales);
+    $stmtBusinessSales->bind_param("s", $businessName);
+    $stmtBusinessSales->execute();
+    $resultBusinessSales = $stmtBusinessSales->get_result();
+    if ($resultBusinessSales->num_rows > 0) {
+        $rowBusinessSales = $resultBusinessSales->fetch_assoc();
+        $businessSales = $rowBusinessSales['total_sales'] ?? 0;
+    }
+
+    // Store processed data for the business-level transactions
+    $processedData[$businessName]['business'] = [
+        'sales' => $businessSales,
+        'expenses' => $businessExpenses,
+    ];
+
+    // Process branch-level data
     foreach ($branches as $branchLocation) {
+        $branchSales = 0;
+        $branchExpenses = 0;
 
         // Fetch total expenses for the branch
-        $sqlExpenses = "SELECT SUM(e.amount) AS total_expenses
-                        FROM expenses e
-                        JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
-                        WHERE br.location = ?";
-
-        $stmtExpenses = $conn->prepare($sqlExpenses);
-        $stmtExpenses->bind_param("s", $branchLocation);
-        $stmtExpenses->execute();
-        $resultExpenses = $stmtExpenses->get_result();
-        $totalExpenses = 0;
-        if ($resultExpenses->num_rows > 0) {
-            $rowExpenses = $resultExpenses->fetch_assoc();
-            $totalExpenses = $rowExpenses['total_expenses'];
+        $sqlBranchExpenses = "SELECT SUM(e.amount) AS total_expenses
+                              FROM expenses e
+                              JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
+                              WHERE br.location = ? AND br.business_id = (
+                                  SELECT id FROM business WHERE name = ?
+                              )";
+        $stmtBranchExpenses = $conn->prepare($sqlBranchExpenses);
+        $stmtBranchExpenses->bind_param("ss", $branchLocation, $businessName);
+        $stmtBranchExpenses->execute();
+        $resultBranchExpenses = $stmtBranchExpenses->get_result();
+        if ($resultBranchExpenses->num_rows > 0) {
+            $rowBranchExpenses = $resultBranchExpenses->fetch_assoc();
+            $branchExpenses = $rowBranchExpenses['total_expenses'] ?? 0;
         }
 
         // Fetch total sales for the branch
-        $sqlSales = "SELECT SUM(s.total_sales) AS total_sales
-                FROM sales s
-                JOIN branch br ON s.branch_id = br.id
-                JOIN business b ON br.business_id = b.id
-                WHERE br.location = ?";
-
-        $stmtSales = $conn->prepare($sqlSales);
-        $stmtSales->bind_param("s", $branchLocation);
-        $stmtSales->execute();
-        $resultSales = $stmtSales->get_result();
-        $totalSales = 0;
-        if ($resultSales->num_rows > 0) {
-            $rowSales = $resultSales->fetch_assoc();
-            $totalSales = $rowSales['total_sales'];
+        $sqlBranchSales = "SELECT SUM(s.total_sales) AS total_sales
+                           FROM sales s
+                           JOIN branch br ON s.branch_id = br.id
+                           WHERE br.location = ? AND br.business_id = (
+                               SELECT id FROM business WHERE name = ?
+                           )";
+        $stmtBranchSales = $conn->prepare($sqlBranchSales);
+        $stmtBranchSales->bind_param("ss", $branchLocation, $businessName);
+        $stmtBranchSales->execute();
+        $resultBranchSales = $stmtBranchSales->get_result();
+        if ($resultBranchSales->num_rows > 0) {
+            $rowBranchSales = $resultBranchSales->fetch_assoc();
+            $branchSales = $rowBranchSales['total_sales'] ?? 0;
         }
 
-        // Store processed data with business name, branch, expenses and sales
+        // Store processed data for the branch-level transactions
         $processedData[$businessName][$branchLocation] = [
-            'sales' => $totalSales,
-            'expenses' => $totalExpenses,
+            'sales' => $branchSales,
+            'expenses' => $branchExpenses,
         ];
     }
 }
+
 
 
 ?>
@@ -201,6 +242,24 @@ foreach ($businessData as $businessName => $branches) {
                                     foreach ($businessData as $businessName => $branches) {
                                         echo '<div class="col-md-12 card" data-business-name="' . $businessName . '" onclick="showBusinessData(\'' . $businessName . '\')">';
                                         echo '<h5>' . $businessName . '</h5>';
+
+                                        // Fetch business-level sales and expenses
+                                        $businessSales = $processedData[$businessName]['business']['sales'] ?? 0;
+                                        $businessExpenses = $processedData[$businessName]['business']['expenses'] ?? 0;
+
+                                        // Main Branch Table
+                                        echo '<table class="table table-striped table-hover mt-4">';
+                                        echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">Main Branch</th></tr></thead>';
+                                        echo '<thead class="table-dark"><tr><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
+                                        echo '<tbody>';
+                                        echo '<tr>';
+                                        echo '<td>' . number_format($businessSales, 2) . '</td>';
+                                        echo '<td>' . number_format($businessExpenses, 2) . '</td>';
+                                        echo '</tr>';
+                                        echo '</tbody>';
+                                        echo '</table>';
+
+                                        // Branch-Level Table
                                         echo '<table class="table table-striped table-hover mt-4">';
                                         echo '<thead class="table-dark"><tr><th>Branch</th><th>Sales (₱)</th><th>Expenses (₱)</th></tr></thead>';
                                         echo '<tbody>';
@@ -217,13 +276,14 @@ foreach ($businessData as $businessName => $branches) {
                                             echo '</tr>';
                                         }
 
-
                                         echo '</tbody>';
                                         echo '</table>';
                                         echo '</div>';
                                     }
                                     ?>
                                 </div>
+
+
                             </div>
 
 
