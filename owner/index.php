@@ -333,9 +333,10 @@ foreach ($businessData as $businessName => $branches) {
 
                                     if (!empty($data)) {
                                         echo "<h3 class='mb-3'>Sales Report for $yearMonth</h3>";
-
+                                        
+                                        echo "<div class='scrollable-table'>";
                                         echo "<table class='table mb-3'>";
-                                        echo "<thead class='table-dark'>
+                                        echo "<thead class='table-dark position-sticky top-0'>
                                                 <tr>
                                                     <th>Business <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
                                                     <th>Branches <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
@@ -352,6 +353,7 @@ foreach ($businessData as $businessName => $branches) {
                                             echo "</tr>";
                                         }
                                         echo "</table>";
+                                        echo "</div>";
                                     } else {
                                         echo "<p>No data available.</p>";
                                     }
@@ -361,7 +363,7 @@ foreach ($businessData as $businessName => $branches) {
                                 ?>
 
 
-                                <button class="btn btn-success mb-5" type="submit">
+                                <button class="btn btn-success mb-5 mt-3" type="submit">
                                     <i class="fa-solid fa-file"></i> Generate Insight
                                 </button>
 
