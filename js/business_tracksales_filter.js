@@ -17,8 +17,8 @@ function formatDateToMMDDYYYY(date) {
 }
 
 document.getElementById("filterDateButton").addEventListener("click", function () {
-  
-  const today = new Date().toISOString().split("T")[0];
+  // Get today's date in Asia/Manila timezone
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 
   Swal.fire({
     title: "Select a Date",
@@ -41,12 +41,15 @@ document.getElementById("filterDateButton").addEventListener("click", function (
     },
   }).then((result) => {
     if (result.isConfirmed && result.value) {
-      const selectedDate = result.value; 
-      const formattedSelectedDate = formatDateToMMDDYYYY(selectedDate);
-
+      const selectedDate = result.value;
+  
+      // Convert selectedDate to Asia/Manila time and format it to MM/DD/YYYY
+      const formattedSelectedDate = new Date(selectedDate + "T00:00:00")
+        .toLocaleDateString("en-US", { timeZone: "Asia/Manila" });
+  
       const rows = document.querySelectorAll("#salesLogTable tbody tr");
       let found = false;
-
+  
       rows.forEach((row) => {
         const dateCell = row.cells[4].innerText.trim(); 
         if (dateCell === formattedSelectedDate) {
@@ -56,7 +59,7 @@ document.getElementById("filterDateButton").addEventListener("click", function (
           row.style.display = "none"; 
         }
       });
-
+  
       if (!found) {
         Swal.fire({
           icon: "warning",
@@ -66,7 +69,9 @@ document.getElementById("filterDateButton").addEventListener("click", function (
       }
     }
   });
+  
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const today = getCurrentDateInManila(); // Get today's date in Manila timezone

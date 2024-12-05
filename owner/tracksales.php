@@ -173,9 +173,9 @@ if (!empty($businesses)) {
                             <thead class="table-dark">
                                 <tr>
                                     <th>Product</th>
+                                    <th>Business/Branch</th>
                                     <th>Amount Sold</th>
                                     <th>Total Sales</th>
-                                    <th>Business</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
@@ -196,9 +196,10 @@ if (!empty($businesses)) {
                                     <?php foreach ($sales_data as $sale): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($sale['product_name']); ?></td>
+                                            <td><?= htmlspecialchars($sale['business_name']); ?></td>
                                             <td><?= htmlspecialchars($sale['quantity']); ?></td>
                                             <td>₱<?= number_format($sale['total_sales'], 2, '.', ','); ?></td>
-                                            <td><?= htmlspecialchars($sale['business_name']); ?></td>
+
                                             <td>
                                                 <?php
                                                 $date = new DateTime($sale['date'], new DateTimeZone('UTC'));
@@ -210,8 +211,6 @@ if (!empty($businesses)) {
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
-
-
 
                         </table>
 

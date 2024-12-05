@@ -48,9 +48,6 @@ function fetchBusinessOverview($owner_id)
     }
 }
 
-
-
-
 function fetchSalesData($owner_id)
 {
     global $conn;

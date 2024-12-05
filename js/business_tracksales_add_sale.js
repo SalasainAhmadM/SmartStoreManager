@@ -37,6 +37,7 @@ document.getElementById("businessSelect").addEventListener("change", function ()
                     <thead class="table-dark">
                         <tr>
                             <th>Product</th>
+                            <th>Business/Branch</th>
                             <th>Amount Sold</th>
                             <th>Total Sales</th>
                             <th>Date</th>
@@ -53,6 +54,7 @@ document.getElementById("businessSelect").addEventListener("change", function ()
             tableHTML += `
                 <tr>
                     <td>${sale.product_name}</td>
+                    <td>Business/Branch name</td>
                     <td>${sale.quantity || "No Sales For Today"}</td>
                     <td>${formattedTotalSales}</td>
                     <td>${sale.date}</td>
