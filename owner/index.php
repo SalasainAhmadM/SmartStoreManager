@@ -347,8 +347,8 @@ foreach ($businessData as $businessName => $branches) {
                                             echo "<tr>";
                                             echo "<td>" . htmlspecialchars($row['business']) . "</td>";
                                             echo "<td>" . htmlspecialchars($row['branches']) . "</td>";
-                                            echo "<td>" . htmlspecialchars($row['sales']) . "</td>";
-                                            echo "<td>" . htmlspecialchars($row['expenses']) . "</td>";
+                                            echo "<td>" . htmlspecialchars(number_format($row['sales'], 2)) . "</td>";
+                                            echo "<td>" . htmlspecialchars(number_format($row['expenses'], 2)) . "</td>";                                            
                                             echo "</tr>";
                                         }
                                         echo "</table>";
