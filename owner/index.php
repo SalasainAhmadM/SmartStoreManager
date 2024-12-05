@@ -321,11 +321,11 @@ foreach ($businessData as $businessName => $branches) {
                             <h1><b><i class="fa-solid fa-lightbulb"></i> Insights</b></h1>
                             <div class="col-md-12 dashboard-content">
                                 <div class="mt-5 mb-5 position-relative">
-                                    <form action="../import_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success">
+                                    <form action="../import_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
                                         <i class="fa-solid fa-upload"></i>
-                                        <label for="file">Upload Data:</label>
-                                        <input type="file" name="file" id="file" accept=".xlsx, .xls">
-                                        <input type="submit" value="Upload Excel">
+                                        <label for="file" class="mb-2">Upload Data:</label>
+                                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                                        <input type="submit" value="Upload Excel" class="form-control">
                                     </form>
                                     <form action="../export_excel.php" method="POST" class="position-absolute top-0 end-0 mt-2 me-2">
                                         <button class="btn btn-success"
@@ -345,7 +345,14 @@ foreach ($businessData as $businessName => $branches) {
                                         echo "<h3 class='mb-3'>Sales Report for $yearMonth</h3>";
 
                                         echo "<table class='table mb-3'>";
-                                        echo "<thead class='table-dark'><tr><th>Business</th><th>Branches</th><th>Sales</th><th>Expenses</th></tr></thead>";
+                                        echo "<thead class='table-dark'>
+                                                <tr>
+                                                    <th>Business <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Branches <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Sales <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Expenses <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                </tr>
+                                                </thead>";
                                         foreach ($data as $row) {
                                             echo "<tr>";
                                             echo "<td>" . htmlspecialchars($row['business']) . "</td>";
