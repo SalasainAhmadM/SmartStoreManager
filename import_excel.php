@@ -6,12 +6,16 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 if (isset($_FILES['file']['tmp_name'])) {
     $filePath = $_FILES['file']['tmp_name'];
 
-    // Load the uploaded Excel file
     $spreadsheet = IOFactory::load($filePath);
     $sheet = $spreadsheet->getActiveSheet();
 
+    // Extract the year and month from the title (A1)
+    $yearMonth = $sheet->getCell('A1')->getValue(); // Assuming A1 contains "Sales Report for November 2024"
+
+    $yearMonth = str_replace('Sales Report for ', '', $yearMonth);
+
     $data = [];
-    foreach ($sheet->getRowIterator(2) as $row) { // Start from row 2 to skip headers
+    foreach ($sheet->getRowIterator(3) as $row) { // Start from row 3 to skip the headers (A2, B2, C2, D2)
         $cellIterator = $row->getCellIterator();
         $cellIterator->setIterateOnlyExistingCells(false);
 
@@ -23,15 +27,15 @@ if (isset($_FILES['file']['tmp_name'])) {
         // Skip empty rows
         if (!empty(array_filter($rowData))) {
             $data[] = [
-                'name' => $rowData[0] ?? '',
-                'birthday' => $rowData[1] ?? '',
-                'age' => $rowData[2] ?? '',
+                'business' => $rowData[0] ?? '',
+                'branches' => $rowData[1] ?? '',
+                'sales' => $rowData[2] ?? '',
+                'expenses' => $rowData[3] ?? '',
             ];
         }
     }
 
-    // Redirect back to HTML page with data
-    header('Location: excel.php?data=' . urlencode(json_encode($data)));
+    header('Location: ./owner/index.php?data=' . urlencode(json_encode($data)) . '&yearMonth=' . urlencode($yearMonth));
     exit;
 } else {
     echo "No file uploaded!";

@@ -320,8 +320,56 @@ foreach ($businessData as $businessName => $branches) {
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-lightbulb"></i> Insights</b></h1>
                             <div class="col-md-12 dashboard-content">
+                                <div class="mt-5 mb-5 position-relative">
+                                    <form action="../import_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <label for="file">Upload Data:</label>
+                                        <input type="file" name="file" id="file" accept=".xlsx, .xls">
+                                        <input type="submit" value="Upload Excel">
+                                    </form>
+                                    <form action="../export_excel.php" method="POST" class="position-absolute top-0 end-0 mt-2 me-2">
+                                        <button class="btn btn-success"
+                                            type="submit">
+                                            <i class="fa-solid fa-download"></i> Download Data Template
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Display Uploaded Data -->
+                                <?php
+                                if (isset($_GET['data'])) {
+                                    $data = json_decode($_GET['data'], true);
+                                    $yearMonth = isset($_GET['yearMonth']) ? htmlspecialchars($_GET['yearMonth']) : 'Unknown Period';
+
+                                    if (!empty($data)) {
+                                        echo "<h3 class='mb-3'>Sales Report for $yearMonth</h3>";
+
+                                        echo "<table class='table mb-3'>";
+                                        echo "<thead class='table-dark'><tr><th>Business</th><th>Branches</th><th>Sales</th><th>Expenses</th></tr></thead>";
+                                        foreach ($data as $row) {
+                                            echo "<tr>";
+                                            echo "<td>" . htmlspecialchars($row['business']) . "</td>";
+                                            echo "<td>" . htmlspecialchars($row['branches']) . "</td>";
+                                            echo "<td>" . htmlspecialchars($row['sales']) . "</td>";
+                                            echo "<td>" . htmlspecialchars($row['expenses']) . "</td>";
+                                            echo "</tr>";
+                                        }
+                                        echo "</table>";
+                                    } else {
+                                        echo "<p>No data available.</p>";
+                                    }
+                                } else {
+                                    echo "<p>No data received.</p>";
+                                }
+                                ?>
+
+
+                                <button class="btn btn-success mb-5" type="submit">
+                                    <i class="fa-solid fa-file"></i> Generate Insight
+                                </button>
+
                                 <div>
-                                    <h5>Predicted Growth:</h5>
+                                    <h5><b>Predicted Growth:</b></h5>
                                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
                                         tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
                                         tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
@@ -330,7 +378,7 @@ foreach ($businessData as $businessName => $branches) {
                                         porttitor. Vestibulum pretium auctor condimentum.</p>
                                 </div>
                                 <div>
-                                    <h5>Actionable Advice:</h5>
+                                    <h5><b>Advice:</b></h5>
                                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
                                         tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
                                         tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
