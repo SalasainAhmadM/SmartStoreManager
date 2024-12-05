@@ -391,7 +391,7 @@ function editProfilePicture() {
     Swal.fire({
         title: 'Change Profile Picture',
         html: `
-            <input type="file" id="profile_pic_input" class="swal2-input" accept="image/*">
+            <input type="file" id="profile_pic_input" class="swal2-input form-control" accept="image/*">
         `,
         showCancelButton: true,
         confirmButtonText: 'Upload',
