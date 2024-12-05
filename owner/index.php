@@ -339,8 +339,8 @@ foreach ($businessData as $businessName => $branches) {
                                                 <tr>
                                                     <th>Business <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
                                                     <th>Branches <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
-                                                    <th>Sales <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
-                                                    <th>Expenses <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Sales (₱) <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Expenses (₱) <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
                                                 </tr>
                                                 </thead>";
                                         foreach ($data as $row) {
