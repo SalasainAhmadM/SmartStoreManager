@@ -31,12 +31,12 @@ $manager_id = $_SESSION['user_id'];
                     <h4 class="mt-5"><b><i class="fas fa-tachometer-alt me-2"></i> View Reports</b></h4>
                     <div class="card-one">
 
-                        <h5 class="mt-5"><b>Select Business:</b></h5>
+                        <h4 class="mt-3"><b>Business Name</b></h4>
+                        <h5><b>Select Branch:</b></h5>
                         <div class="mt-4 mb-4 position-relative">
-                            <select class="form-select w-50" id="businessSelect">
-                                <option value="">Select Business</option>
-                                <option value="A">Business A</option>
-                                <option value="B">Business B</option>
+                            <select class="form-select w-50" id="branchSelect">
+                                <option value="">Select Branch</option>
+                                <option value="A">Branch A</option>
                             </select>
                         </div>
 
