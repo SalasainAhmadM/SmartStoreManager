@@ -2,7 +2,7 @@
 require_once '../../conn/auth.php';
 require_once '../../conn/conn.php';
 
-session_start(); 
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
@@ -45,8 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Get branch or business information
-        if ($branch_id > 0) {
+        // Determine if it's a branch or a business and fetch details
+        $type = $branch_id > 0 ? 'branch' : 'business'; // Determine the type value
+        if ($type === 'branch') {
             $branchQuery = "SELECT b.location, biz.name AS business_name 
                             FROM branch b 
                             JOIN business biz ON b.business_id = biz.id 
@@ -83,10 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Insert sale data into sales table
-        $query = "INSERT INTO sales (product_id, quantity, total_sales, date, branch_id, created_at) 
-                  VALUES (?, ?, ?, ?, ?, NOW())";
+        $query = "INSERT INTO sales (product_id, quantity, total_sales, date, branch_id, created_at, type) 
+                  VALUES (?, ?, ?, ?, ?, NOW(), ?)";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("iidsi", $product_id, $quantity, $total_sales, $sale_date, $branch_id);
+        $stmt->bind_param("iidsis", $product_id, $quantity, $total_sales, $sale_date, $branch_id, $type);
 
         if ($stmt->execute()) {
             // Log the activity

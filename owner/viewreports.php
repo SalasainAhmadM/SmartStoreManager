@@ -55,20 +55,18 @@ function fetchSalesData($owner_id)
     $query = "
         SELECT 
             COALESCE(branch.business_id, products.business_id) AS business_id,
-            sales.product_id,
             SUM(sales.total_sales) AS total_sales
         FROM 
             sales
         LEFT JOIN 
-            branch ON sales.branch_id = branch.id AND sales.branch_id != 0
+            branch ON sales.branch_id = branch.id
         LEFT JOIN 
             products ON sales.product_id = products.id
         WHERE 
-            (sales.branch_id != 0 AND branch.business_id IS NOT NULL)
-            OR (sales.branch_id = 0 AND products.business_id IS NOT NULL)
+            (branch.business_id IS NOT NULL OR products.business_id IS NOT NULL)
         GROUP BY 
-            COALESCE(branch.business_id, products.business_id), sales.product_id;
-            ";
+            COALESCE(branch.business_id, products.business_id);
+    ";
 
     // Execute the query
     if ($stmt = $conn->prepare($query)) {
@@ -86,6 +84,7 @@ function fetchSalesData($owner_id)
         return false;
     }
 }
+
 
 $businesses = fetchBusinessOverview($owner_id);
 $salesData = fetchSalesData($owner_id);
@@ -135,33 +134,35 @@ $salesData = fetchSalesData($owner_id);
                                 <?php
                                 if ($businesses) {
                                     foreach ($businesses as $business) {
+                                        // Initialize total sales and expenses
+                                        $total_sales = 0;
+                                        $total_expenses = $business['total_expenses'];
+
                                         // Find the matching sales data for this business_id
-                                        $total_sales = 0; // Default to 0 if no matching sales data
-                                        $total_expenses = 0;
                                         foreach ($salesData as $sales) {
                                             if ($sales['business_id'] == $business['business_id']) {
-                                                $total_sales = $sales['total_sales'];
-                                                $total_expenses = $business['total_expenses'];
-                                                break;
+                                                $total_sales += $sales['total_sales']; // Add the sales data
                                             }
                                         }
 
+                                        // Display the data in the table
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($business['business_name']) . "</td>";
                                         echo "<td>₱" . number_format($total_sales, 2) . "</td>";
                                         echo "<td>₱" . number_format($total_expenses, 2) . "</td>";
                                         echo "<td><button class='swal2-print-btn view-branches' 
-        data-business-id='" . $business['business_id'] . "' 
-        onclick=\"fetchAndShowBranchDetails(" . $business['business_id'] . ")\">
-        View Branches
-    </button></td>";
-
+            data-business-id='" . $business['business_id'] . "' 
+            onclick=\"fetchAndShowBranchDetails(" . $business['business_id'] . ")\">
+            View Branches
+        </button></td>";
+                                        echo "</tr>";
                                     }
                                 } else {
                                     echo "<tr><td colspan='4'>No data available</td></tr>";
                                 }
                                 ?>
                             </tbody>
+
                         </table>
                     </div>
                 </div>
@@ -215,8 +216,8 @@ $salesData = fetchSalesData($owner_id);
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Total Business Sales</th>
-                            <th>Total Business Expenses</th>
+                            <th> Business Sales</th>
+                            <th> Business Expenses</th>
                         </tr>
                     </thead>
                     <tbody>
