@@ -1,4 +1,4 @@
-document.getElementById('businessSelect').addEventListener('change', function() {
+document.getElementById('branchSelect').addEventListener('change', function() {
     var selectedBusiness = this.value;
     var salesReportPanel = document.getElementById('salesReportPanel');
     var reportTitle = document.getElementById('reportTitle');
@@ -9,7 +9,7 @@ document.getElementById('businessSelect').addEventListener('change', function() 
     totalSalesCell.textContent = '';
 
     if (selectedBusiness === 'A') {
-        reportTitle.textContent = 'Sales Report for Business A';
+        reportTitle.textContent = 'Sales Report for Branch A';
 
         const salesData = [{
                 date: '2024-11-01',
@@ -54,53 +54,7 @@ document.getElementById('businessSelect').addEventListener('change', function() 
         });
 
         totalSalesCell.textContent = `₱${totalSales.toLocaleString()}`;
-    } else if (selectedBusiness === 'B') {
-        reportTitle.textContent = 'Sales Report for Business B';
-
-        const salesData = [{
-                date: '2024-11-01',
-                product: 'Product 3',
-                quantity: 15,
-                price: 200,
-                sales: 15 * 200
-            },
-            {
-                date: '2024-11-01',
-                product: 'Product 4',
-                quantity: 7,
-                price: 120,
-                sales: 7 * 120
-            },
-            {
-                date: '2024-11-02',
-                product: 'Product 3',
-                quantity: 12,
-                price: 200,
-                sales: 12 * 200
-            },
-            {
-                date: '2024-11-02',
-                product: 'Product 4',
-                quantity: 5,
-                price: 120,
-                sales: 5 * 120
-            }
-        ];
-
-        let totalSales = 0;
-        salesData.forEach(sale => {
-            salesReportBody.innerHTML += `
-                <tr>
-                    <td>${sale.date}</td>
-                    <td>${sale.product} (Quantity: ${sale.quantity}, Price: ₱${sale.price.toLocaleString()})</td>
-                    <td>₱${sale.sales.toLocaleString()}</td>
-                </tr>
-            `;
-            totalSales += sale.sales;
-        });
-
-        totalSalesCell.textContent = `₱${totalSales.toLocaleString()}`;
-    }
+    } 
 
     if (selectedBusiness) {
         salesReportPanel.classList.add('show');

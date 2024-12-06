@@ -1,4 +1,4 @@
-document.getElementById('businessSelect').addEventListener('change', function() {
+document.getElementById('branchSelect').addEventListener('change', function() {
     var selectedBusiness = this.value;
     var salesPanel = document.getElementById('salesPanel');
     var salesTitle = document.getElementById('salesTitle');
@@ -7,7 +7,7 @@ document.getElementById('businessSelect').addEventListener('change', function() 
     salesTableBody.innerHTML = '';
 
     if (selectedBusiness === 'A') {
-        salesTitle.textContent = 'Sales for Business A';
+        salesTitle.textContent = 'Sales for Branch A';
         // Example Sales Data for Business A
         salesTableBody.innerHTML = `
 
@@ -24,28 +24,6 @@ document.getElementById('businessSelect').addEventListener('change', function() 
             <td>₱100</td>
             <td>300</td>
             <td>₱30000</td>
-            <td>2024-11-29 00:06:49</td>
-            </tr>
-
-        `;
-    } else if (selectedBusiness === 'B') {
-        salesTitle.textContent = 'Sales for Business B';
-        // Example Sales Data for Business B
-        salesTableBody.innerHTML = `
-
-            <tr>
-            <td>Product 3</td>
-            <td>₱250</td>
-            <td>50</td>
-            <td>₱12500</td>
-            <td>2024-05-29 00:06:49</td>
-            </tr>
-
-            <tr>
-            <td>Product 4</td>
-            <td>₱550</td>
-            <td>100</td>
-            <td>₱55000</td>
             <td>2024-11-29 00:06:49</td>
             </tr>
 
