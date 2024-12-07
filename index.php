@@ -1,4 +1,4 @@
 <?php
-header("Location: ./home/d");
+header("Location: ./home/");
 exit();
 ?>
