@@ -183,73 +183,70 @@ $salesData = fetchSalesData($owner_id);
                 const { business, branches } = data;
 
                 // Initialize combined totals
-                let combinedSales = business.total_sales || 0;
-                let combinedExpenses = business.total_expenses || 0;
+                let combinedSales = parseFloat(business.total_sales) || 0;
+                let combinedExpenses = parseFloat(business.total_expenses) || 0;
 
                 // Create branch table rows
                 let branchDetails = '';
                 if (branches.length > 0) {
                     branches.forEach(branch => {
                         branchDetails += `
-                    <tr>
-                        <td>${branch.location}</td>
-                        <td>₱${branch.sales.toLocaleString()}</td>
-                        <td>₱${branch.expenses.toLocaleString()}</td>
-                    </tr>
-                `;
-                        combinedSales += branch.sales;
-                        combinedExpenses += branch.expenses;
+                <tr>
+                    <td>${branch.location}</td>
+                    <td>₱${parseFloat(branch.sales).toLocaleString()}</td>
+                    <td>₱${parseFloat(branch.expenses).toLocaleString()}</td>
+                </tr>`;
+                        combinedSales += parseFloat(branch.sales);
+                        combinedExpenses += parseFloat(branch.expenses);
                     });
                 } else {
                     // Display "No Branch Found."
                     branchDetails = `
-                <tr>
-                    <td colspan="3" style="text-align: center;">No Branch Found.</td>
-                </tr>
-            `;
+            <tr>
+                <td colspan="3" style="text-align: center;">No Branch Found.</td>
+            </tr>`;
                 }
 
                 // Construct UI
                 const content = `
-            <div>
-                <h3>${business.name}</h3>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th> Business Sales</th>
-                            <th> Business Expenses</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>₱${business.total_sales.toLocaleString()}</td>
-                            <td>₱${business.total_expenses.toLocaleString()}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <hr>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Branch</th>
-                            <th>Sales (₱)</th>
-                            <th>Expenses (₱)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${branchDetails}
-                    </tbody>
-                </table>
-                <hr>
-                <p><b>Total Business/Branch Sales:</b> ₱${combinedSales.toLocaleString()}</p>
-                <p><b>Total Business/Branch Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
-                <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(branches)})'>
-                    <i class="fas fa-print me-2"></i> Print Report
-                </button>
-            </div>
-        `;
+        <div>
+            <h3>${business.name}</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Business Sales</th>
+                        <th>Business Expenses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>₱${parseFloat(business.total_sales).toLocaleString()}</td>
+                        <td>₱${parseFloat(business.total_expenses).toLocaleString()}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Sales (₱)</th>
+                        <th>Expenses (₱)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${branchDetails}
+                </tbody>
+            </table>
+            <hr>
+            <p><b>Total Business/Branch Sales:</b> ₱${combinedSales.toLocaleString()}</p>
+            <p><b>Total Business/Branch Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
+            <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(branches)}, ${JSON.stringify(business)})'>
+                <i class="fas fa-print me-2"></i> Print Report
+            </button>
+        </div>`;
 
-                // Use SweetAlert2 or any modal library to display the content
+                // Display content using SweetAlert2
                 Swal.fire({
                     title: 'Business Details',
                     html: content,
@@ -262,6 +259,7 @@ $salesData = fetchSalesData($owner_id);
                 alert('Failed to fetch branch details.');
             }
         }
+
 
     </script>
 

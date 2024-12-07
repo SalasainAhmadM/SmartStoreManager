@@ -114,9 +114,9 @@ function fetchSalesByDate(date) {
           tableBody.innerHTML += `
               <tr>
                   <td>${sale.product_name}</td>
+                  <td>${sale.business_or_branch_name}</td>
                   <td>${sale.quantity}</td>
                   <td>${currencyFormatter.format(sale.total_sales)}</td>
-                  <td>${sale.business_name}</td>
                   <td>${sale.date}</td>
               </tr>
           `;
@@ -128,30 +128,7 @@ function fetchSalesByDate(date) {
   });
 }
 
-
-// Date filter functionality
-document.getElementById("filterDateButton").addEventListener("click", function () {
-  Swal.fire({
-      title: "Filter Sales by Date",
-      html: `<input type="date" id="filterDate" class="form-control" value="${getCurrentDateInManila()}">`,
-      confirmButtonText: "Filter",
-      showCancelButton: true,
-      preConfirm: () => {
-          const date = document.getElementById("filterDate").value;
-          if (!date) {
-              Swal.showValidationMessage("Please select a date.");
-              return false;
-          }
-          return date;
-      },
-  }).then((result) => {
-      if (result.isConfirmed) {
-          const selectedDate = result.value;
-          fetchSalesByDate(selectedDate);
-      }
-  });
-});
-
+// Utility to get the current date in Manila timezone
 function getCurrentDateInManila() {
   const now = new Date();
   const manilaOffset = 8 * 60 * 60 * 1000;

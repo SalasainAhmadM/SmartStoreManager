@@ -54,15 +54,17 @@ document.getElementById("businessSelect").addEventListener("change", function ()
             tableHTML += `
                 <tr>
                     <td>${sale.product_name}</td>
-                    <td>Business/Branch name</td>
+                    <td>${sale.business_or_branch_name || "Unknown"}</td>
                     <td>${sale.quantity || "No Sales For Today"}</td>
                     <td>${formattedTotalSales}</td>
                     <td>${sale.date}</td>
                 </tr>
             `;
+            
             totalQuantity += parseInt(sale.quantity || 0, 10);
             totalSales += parseFloat(sale.total_sales || 0);
         });
+        
   
         tableHTML += `
                     </tbody>
@@ -76,9 +78,11 @@ document.getElementById("businessSelect").addEventListener("change", function ()
                     </tfoot>
                 </table>
             </div>
-            <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
-                <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
-            </button>
+            <button class="btn btn-primary mt-2 mb-5" 
+    onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
+    <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
+</button>
+
         `;
   
         salesDiv.innerHTML = tableHTML;
@@ -120,18 +124,26 @@ function updateFooter(business) {
 
 // Sales search functionality
 function searchSales() {
-  const filter = document.getElementById('saleSearchBar').value.toLowerCase();
+    const filter = document.getElementById('saleSearchBar').value.toLowerCase(); // Get search input
+    const rows = document.querySelectorAll('tbody tr'); // Select all table rows in tbody
 
-  const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const productCell = row.querySelector('td:first-child'); // First column (Product Name)
+        const businessBranchCell = row.querySelector('td:nth-child(2)'); // Second column (Business/Branch Name)
 
-  rows.forEach(row => {
-      const productCell = row.querySelector('td:first-child'); 
-      if (productCell) {
-          const productName = productCell.textContent.toLowerCase();
-          row.style.display = productName.includes(filter) ? '' : 'none'; 
-      }
-  });
+        if (productCell && businessBranchCell) {
+            const productName = productCell.textContent.toLowerCase(); // Product name text
+            const businessBranchName = businessBranchCell.textContent.toLowerCase(); // Business/Branch name text
+
+            // Check if either product name or business/branch name matches the filter
+            const matches = productName.includes(filter) || businessBranchName.includes(filter);
+
+            // Show row if match found, otherwise hide
+            row.style.display = matches ? '' : 'none';
+        }
+    });
 }
+
 
 
 // Filter sales log by date

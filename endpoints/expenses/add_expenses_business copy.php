@@ -40,7 +40,7 @@ try {
             $businessRow = $businessResult->fetch_assoc();
             $businessName = $businessRow['business_name'];
         } else {
-            echo json_encode(['success' => false, 'message' => 'Business not found']);
+            // echo json_encode(['success' => false, 'message' => 'Business not found']);
             exit;
         }
 

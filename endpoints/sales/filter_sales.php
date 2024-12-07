@@ -22,11 +22,15 @@ $query = "
         p.price AS product_price,
         s.quantity,
         s.total_sales,
-        b.name AS business_name,
+        CASE 
+            WHEN s.type = 'branch' THEN br.location
+            ELSE b.name
+        END AS business_or_branch_name,
         s.date
     FROM sales s
     JOIN products p ON s.product_id = p.id
     JOIN business b ON p.business_id = b.id
+    LEFT JOIN branch br ON s.branch_id = br.id
     WHERE b.owner_id = ? AND s.date = ?
 ";
 $stmt = $conn->prepare($query);

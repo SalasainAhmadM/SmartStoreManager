@@ -26,28 +26,24 @@ if (isset($_GET['business_id'])) {
         while ($branch = $branchResult->fetch_assoc()) {
             $branchId = $branch['id'];
 
-            // Total sales for branch
+            // Fetch branch sales
             $salesQuery = $conn->prepare("
                 SELECT SUM(total_sales) AS monthly_sales 
                 FROM sales 
-                WHERE branch_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?
-            ");
+                WHERE branch_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?");
             $salesQuery->bind_param("is", $branchId, $currentMonth);
             $salesQuery->execute();
-            $salesResult = $salesQuery->get_result();
-            $salesData = $salesResult->fetch_assoc();
+            $salesData = $salesQuery->get_result()->fetch_assoc();
             $branch['sales'] = $salesData['monthly_sales'] ?? 0;
 
-            // Total expenses for branch
+            // Fetch branch expenses
             $expensesQuery = $conn->prepare("
                 SELECT SUM(amount) AS total_expenses 
                 FROM expenses 
-                WHERE category_id = ? AND category = 'branch' AND DATE_FORMAT(created_at, '%Y-%m') = ?
-            ");
+                WHERE category = 'branch' AND category_id = ? AND DATE_FORMAT(created_at, '%Y-%m') = ?");
             $expensesQuery->bind_param("is", $branchId, $currentMonth);
             $expensesQuery->execute();
-            $expensesResult = $expensesQuery->get_result();
-            $expensesData = $expensesResult->fetch_assoc();
+            $expensesData = $expensesQuery->get_result()->fetch_assoc();
             $branch['expenses'] = $expensesData['total_expenses'] ?? 0;
 
             $totalBranchSales += $branch['sales'];
@@ -55,47 +51,38 @@ if (isset($_GET['business_id'])) {
             $branches[] = $branch;
         }
 
-        // Business-level sales
+        // Fetch business-level sales
         $businessSalesQuery = $conn->prepare("
-SELECT SUM(CAST(total_sales AS DECIMAL(10, 2))) AS business_sales 
-FROM sales 
-WHERE (branch_id = 0) 
-AND product_id IN (
-    SELECT id FROM products WHERE business_id = ?
-) 
-AND DATE_FORMAT(date, '%Y-%m') = ?
-");
+            SELECT SUM(total_sales) AS business_sales 
+            FROM sales 
+            WHERE branch_id = 0 AND product_id IN (
+                SELECT id FROM products WHERE business_id = ?
+            ) AND DATE_FORMAT(date, '%Y-%m') = ?");
         $businessSalesQuery->bind_param("is", $businessId, $currentMonth);
         $businessSalesQuery->execute();
-        $businessSalesResult = $businessSalesQuery->get_result();
-        $businessSalesData = $businessSalesResult->fetch_assoc();
+        $businessSalesData = $businessSalesQuery->get_result()->fetch_assoc();
         $businessSales = $businessSalesData['business_sales'] ?? 0;
 
-        // Business-level expenses
+        // Fetch business-level expenses
         $businessExpensesQuery = $conn->prepare("
-SELECT SUM(CAST(amount AS DECIMAL(10, 2))) AS business_expenses 
-FROM expenses 
-WHERE category_id = ? 
-AND category = 'business' 
-AND DATE_FORMAT(created_at, '%Y-%m') = ?
-");
+            SELECT SUM(amount) AS business_expenses 
+            FROM expenses 
+            WHERE category = 'business' AND category_id = ? AND DATE_FORMAT(created_at, '%Y-%m') = ?");
         $businessExpensesQuery->bind_param("is", $businessId, $currentMonth);
         $businessExpensesQuery->execute();
-        $businessExpensesResult = $businessExpensesQuery->get_result();
-        $businessExpensesData = $businessExpensesResult->fetch_assoc();
+        $businessExpensesData = $businessExpensesQuery->get_result()->fetch_assoc();
         $businessExpenses = $businessExpensesData['business_expenses'] ?? 0;
 
         // Combine totals
-        $business['total_sales'] = $businessSales + $totalBranchSales;
-        $business['total_expenses'] = $businessExpenses + $totalBranchExpenses;
+        $business['total_sales'] = $businessSales;
+        $business['total_expenses'] = $businessExpenses;
 
-        // Response
+        // Send JSON response
         header('Content-Type: application/json');
         echo json_encode([
             'business' => $business,
             'branches' => $branches
         ]);
-
     } else {
         echo json_encode(['error' => 'Business not found']);
     }
