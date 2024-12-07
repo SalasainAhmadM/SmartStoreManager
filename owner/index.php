@@ -79,7 +79,7 @@ if ($result->num_rows > 0) {
 
 
 
-// Query to fetch popular products
+// Query to fetch popular products for a specific owner
 $sql = "SELECT
     p.name AS product_name,
     COALESCE(b.name, 'Direct Business') AS business_name,
@@ -90,14 +90,18 @@ $sql = "SELECT
 FROM
     sales s
 JOIN products p ON s.product_id = p.id
-LEFT JOIN business b ON p.business_id = b.id  -- Join business table through products.business_id
-WHERE s.total_sales > 0
-GROUP BY p.name, b.name, p.type, p.price, p.description
-ORDER BY total_sales DESC
+LEFT JOIN business b ON p.business_id = b.id  
+WHERE 
+    s.total_sales > 0
+    AND b.owner_id = ? -- Filter by owner_id
+GROUP BY 
+    p.name, b.name, p.type, p.price, p.description
+ORDER BY 
+    total_sales DESC
 LIMIT 10"; // Limit to top 10 products
 
-
 $stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $owner_id); // Bind the owner_id parameter
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -322,7 +326,8 @@ foreach ($businessData as $businessName => $branches) {
                             <div class="col-md-12 dashboard-content">
 
                                 <div class="mb-5 position-relative">
-                                <button id="uploadDataButton" class="btn btn-success"><i class="fa-solid fa-upload"></i> Upload Data</button>
+                                    <button id="uploadDataButton" class="btn btn-success"><i
+                                            class="fa-solid fa-upload"></i> Upload Data</button>
                                 </div>
 
                                 <!-- Display Uploaded Data -->
@@ -333,7 +338,7 @@ foreach ($businessData as $businessName => $branches) {
 
                                     if (!empty($data)) {
                                         echo "<h3 class='mb-3'>Sales Report for $yearMonth</h3>";
-                                        
+
                                         echo "<div class='scrollable-table'>";
                                         echo "<table class='table mb-3'>";
                                         echo "<thead class='table-dark position-sticky top-0'>
@@ -349,7 +354,7 @@ foreach ($businessData as $businessName => $branches) {
                                             echo "<td>" . htmlspecialchars($row['business']) . "</td>";
                                             echo "<td>" . htmlspecialchars($row['branches']) . "</td>";
                                             echo "<td>" . htmlspecialchars(number_format($row['sales'], 2)) . "</td>";
-                                            echo "<td>" . htmlspecialchars(number_format($row['expenses'], 2)) . "</td>";                                            
+                                            echo "<td>" . htmlspecialchars(number_format($row['expenses'], 2)) . "</td>";
                                             echo "</tr>";
                                         }
                                         echo "</table>";
@@ -397,29 +402,44 @@ foreach ($businessData as $businessName => $branches) {
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Product <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($popularProducts as $product): ?>
+                                            <?php if (!empty($popularProducts)): ?>
+                                                <?php foreach ($popularProducts as $product): ?>
+                                                    <tr>
+                                                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                                                        <td><?php echo htmlspecialchars($product['business_name']); ?></td>
+                                                        <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                        <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
+                                                        <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
                                                 <tr>
-                                                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($product['business_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($product['type']); ?></td>
-                                                    <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
-                                                    <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                    <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                    <td colspan="6" style="text-align: center;">No popular products found
+                                                    </td>
                                                 </tr>
-                                            <?php endforeach; ?>
+                                            <?php endif; ?>
                                         </tbody>
+
                                     </table>
 
-                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts" onclick="printTable('product-table', 'Popular Products')">
+                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
+                                        onclick="printTable('product-table', 'Popular Products')">
                                         <i class="fas fa-print me-2"></i> Print Report (Popular Products)
                                     </button>
                                 </div>
@@ -465,7 +485,8 @@ foreach ($businessData as $businessName => $branches) {
                                                             ?>
                                                         </td>
 
-                                                        <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?></td>
+                                                        <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?>
+                                                        </td>
                                                         <td>
                                                             <?php echo $activity['status']; ?>
                                                         </td>
@@ -574,9 +595,9 @@ foreach ($businessData as $businessName => $branches) {
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
-                            method: 'POST',
-                            body: formData
-                        })
+                        method: 'POST',
+                        body: formData
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {

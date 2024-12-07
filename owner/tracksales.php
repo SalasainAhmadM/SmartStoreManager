@@ -29,11 +29,24 @@ $sales_by_business = [];
 
 if (!empty($businesses)) {
     $query = "
-        SELECT p.id AS product_id, p.name AS product_name, p.price, p.business_id,
-               s.quantity, s.total_sales, s.date
-        FROM products p
-        LEFT JOIN sales s ON p.id = s.product_id AND s.date = ? 
-        WHERE p.business_id IN (" . implode(",", array_keys($businesses)) . ")";
+    SELECT 
+        p.id AS product_id, 
+        p.name AS product_name, 
+        p.price, 
+        p.business_id,
+        s.quantity, 
+        s.total_sales, 
+        s.date,
+        CASE 
+            WHEN s.type = 'branch' THEN b.location
+            WHEN s.type = 'business' THEN bu.name
+        END AS business_or_branch_name
+    FROM products p
+    LEFT JOIN sales s ON p.id = s.product_id AND s.date = ? 
+    LEFT JOIN branch b ON s.branch_id = b.id
+    LEFT JOIN business bu ON p.business_id = bu.id
+    WHERE p.business_id IN (" . implode(",", array_keys($businesses)) . ")";
+
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $today); // Bind the current date
     $stmt->execute();
@@ -48,12 +61,14 @@ if (!empty($businesses)) {
         if (!empty($row['quantity'])) {
             $sales_by_business[$row['business_id']][] = [
                 'product_name' => $row['product_name'],
+                'business_or_branch_name' => $row['business_or_branch_name'], // Add this field
                 'quantity' => $row['quantity'],
                 'total_sales' => $row['total_sales'],
                 'date' => $row['date']
             ];
         }
     }
+
     $stmt->close();
 }
 
@@ -61,18 +76,26 @@ if (!empty($businesses)) {
 $sales_data = [];
 if (!empty($businesses)) {
     $query = "
-        SELECT 
-            p.name AS product_name,
-            p.price AS product_price,
-            s.quantity,
-            s.total_sales,
-            b.name AS business_name,
-            s.date
-        FROM sales s
-        JOIN products p ON s.product_id = p.id
-        JOIN business b ON p.business_id = b.id
-        WHERE b.owner_id = ? AND s.date = ?
-    ";
+    SELECT 
+    p.name AS product_name,
+    p.price AS product_price,
+    s.quantity,
+    s.total_sales,
+    b.name AS business_name,
+    CASE 
+        WHEN s.type = 'branch' THEN br.location
+        ELSE b.name
+    END AS business_or_branch_name,
+    s.type,
+    s.date
+FROM sales s
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+LEFT JOIN branch br ON s.branch_id = br.id
+WHERE b.owner_id = ? AND s.date = ?
+
+";
+
     $stmt = $conn->prepare($query);
     $stmt->bind_param("is", $owner_id, $today);
     $stmt->execute();
@@ -181,36 +204,10 @@ if (!empty($businesses)) {
                             </thead>
 
                             <tbody>
-                                <?php
 
-                                $manila_time = new DateTime('now', new DateTimeZone('Asia/Manila'));
-                                $today_date = $manila_time->format('m/d/Y');
-                                ?>
-                                <?php if (empty($sales_data)): ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center">No Sales for
-                                            <?= htmlspecialchars($today_date); ?>
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($sales_data as $sale): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($sale['product_name']); ?></td>
-                                            <td><?= htmlspecialchars($sale['business_name']); ?></td>
-                                            <td><?= htmlspecialchars($sale['quantity']); ?></td>
-                                            <td>₱<?= number_format($sale['total_sales'], 2, '.', ','); ?></td>
-
-                                            <td>
-                                                <?php
-                                                $date = new DateTime($sale['date'], new DateTimeZone('UTC'));
-                                                $date->setTimezone(new DateTimeZone('Asia/Manila'));
-                                                echo htmlspecialchars($date->format('m/d/Y h:i A'));
-                                                ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
                             </tbody>
+
+
 
                         </table>
 

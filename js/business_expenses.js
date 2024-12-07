@@ -267,7 +267,6 @@ function handleDeleteExpense(row) {
     });
 }
 
-
 document.getElementById('addExpenseBtn').addEventListener('click', function () {
     // Get the current date in Asia/Manila timezone
     const currentDate = new Date();
@@ -275,7 +274,11 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
     const currentMonth = new Intl.DateTimeFormat('en-US', options).format(currentDate);
 
     fetchExpenseTypes().then(expenseTypes => {
-        const options = expenseTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+        // Add a default option and map the other options
+        const options = `
+            <option value="" selected>Select Expense Type</option>
+            ${expenseTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+        `;
 
         Swal.fire({
             title: 'Add Business Expenses',
@@ -352,6 +355,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
         console.error('Error:', err);
     });
 });
+
 
 
 
