@@ -321,7 +321,6 @@ CREATE TABLE `sales` (
   `date` date NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `product_id` int(11) NOT NULL,
-  `branch_id` int(11) DEFAULT NULL,
   `user_role` enum('Manager','Owner') NOT NULL DEFAULT 'Owner',
   `type` enum('business','branch') NOT NULL DEFAULT 'business'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
