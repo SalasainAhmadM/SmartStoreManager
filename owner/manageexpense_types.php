@@ -50,7 +50,7 @@ $owner_id = $_SESSION['user_id'];
 
                                 <label for="typesRadio">
                                     <input type="radio" name="selection" value="branch" id="typesRadio" checked>
-                                    <i class="fa-solid fa-money-check-dollar"></i><strong>Expense Types</strong>
+                                    <i class="fa-solid fa-money-check-dollar"></i><strong> Expense Types</strong>
                                 </label>
                             </div>
 
