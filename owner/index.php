@@ -185,8 +185,8 @@ foreach ($businessData as $businessName => $branches) {
         $sqlBranchExpenses = "SELECT SUM(e.amount) AS total_expenses
                               FROM expenses e
                               JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
-                              WHERE br.location = ? AND br.business_id = (
-                                  SELECT id FROM business WHERE name = ?
+                              WHERE br.location = ? AND br.business_id IN (
+                                  SELECT id FROM business WHERE name = ? 
                               )";
         $stmtBranchExpenses = $conn->prepare($sqlBranchExpenses);
         $stmtBranchExpenses->bind_param("ss", $branchLocation, $businessName);
@@ -201,8 +201,8 @@ foreach ($businessData as $businessName => $branches) {
         $sqlBranchSales = "SELECT SUM(s.total_sales) AS total_sales
                            FROM sales s
                            JOIN branch br ON s.branch_id = br.id
-                           WHERE br.location = ? AND br.business_id = (
-                               SELECT id FROM business WHERE name = ?
+                           WHERE br.location = ? AND br.business_id IN (
+                               SELECT id FROM business WHERE name = ? 
                            )";
         $stmtBranchSales = $conn->prepare($sqlBranchSales);
         $stmtBranchSales->bind_param("ss", $branchLocation, $businessName);
