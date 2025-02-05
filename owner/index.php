@@ -223,17 +223,42 @@ foreach ($businessData as $businessName => $branches) {
 
 // Get daily sales and expenses for the past 30 days
 $sqlDaily = "SELECT 
-    DATE(s.created_at) as date,
-    SUM(s.total_sales) as daily_sales,
-    COALESCE((
-        SELECT SUM(e.amount) 
-        FROM expenses e 
-        WHERE DATE(e.created_at) = DATE(s.created_at)
-    ), 0) as daily_expenses
-FROM sales s
-WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-GROUP BY DATE(s.created_at)
-ORDER BY date";
+    dates.date,
+    b.name as business_name,
+    COALESCE(s.daily_sales, 0) as daily_sales,
+    COALESCE(e.daily_expenses, 0) as daily_expenses
+FROM (
+    SELECT DATE(created_at) as date
+    FROM sales 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    UNION
+    SELECT DATE(created_at) as date
+    FROM expenses
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+) dates
+LEFT JOIN (
+    SELECT 
+        DATE(s.created_at) as date,
+        b.name as business_name,
+        SUM(s.total_sales) as daily_sales
+    FROM sales s
+    JOIN products p ON s.product_id = p.id
+    JOIN business b ON p.business_id = b.id
+    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    GROUP BY DATE(s.created_at), b.name
+) s ON dates.date = s.date
+LEFT JOIN (
+    SELECT 
+        DATE(e.created_at) as date,
+        b.name as business_name,
+        SUM(e.amount) as daily_expenses
+    FROM expenses e
+    JOIN business b ON e.category = 'business' AND e.category_id = b.id
+    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    GROUP BY DATE(e.created_at), b.name
+) e ON dates.date = e.date AND s.business_name = e.business_name
+JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
+ORDER BY dates.date";
 
 $stmtDaily = $conn->prepare($sqlDaily);
 $stmtDaily->execute();
@@ -243,6 +268,7 @@ $dailyData = [];
 while ($row = $resultDaily->fetch_assoc()) {
     $dailyData[] = [
         'date' => $row['date'],
+        'business_name' => $row['business_name'],
         'sales' => floatval($row['daily_sales']),
         'expenses' => floatval($row['daily_expenses']),
         'profit_margin' => $row['daily_sales'] > 0 ?
@@ -252,17 +278,42 @@ while ($row = $resultDaily->fetch_assoc()) {
 
 // Get monthly cash flow for the past 12 months
 $sqlMonthly = "SELECT 
-    DATE_FORMAT(s.created_at, '%Y-%m') as month,
-    SUM(s.total_sales) as monthly_inflow,
-    COALESCE((
-        SELECT SUM(e.amount) 
-        FROM expenses e 
-        WHERE DATE_FORMAT(e.created_at, '%Y-%m') = DATE_FORMAT(s.created_at, '%Y-%m')
-    ), 0) as monthly_outflow
-FROM sales s
-WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-GROUP BY DATE_FORMAT(s.created_at, '%Y-%m')
-ORDER BY month";
+    dates.month,
+    b.name as business_name,
+    COALESCE(s.monthly_sales, 0) as monthly_inflow,
+    COALESCE(e.monthly_expenses, 0) as monthly_outflow
+FROM (
+    SELECT DATE_FORMAT(created_at, '%Y-%m') as month
+    FROM sales 
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    UNION
+    SELECT DATE_FORMAT(created_at, '%Y-%m') as month
+    FROM expenses
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+) dates
+LEFT JOIN (
+    SELECT 
+        DATE_FORMAT(s.created_at, '%Y-%m') as month,
+        b.name as business_name,
+        SUM(s.total_sales) as monthly_sales
+    FROM sales s
+    JOIN products p ON s.product_id = p.id
+    JOIN business b ON p.business_id = b.id
+    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    GROUP BY DATE_FORMAT(s.created_at, '%Y-%m'), b.name
+) s ON dates.month = s.month
+LEFT JOIN (
+    SELECT 
+        DATE_FORMAT(e.created_at, '%Y-%m') as month,
+        b.name as business_name,
+        SUM(e.amount) as monthly_expenses
+    FROM expenses e
+    JOIN business b ON e.category = 'business' AND e.category_id = b.id
+    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    GROUP BY DATE_FORMAT(e.created_at, '%Y-%m'), b.name
+) e ON dates.month = e.month AND s.business_name = e.business_name
+JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
+ORDER BY dates.month";
 
 $stmtMonthly = $conn->prepare($sqlMonthly);
 $stmtMonthly->execute();
@@ -272,6 +323,7 @@ $monthlyData = [];
 while ($row = $resultMonthly->fetch_assoc()) {
     $monthlyData[] = [
         'month' => $row['month'],
+        'business_name' => $row['business_name'],
         'inflow' => floatval($row['monthly_inflow']),
         'outflow' => floatval($row['monthly_outflow'])
     ];
