@@ -221,7 +221,61 @@ foreach ($businessData as $businessName => $branches) {
     }
 }
 
+// Get daily sales and expenses for the past 30 days
+$sqlDaily = "SELECT 
+    DATE(s.created_at) as date,
+    SUM(s.total_sales) as daily_sales,
+    COALESCE((
+        SELECT SUM(e.amount) 
+        FROM expenses e 
+        WHERE DATE(e.created_at) = DATE(s.created_at)
+    ), 0) as daily_expenses
+FROM sales s
+WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+GROUP BY DATE(s.created_at)
+ORDER BY date";
 
+$stmtDaily = $conn->prepare($sqlDaily);
+$stmtDaily->execute();
+$resultDaily = $stmtDaily->get_result();
+
+$dailyData = [];
+while ($row = $resultDaily->fetch_assoc()) {
+    $dailyData[] = [
+        'date' => $row['date'],
+        'sales' => floatval($row['daily_sales']),
+        'expenses' => floatval($row['daily_expenses']),
+        'profit_margin' => $row['daily_sales'] > 0 ?
+            (($row['daily_sales'] - $row['daily_expenses']) / $row['daily_sales']) * 100 : 0
+    ];
+}
+
+// Get monthly cash flow for the past 12 months
+$sqlMonthly = "SELECT 
+    DATE_FORMAT(s.created_at, '%Y-%m') as month,
+    SUM(s.total_sales) as monthly_inflow,
+    COALESCE((
+        SELECT SUM(e.amount) 
+        FROM expenses e 
+        WHERE DATE_FORMAT(e.created_at, '%Y-%m') = DATE_FORMAT(s.created_at, '%Y-%m')
+    ), 0) as monthly_outflow
+FROM sales s
+WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+GROUP BY DATE_FORMAT(s.created_at, '%Y-%m')
+ORDER BY month";
+
+$stmtMonthly = $conn->prepare($sqlMonthly);
+$stmtMonthly->execute();
+$resultMonthly = $stmtMonthly->get_result();
+
+$monthlyData = [];
+while ($row = $resultMonthly->fetch_assoc()) {
+    $monthlyData[] = [
+        'month' => $row['month'],
+        'inflow' => floatval($row['monthly_inflow']),
+        'outflow' => floatval($row['monthly_outflow'])
+    ];
+}
 
 ?>
 
@@ -310,9 +364,30 @@ foreach ($businessData as $businessName => $branches) {
 
 
                             <div class="col-md-7">
+                                <h5 class="mt-5"><b>Financial Overview:</b></h5>
 
-                                <h5 class="mt-5"><b>Sales Overview:</b></h5>
+                                <!-- Original Chart -->
+                                <div class="chart-container mb-4">
                                 <canvas id="financialChart"></canvas>
+                                </div>
+
+                                <!-- Sales vs Expenses Chart -->
+                                <div class="chart-container mb-4">
+                                    <h6>Sales vs Expenses</h6>
+                                    <canvas id="salesExpensesChart"></canvas>
+                                </div>
+
+                                <!-- Profit Margin Chart -->
+                                <div class="chart-container mb-4">
+                                    <h6>Profit Margin Trends</h6>
+                                    <canvas id="profitMarginChart"></canvas>
+                                </div>
+
+                                <!-- Cash Flow Chart -->
+                                <div class="chart-container mb-4">
+                                    <h6>Monthly Cash Flow</h6>
+                                    <canvas id="cashFlowChart"></canvas>
+                                </div>
 
                             </div>
 
@@ -684,8 +759,10 @@ foreach ($businessData as $businessName => $branches) {
 
 
     <script>
-        // Prepare data for the chart
+        // Prepare data for all charts
         var chartData = <?php echo json_encode($processedData); ?>;
+        var dailyData = <?php echo json_encode($dailyData); ?>;
+        var monthlyData = <?php echo json_encode($monthlyData); ?>;
     </script>
     <script src="../js/chart.js"></script>
 
