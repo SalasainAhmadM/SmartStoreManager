@@ -229,15 +229,42 @@ function updateSalesExpensesChart(data) {
         
         ['Daily', 'Weekly', 'Monthly'].forEach(period => {
             const button = document.createElement('button');
-            button.className = 'btn btn-outline-primary';
+            // Update button classes for dark theme
+            button.className = 'btn btn-outline-light';
+            button.style.cssText = `
+                background-color: #343a40;
+                color: #fff;
+                border: 1px solid #6c757d;
+                margin-right: 5px;
+                padding: 8px 16px;
+                border-radius: 5px;
+                transition: all 0.3s ease;
+            `;
             button.textContent = period;
+
+            // Add hover effect
+            button.onmouseover = () => {
+                if (!button.classList.contains('active')) {
+                    button.style.backgroundColor = '#495057';
+                }
+            };
+            button.onmouseout = () => {
+                if (!button.classList.contains('active')) {
+                    button.style.backgroundColor = '#343a40';
+                }
+            };
+
             button.onclick = () => {
-                // Remove active class from all buttons
+                // Remove active class and reset styles for all buttons
                 buttonGroup.querySelectorAll('button').forEach(btn => {
                     btn.classList.remove('active');
+                    btn.style.backgroundColor = '#343a40';
+                    btn.style.color = '#fff';
                 });
-                // Add active class to clicked button
+                // Add active class and update styles for clicked button
                 button.classList.add('active');
+                button.style.backgroundColor = '#6c757d';
+                button.style.color = '#fff';
                 updateChartWithPeriod(period.toLowerCase());
             };
             buttonGroup.appendChild(button);
@@ -247,9 +274,11 @@ function updateSalesExpensesChart(data) {
         container.insertBefore(buttonGroup, container.firstChild);
     }
 
-    // Initialize with daily view
+    // Initialize with daily view and set active state
     updateChartWithPeriod('daily');
-    buttonGroup.querySelector('button').classList.add('active');
+    const firstButton = buttonGroup.querySelector('button');
+    firstButton.classList.add('active');
+    firstButton.style.backgroundColor = '#6c757d';
 }
 
 // Profit Margin Chart
