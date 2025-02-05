@@ -534,6 +534,177 @@ function updateRevenueContributionChart() {
     });
 }
 
+// Product Analysis Charts
+function updateProductCharts() {
+    // Sort products by revenue
+    const sortedProducts = [...productData].sort((a, b) => b.revenue - a.revenue);
+    const topProducts = sortedProducts.slice(0, 10);
+    const lowProducts = [...sortedProducts].reverse().slice(0, 10);
+
+    // Top Products Chart
+    const topCtx = document.getElementById('topProductsChart').getContext('2d');
+    new Chart(topCtx, {
+        type: 'bar',
+        data: {
+            labels: topProducts.map(p => p.product_name),
+            datasets: [{
+                label: 'Revenue',
+                data: topProducts.map(p => p.revenue),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            return `Revenue: ₱${value.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Low Performing Products Chart
+    const lowCtx = document.getElementById('lowProductsChart').getContext('2d');
+    new Chart(lowCtx, {
+        type: 'bar',
+        data: {
+            labels: lowProducts.map(p => p.product_name),
+            datasets: [{
+                label: 'Revenue',
+                data: lowProducts.map(p => p.revenue),
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            return `Revenue: ₱${value.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Product Profitability Chart
+    const profitCtx = document.getElementById('productProfitabilityChart').getContext('2d');
+    new Chart(profitCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Products',
+                data: productData.map(p => ({
+                    x: p.revenue,
+                    y: p.profit,
+                    product: p.product_name,
+                    business: p.business_name
+                })),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                pointRadius: 8,
+                pointHoverRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Revenue (₱)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Profit (₱)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const point = context.raw;
+                            return [
+                                `Product: ${point.product}`,
+                                `Business: ${point.business}`,
+                                `Revenue: ₱${point.x.toLocaleString()}`,
+                                `Profit: ₱${point.y.toLocaleString()}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Initialize all charts when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the main financial chart
@@ -549,4 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize comparison charts
     updateBusinessPerformanceChart();
     updateRevenueContributionChart();
+
+    // Initialize product analysis charts
+    updateProductCharts();
 });

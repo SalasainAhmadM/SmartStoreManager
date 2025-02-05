@@ -329,6 +329,35 @@ while ($row = $resultMonthly->fetch_assoc()) {
     ];
 }
 
+// Get product performance data
+$sqlProducts = "SELECT 
+    p.name as product_name,
+    b.name as business_name,
+    SUM(s.total_sales) as revenue,
+    COUNT(*) as units_sold,
+    SUM(s.total_sales) - (p.price * COUNT(*)) as profit
+FROM sales s
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+GROUP BY p.id, p.name, b.name
+ORDER BY revenue DESC";
+
+$stmtProducts = $conn->prepare($sqlProducts);
+$stmtProducts->execute();
+$resultProducts = $stmtProducts->get_result();
+
+$productData = [];
+while ($row = $resultProducts->fetch_assoc()) {
+    $productData[] = [
+        'product_name' => $row['product_name'],
+        'business_name' => $row['business_name'],
+        'revenue' => floatval($row['revenue']),
+        'units_sold' => intval($row['units_sold']),
+        'profit' => floatval($row['profit'])
+    ];
+}
+
 ?>
 
 
@@ -453,7 +482,7 @@ while ($row = $resultMonthly->fetch_assoc()) {
                                 <!-- Business Performance Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h6 class="mt-4 mb-3">Business Performance Comparison</h6>
+                                        <h5 class="mt-5"><b>Business Performance Comparison</b></h5>
                                         <canvas id="businessPerformanceChart"></canvas>
                                     </div>
                                 </div>
@@ -461,13 +490,43 @@ while ($row = $resultMonthly->fetch_assoc()) {
                                 <!-- Revenue Contribution Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h6 class="mt-4 mb-3">Revenue Contribution by Business</h6>
+                                        <h5 class="mt-5"><b>Revenue Contribution by Business</b></h5>
                                         <canvas id="revenueContributionChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <div class="col-md-12 mt-5">
+                            <h1><b><i class="fa-solid fa-box"></i> Product/Service Analysis</b></h1>
+                            <div class="row">
+                                <!-- Top-Selling Products Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Top-Selling Products/Services</b></h5>
+                                        <canvas id="topProductsChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Low-Performing Products Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Low-Performing Products/Services</b></h5>
+                                        <canvas id="lowProductsChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Product Profitability Chart -->
+                                <div class="col-md-12">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5 mb-3"><b>Product/Service Profitability Analysis</b></h5>
+                                        <canvas id="productProfitabilityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Popular Products Section -->
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-lightbulb"></i> Insights</b></h1>
                             <div class="col-md-12 dashboard-content">
@@ -836,6 +895,7 @@ while ($row = $resultMonthly->fetch_assoc()) {
         var chartData = <?php echo json_encode($processedData); ?>;
         var dailyData = <?php echo json_encode($dailyData); ?>;
         var monthlyData = <?php echo json_encode($monthlyData); ?>;
+        var productData = <?php echo json_encode($productData); ?>;
     </script>
     <script src="../js/chart.js"></script>
 
