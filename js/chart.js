@@ -359,6 +359,181 @@ function updateCashFlowChart(data) {
     });
 }
 
+// Business Performance Comparison Chart
+function updateBusinessPerformanceChart() {
+    const ctx = document.getElementById('businessPerformanceChart').getContext('2d');
+    
+    // Calculate total sales and expenses for each business
+    const businessPerformance = {};
+    
+    // Initialize business performance data from chartData
+    for (const businessName in chartData) {
+        businessPerformance[businessName] = {
+            sales: 0,
+            expenses: 0
+        };
+        
+        // Sum up sales and expenses from all branches
+        for (const branchLocation in chartData[businessName]) {
+            const branchData = chartData[businessName][branchLocation];
+            businessPerformance[businessName].sales += parseFloat(branchData.sales) || 0;
+            businessPerformance[businessName].expenses += parseFloat(branchData.expenses) || 0;
+        }
+    }
+
+    // Prepare data for chart
+    const businesses = Object.keys(businessPerformance);
+    const salesData = businesses.map(b => businessPerformance[b].sales);
+    const expensesData = businesses.map(b => businessPerformance[b].expenses);
+
+    // Create chart
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: businesses,
+            datasets: [
+                {
+                    label: 'Sales (₱)',
+                    data: salesData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    barThickness: 30
+                },
+                {
+                    label: 'Expenses (₱)',
+                    data: expensesData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    barThickness: 30
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',  // Make bars horizontal
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'start',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            return `${context.dataset.label}: ₱${value.toLocaleString()}`;
+                        }
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    top: 20,
+                    bottom: 20,
+                    left: 20,
+                    right: 20
+                }
+            }
+        }
+    });
+}
+
+// Revenue Contribution Chart
+function updateRevenueContributionChart() {
+    const ctx = document.getElementById('revenueContributionChart').getContext('2d');
+    
+    // Calculate total revenue for each business
+    const revenueByBusiness = {};
+    let totalRevenue = 0;
+    
+    dailyData.forEach(item => {
+        if (!revenueByBusiness[item.business_name]) {
+            revenueByBusiness[item.business_name] = 0;
+        }
+        const revenue = parseFloat(item.sales) || 0;
+        revenueByBusiness[item.business_name] += revenue;
+        totalRevenue += revenue;
+    });
+
+    // Calculate percentages and prepare data
+    const businesses = Object.keys(revenueByBusiness);
+    const percentages = businesses.map(b => 
+        ((revenueByBusiness[b] / totalRevenue) * 100).toFixed(1)
+    );
+
+    // Create chart
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: businesses.map(b => `${b} (${percentages[businesses.indexOf(b)]}%)`),
+            datasets: [{
+                data: Object.values(revenueByBusiness),
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(54, 162, 235, 0.2)'
+                ],
+                borderColor: [
+                    'rgb(75, 192, 192)',
+                    'rgb(255, 99, 132)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 206, 86)',
+                    'rgb(54, 162, 235)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const percentage = ((value / totalRevenue) * 100).toFixed(1);
+                            return `₱${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Initialize all charts when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the main financial chart
@@ -367,7 +542,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get the first business name and show its data
     const firstBusinessName = Object.keys(chartData)[0];
     if (firstBusinessName) {
-        selectedBusinessName = firstBusinessName; // Set initial selected business
+        selectedBusinessName = firstBusinessName;
         showBusinessData(firstBusinessName);
     }
+
+    // Initialize comparison charts
+    updateBusinessPerformanceChart();
+    updateRevenueContributionChart();
 });

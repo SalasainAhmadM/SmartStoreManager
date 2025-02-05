@@ -448,6 +448,27 @@ while ($row = $resultMonthly->fetch_assoc()) {
 
 
                         <div class="col-md-12 mt-5">
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison</b></h1>
+                            <div class="row">
+                                <!-- Business Performance Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h6 class="mt-4 mb-3">Business Performance Comparison</h6>
+                                        <canvas id="businessPerformanceChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Revenue Contribution Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h6 class="mt-4 mb-3">Revenue Contribution by Business</h6>
+                                        <canvas id="revenueContributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-lightbulb"></i> Insights</b></h1>
                             <div class="col-md-12 dashboard-content">
 
