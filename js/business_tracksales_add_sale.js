@@ -276,7 +276,9 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                             .then((response) => response.json())
                             .then((data) => {
                                 if (data.success) {
-                                    Swal.fire("Success", data.message, "success");
+                                    Swal.fire("Success", data.message, "success").then(() => {
+                                        window.location.reload();
+                                    });
                                     addSaleToTable(
                                         saleData.branchId,
                                         saleData.productId,

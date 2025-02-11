@@ -90,15 +90,14 @@ $sql = "SELECT
 FROM
     sales s
 JOIN products p ON s.product_id = p.id
-LEFT JOIN business b ON p.business_id = b.id
+LEFT JOIN business b ON p.business_id = b.id 
 WHERE s.total_sales > 0
-AND b.owner_id = ?
 GROUP BY p.name, b.name, p.type, p.price, p.description
 ORDER BY total_sales DESC
 LIMIT 10"; // Limit to top 10 products
 
+
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -109,6 +108,7 @@ if ($result->num_rows > 0) {
         $popularProducts[] = $row;
     }
 }
+
 
 
 // Query to fetch activities for the owner
@@ -621,25 +621,17 @@ while ($row = $resultProducts->fetch_assoc()) {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php if (!empty($popularProducts)): ?>
-                                                <?php foreach ($popularProducts as $product): ?>
-                                                    <tr>
-                                                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['business_name']); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['type']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
+                                            <?php foreach ($popularProducts as $product): ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
-                                                    </td>
+                                                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['business_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
                                                 </tr>
-                                            <?php endif; ?>
+                                            <?php endforeach; ?>
                                         </tbody>
-
                                     </table>
 
                                     <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"

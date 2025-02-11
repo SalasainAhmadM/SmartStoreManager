@@ -212,8 +212,10 @@ function handleEditExpense(row) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Updated!', 'Expense updated successfully.', 'success');
-                    } else {
+                        Swal.fire('Updated!', 'Expense updated successfully.', 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else { 
                         Swal.fire('Error', data.message, 'error');
                     }
                 })
@@ -339,7 +341,9 @@ document.getElementById('addExpenseBtn').addEventListener('click', function () {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Added!', 'Expense added successfully.', 'success');
+                        Swal.fire('Added!', 'Expense added successfully.', 'success').then(() => {
+                            window.location.reload();
+                        });
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }

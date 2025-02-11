@@ -146,7 +146,8 @@ while ($row = $result->fetch_assoc()) {
                             </div>
 
                             <div class="scrollable-table" id="managerListTableSection">
-                                <table class="table table-striped table-hover mt-5" id="managerListTable">
+                                <h4 class="mt-3">Manager List</h4>
+                                <table class="table table-striped table-hover mt-3" id="managerListTable">
                                     <thead class="table-dark position-sticky top-0">
                                         <tr>
                                             <th>Name <button class="btn text-white"><i class="fas fa-sort"></i></button>
@@ -194,8 +195,9 @@ while ($row = $result->fetch_assoc()) {
                                     </tbody>
                                 </table>
 
-                                <button class="btn btn-primary mt-2 mb-5" id="managerListTable" onclick="printContent('managerListTableSection', 'Manager List Report')">
-                                <i class="fas fa-print me-2"></i> Print Report (Manager List)
+                                <button class="btn btn-primary mt-2 mb-5" id="managerListTable"
+                                    onclick="printContent('managerListTableSection', 'Manager List Report')">
+                                    <i class="fas fa-print me-2"></i> Print Report (Manager List)
                                 </button>
 
                             </div>
@@ -210,13 +212,13 @@ while ($row = $result->fetch_assoc()) {
 
                         <div class="table-responsive mt-5 scrollable-table" id="assignManagerTableSection">
 
-                            <table class="table table-striped table-hover mt-5" id="assignManagerTable">
+                            <table class="table table-striped table-hover mt-3" id="assignManagerTable">
                                 <form class="d-flex" role="search" id="search-form">
                                     <input class="form-control me-2 w-50" id="search-business" type="search"
                                         placeholder="Search business or branch..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-
+                                <h4 class="mt-3">Assign Manager</h4>
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Business Name <button class="btn text-white"><i
@@ -263,8 +265,9 @@ while ($row = $result->fetch_assoc()) {
                                 </tbody>
                             </table>
 
-                            <button class="btn btn-primary mt-2 mb-5" id="assignManagerTable" onclick="printContent('assignManagerTableSection', 'Business Branches Report')">
-                            <i class="fas fa-print me-2"></i> Print Report (Business Branches) 
+                            <button class="btn btn-primary mt-2 mb-5" id="assignManagerTable"
+                                onclick="printContent('assignManagerTableSection', 'Business Branches Report')">
+                                <i class="fas fa-print me-2"></i> Print Report (Business Branches)
                             </button>
 
                         </div>
@@ -316,8 +319,9 @@ while ($row = $result->fetch_assoc()) {
                             </table>
 
 
-                            <button class="btn btn-primary mt-2 mb-5" id="managerListTable" onclick="printContent('managerListTableSection', 'Manager Assigned Branches/Business Report')">
-                            <i class="fas fa-print me-2"></i> Print Report (Manager Assigned Branches/Business) 
+                            <button class="btn btn-primary mt-2 mb-5" id="managerListTable"
+                                onclick="printContent('managerListTableSection', 'Manager Assigned Branches/Business Report')">
+                                <i class="fas fa-print me-2"></i> Print Report (Manager Assigned Branches/Business)
                             </button>
 
                         </div>

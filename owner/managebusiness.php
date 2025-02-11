@@ -117,6 +117,7 @@ $product_stmt->close();
                         </div>
 
                         <div class="col-md-12 mt-5 scrollable-table">
+                            <h4 class="mb-3">Business List</h4>
                             <table class="table table-striped table-hover mt-4" id="businessTable">
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
@@ -136,29 +137,37 @@ $product_stmt->close();
                                     </tr>
                                 </thead>
                                 <tbody id="business-table-body">
-                                    <?php foreach ($businesses as $business): ?>
-                                        <tr data-id="<?php echo $business['id']; ?>">
-                                            <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($business['description']); ?></td>
-                                            <td><?php echo htmlspecialchars($business['asset']); ?></td>
-                                            <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
-                                            <td><?php echo htmlspecialchars($business['created_at']); ?></td>
-                                            <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
-                                            <td class="text-center">
-                                                <a href="#" class="edit-button text-primary me-3" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="#" class="delete-button text-danger" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            </td>
+                                    <?php if (!empty($businesses)): ?>
+                                        <?php foreach ($businesses as $business): ?>
+                                            <tr data-id="<?php echo $business['id']; ?>">
+                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($business['description']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['asset']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['created_at']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
+                                                <td class="text-center">
+                                                    <a href="#" class="edit-button text-primary me-3" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="delete-button text-danger" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="7" style="text-align: center;">No Business Found</td>
                                         </tr>
-                                    <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </tbody>
+
                             </table>
 
-                            <button class="btn btn-primary mt-2 mb-5" onclick="printContent('businesslist', 'Business List Report')">
+                            <button class="btn btn-primary mt-2 mb-5"
+                                onclick="printContent('businesslist', 'Business List Report')">
                                 <i class="fas fa-print me-2"></i> Print Report (Business List)
                             </button>
 
@@ -241,7 +250,8 @@ $product_stmt->close();
                                                 </tbody>
                                             </table>
 
-                                            <button class="btn btn-primary mt-2 mb-5" onclick="printContent('business<?php echo $business['id']; ?>', 'Branch List for <?php echo $business['name']; ?>')">
+                                            <button class="btn btn-primary mt-2 mb-5"
+                                                onclick="printContent('business<?php echo $business['id']; ?>', 'Branch List for <?php echo $business['name']; ?>')">
                                                 <i class="fas fa-print me-2"></i> Print Report (Branch List)
                                             </button>
 
@@ -345,7 +355,8 @@ $product_stmt->close();
                                                 </tbody>
                                             </table>
 
-                                            <button class="btn btn-primary mt-2 mb-5" onclick="printContent('business-<?php echo $business['id']; ?>', 'Product List for <?php echo $business['name']; ?>')">
+                                            <button class="btn btn-primary mt-2 mb-5"
+                                                onclick="printContent('business-<?php echo $business['id']; ?>', 'Product List for <?php echo $business['name']; ?>')">
                                                 <i class="fas fa-print me-2"></i> Print Report (Product List)
                                             </button>
 
@@ -379,7 +390,7 @@ $product_stmt->close();
 
         //  <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
         // Add Business
-        $('#add-business-btn').click(function() {
+        $('#add-business-btn').click(function () {
             Swal.fire({
                 title: 'Add New Business',
                 html: `
@@ -432,9 +443,9 @@ $product_stmt->close();
             });
         });
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Edit Button
-            $('.edit-button').click(function(e) {
+            $('.edit-button').click(function (e) {
                 e.preventDefault();
                 const row = $(this).closest('tr');
                 const businessId = row.data('id');
@@ -494,7 +505,7 @@ $product_stmt->close();
             });
 
             // Delete Button
-            $('.delete-button').click(function(e) {
+            $('.delete-button').click(function (e) {
                 e.preventDefault();
                 const row = $(this).closest('tr');
                 const businessId = row.data('id');
@@ -555,21 +566,22 @@ $product_stmt->close();
 
                     // Send data to add_branch.php
                     fetch('../endpoints/branch/add_branch.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                business_id: businessId,
-                                location
-                            })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            business_id: businessId,
+                            location
                         })
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 Swal.fire('Success', data.message, 'success').then(() => {
-                                    location.reload();
+                                    window.location.reload();
                                 });
+
                             } else {
                                 Swal.fire('Error', data.message, 'error');
                             }
@@ -612,20 +624,20 @@ $product_stmt->close();
                                 } = result.value;
 
                                 fetch('../endpoints/branch/edit_branch.php', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            id: branchId,
-                                            location
-                                        })
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id: branchId,
+                                        location
                                     })
+                                })
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.success) {
                                             Swal.fire('Success', 'Branch updated successfully!', 'success').then(() => {
-                                                location.reload();
+                                                window.location.reload();
                                             });
                                         } else {
                                             Swal.fire('Error', 'Failed to update branch!', 'error');
@@ -655,14 +667,14 @@ $product_stmt->close();
             }).then(result => {
                 if (result.isConfirmed) {
                     fetch('../endpoints/branch/delete_branch.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                id: branchId
-                            })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id: branchId
                         })
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -718,18 +730,18 @@ $product_stmt->close();
 
                     // Send data to add_product.php
                     fetch('../endpoints/product/add_product.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                business_id: businessId,
-                                name,
-                                type,
-                                price,
-                                description
-                            })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            business_id: businessId,
+                            name,
+                            type,
+                            price,
+                            description
                         })
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -780,15 +792,15 @@ $product_stmt->close();
                     }).then(result => {
                         if (result.isConfirmed) {
                             fetch('../endpoints/product/edit_product.php', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        id: productId,
-                                        ...result.value
-                                    })
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    id: productId,
+                                    ...result.value
                                 })
+                            })
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
@@ -818,14 +830,14 @@ $product_stmt->close();
             }).then(result => {
                 if (result.isConfirmed) {
                     fetch('../endpoints/product/delete_product.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                id: productId
-                            })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id: productId
                         })
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -901,7 +913,7 @@ $product_stmt->close();
         // });
 
         // business filter
-        document.getElementById('search-business').addEventListener('input', function() {
+        document.getElementById('search-business').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#business-table-body tr');
 
@@ -914,7 +926,7 @@ $product_stmt->close();
             });
         });
         // Branch filter
-        document.getElementById('search-branch').addEventListener('input', function() {
+        document.getElementById('search-branch').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr'); // Target all table rows in the tbody
 
@@ -928,7 +940,7 @@ $product_stmt->close();
         });
 
         // product filter
-        document.getElementById('search-product').addEventListener('input', function() {
+        document.getElementById('search-product').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#product-table tbody tr');
 

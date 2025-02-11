@@ -69,7 +69,7 @@ $owner_id = $_SESSION['user_id'];
                             <i class="fas fa-plus me-2"></i> Add Type
                         </button>
                     </div>
-
+                    <h4 class="mb-3">Expense Types</h4>
                     <table class="table table-striped table-hover mt-4" id="expensesListTable">
                         <thead class="table-dark position-sticky top-0">
                             <tr>
