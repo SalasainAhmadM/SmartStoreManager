@@ -131,8 +131,6 @@ if ($result->num_rows > 0) {
     }
 }
 
-
-
 // Modify to fetch expenses for each branch
 $processedData = [];
 foreach ($businessData as $businessName => $branches) {
@@ -144,9 +142,9 @@ foreach ($businessData as $businessName => $branches) {
     $sqlBusinessExpenses = "SELECT SUM(e.amount) AS total_expenses
                             FROM expenses e
                             JOIN business b ON e.category = 'business' AND e.category_id = b.id
-                            WHERE b.name = ?";
+                            WHERE b.name = ? AND b.owner_id = ?";
     $stmtBusinessExpenses = $conn->prepare($sqlBusinessExpenses);
-    $stmtBusinessExpenses->bind_param("s", $businessName);
+    $stmtBusinessExpenses->bind_param("si", $businessName, $owner_id);
     $stmtBusinessExpenses->execute();
     $resultBusinessExpenses = $stmtBusinessExpenses->get_result();
     if ($resultBusinessExpenses->num_rows > 0) {
@@ -160,9 +158,9 @@ foreach ($businessData as $businessName => $branches) {
             FROM sales s
             JOIN products p ON s.product_id = p.id
             JOIN business b ON p.business_id = b.id
-            WHERE s.branch_id = 0 AND b.name = ?";
+            WHERE s.branch_id = 0 AND b.name = ? AND b.owner_id = ?";
     $stmtBusinessSales = $conn->prepare($sqlBusinessSales);
-    $stmtBusinessSales->bind_param("s", $businessName);
+    $stmtBusinessSales->bind_param("si", $businessName, $owner_id);
     $stmtBusinessSales->execute();
     $resultBusinessSales = $stmtBusinessSales->get_result();
     if ($resultBusinessSales->num_rows > 0) {
@@ -185,11 +183,10 @@ foreach ($businessData as $businessName => $branches) {
         $sqlBranchExpenses = "SELECT SUM(e.amount) AS total_expenses
                               FROM expenses e
                               JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
-                              WHERE br.location = ? AND br.business_id IN (
-                                  SELECT id FROM business WHERE name = ? 
-                              )";
+                              JOIN business b ON br.business_id = b.id
+                              WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
         $stmtBranchExpenses = $conn->prepare($sqlBranchExpenses);
-        $stmtBranchExpenses->bind_param("ss", $branchLocation, $businessName);
+        $stmtBranchExpenses->bind_param("ssi", $branchLocation, $businessName, $owner_id);
         $stmtBranchExpenses->execute();
         $resultBranchExpenses = $stmtBranchExpenses->get_result();
         if ($resultBranchExpenses->num_rows > 0) {
@@ -201,11 +198,10 @@ foreach ($businessData as $businessName => $branches) {
         $sqlBranchSales = "SELECT SUM(s.total_sales) AS total_sales
                            FROM sales s
                            JOIN branch br ON s.branch_id = br.id
-                           WHERE br.location = ? AND br.business_id IN (
-                               SELECT id FROM business WHERE name = ? 
-                           )";
+                           JOIN business b ON br.business_id = b.id
+                           WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
         $stmtBranchSales = $conn->prepare($sqlBranchSales);
-        $stmtBranchSales->bind_param("ss", $branchLocation, $businessName);
+        $stmtBranchSales->bind_param("ssi", $branchLocation, $businessName, $owner_id);
         $stmtBranchSales->execute();
         $resultBranchSales = $stmtBranchSales->get_result();
         if ($resultBranchSales->num_rows > 0) {
@@ -221,7 +217,7 @@ foreach ($businessData as $businessName => $branches) {
     }
 }
 
-// Get daily sales and expenses for the past 30 days
+// Get daily sales and expenses for the past 30 days for the owner
 $sqlDaily = "SELECT 
     dates.date,
     b.name as business_name,
@@ -245,6 +241,7 @@ LEFT JOIN (
     JOIN products p ON s.product_id = p.id
     JOIN business b ON p.business_id = b.id
     WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND b.owner_id = ?
     GROUP BY DATE(s.created_at), b.name
 ) s ON dates.date = s.date
 LEFT JOIN (
@@ -255,12 +252,15 @@ LEFT JOIN (
     FROM expenses e
     JOIN business b ON e.category = 'business' AND e.category_id = b.id
     WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND b.owner_id = ?
     GROUP BY DATE(e.created_at), b.name
 ) e ON dates.date = e.date AND s.business_name = e.business_name
 JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
+WHERE b.owner_id = ?
 ORDER BY dates.date";
 
 $stmtDaily = $conn->prepare($sqlDaily);
+$stmtDaily->bind_param("iii", $owner_id, $owner_id, $owner_id);
 $stmtDaily->execute();
 $resultDaily = $stmtDaily->get_result();
 
@@ -276,7 +276,7 @@ while ($row = $resultDaily->fetch_assoc()) {
     ];
 }
 
-// Get monthly cash flow for the past 12 months
+// Get monthly cash flow for the past 12 months for the owner
 $sqlMonthly = "SELECT 
     dates.month,
     b.name as business_name,
@@ -300,6 +300,7 @@ LEFT JOIN (
     JOIN products p ON s.product_id = p.id
     JOIN business b ON p.business_id = b.id
     WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    AND b.owner_id = ?
     GROUP BY DATE_FORMAT(s.created_at, '%Y-%m'), b.name
 ) s ON dates.month = s.month
 LEFT JOIN (
@@ -310,12 +311,15 @@ LEFT JOIN (
     FROM expenses e
     JOIN business b ON e.category = 'business' AND e.category_id = b.id
     WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    AND b.owner_id = ?
     GROUP BY DATE_FORMAT(e.created_at, '%Y-%m'), b.name
 ) e ON dates.month = e.month AND s.business_name = e.business_name
 JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
+WHERE b.owner_id = ?
 ORDER BY dates.month";
 
 $stmtMonthly = $conn->prepare($sqlMonthly);
+$stmtMonthly->bind_param("iii", $owner_id, $owner_id, $owner_id);
 $stmtMonthly->execute();
 $resultMonthly = $stmtMonthly->get_result();
 
@@ -329,7 +333,7 @@ while ($row = $resultMonthly->fetch_assoc()) {
     ];
 }
 
-// Get product performance data
+// Get product performance data for the owner
 $sqlProducts = "SELECT 
     p.name as product_name,
     b.name as business_name,
@@ -339,11 +343,13 @@ $sqlProducts = "SELECT
 FROM sales s
 JOIN products p ON s.product_id = p.id
 JOIN business b ON p.business_id = b.id
-WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+WHERE b.owner_id = ? 
+AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
 GROUP BY p.id, p.name, b.name
 ORDER BY revenue DESC";
 
 $stmtProducts = $conn->prepare($sqlProducts);
+$stmtProducts->bind_param("i", $owner_id);
 $stmtProducts->execute();
 $resultProducts = $stmtProducts->get_result();
 
@@ -357,7 +363,6 @@ while ($row = $resultProducts->fetch_assoc()) {
         'profit' => floatval($row['profit'])
     ];
 }
-
 // 6
 // Fetch Category-Wise Expenses
 $categoryQuery = "
@@ -943,7 +948,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                                                 <canvas id="seasonalTrendsChart"></canvas>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Growth Rate Chart -->
                                         <div class="col-md-6">
                                             <div class="chart-container mb-4" style="height: 400px;">
@@ -1112,7 +1117,7 @@ while ($row = $resultTrends->fetch_assoc()) {
     </script> -->
 
     <script>
-        document.getElementById('uploadDataButton').addEventListener('click', function() {
+        document.getElementById('uploadDataButton').addEventListener('click', function () {
             Swal.fire({
                 title: 'Upload or Download Data',
                 html: `
@@ -1178,9 +1183,9 @@ while ($row = $resultTrends->fetch_assoc()) {
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
-                            method: 'POST',
-                            body: formData
-                        })
+                        method: 'POST',
+                        body: formData
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -1313,7 +1318,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return '₱' + tooltipItem.raw.toLocaleString();
                             }
                         }
@@ -1356,7 +1361,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                         stacked: true,
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
+                            callback: function (value) {
                                 return '₱' + value.toLocaleString();
                             }
                         }
@@ -1365,7 +1370,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return '₱' + tooltipItem.raw.toLocaleString();
                             }
                         }
@@ -1423,7 +1428,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 return tooltipItem.dataset.label + ': ' + tooltipItem.raw + ' units sold';
                             }
                         }
@@ -1433,7 +1438,7 @@ while ($row = $resultTrends->fetch_assoc()) {
         });
 
         // 9
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Parse JSON data from PHP
             const salesData = JSON.parse('<?php echo $salesJson; ?>');
             const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
@@ -1495,7 +1500,7 @@ while ($row = $resultTrends->fetch_assoc()) {
         });
 
         // 10
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Parse JSON data from PHP
             const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
             const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
@@ -1518,20 +1523,20 @@ while ($row = $resultTrends->fetch_assoc()) {
                 data: {
                     labels: labels, // Now it shows Month Names
                     datasets: [{
-                            label: "Monthly Expenses",
-                            data: expenses,
-                            backgroundColor: expenses.map((value, index) =>
-                                value > thresholdValues[index] ? "red" : "blue"
-                            )
-                        },
-                        {
-                            label: "Dynamic Threshold (80%)",
-                            data: thresholdValues,
-                            type: "line",
-                            borderColor: "orange",
-                            borderWidth: 2,
-                            fill: false
-                        }
+                        label: "Monthly Expenses",
+                        data: expenses,
+                        backgroundColor: expenses.map((value, index) =>
+                            value > thresholdValues[index] ? "red" : "blue"
+                        )
+                    },
+                    {
+                        label: "Dynamic Threshold (80%)",
+                        data: thresholdValues,
+                        type: "line",
+                        borderColor: "orange",
+                        borderWidth: 2,
+                        fill: false
+                    }
                     ]
                 },
                 options: {
