@@ -60,9 +60,9 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
 
 
 // Query to fetch business and its branches
-$sql = "SELECT b.name AS business_name, br.location AS branch_location, br.business_id
+$sql = "SELECT b.id AS business_id, b.name AS business_name, br.location AS branch_location
         FROM business b
-        JOIN branch br ON b.id = br.business_id
+        LEFT JOIN branch br ON b.id = br.business_id
         WHERE b.owner_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $owner_id);
@@ -71,24 +71,20 @@ $result = $stmt->get_result();
 
 // Business chart data
 $businessData = [];
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $businessData[$row['business_name']][] = $row['branch_location'];
-    }
+while ($row = $result->fetch_assoc()) {
+    $businessData[$row['business_name']][] = $row['branch_location'] ?? 'No Branch for this Business';
 }
-
-
 
 // Query to fetch popular products
 $sql = "SELECT
-    p.name AS product_name,
-    COALESCE(b.name, 'Direct Business') AS business_name,
-    p.type,
-    p.price,
-    p.description,
-    SUM(s.total_sales) AS total_sales
+p.name AS product_name,
+COALESCE(b.name, 'Direct Business') AS business_name,
+p.type,
+p.price,
+p.description,
+SUM(s.total_sales) AS total_sales
 FROM
-    sales s
+sales s
 JOIN products p ON s.product_id = p.id
 LEFT JOIN business b ON p.business_id = b.id
 WHERE s.total_sales > 0
@@ -112,11 +108,11 @@ if ($result->num_rows > 0) {
 
 
 // Query to fetch activities for the owner
-$sql = "SELECT id, message, created_at, status, user, user_id 
-        FROM activity 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC 
-        LIMIT 5";
+$sql = "SELECT id, message, created_at, status, user, user_id
+FROM activity
+WHERE user_id = ?
+ORDER BY created_at DESC
+LIMIT 5";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $owner_id);
@@ -127,7 +123,7 @@ $result = $stmt->get_result();
 $activities = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        $activities[] = $row;  // Fetch all activities
+        $activities[] = $row; // Fetch all activities
     }
 }
 
@@ -140,9 +136,9 @@ foreach ($businessData as $businessName => $branches) {
 
     // Fetch total expenses directly made by the business
     $sqlBusinessExpenses = "SELECT SUM(e.amount) AS total_expenses
-                            FROM expenses e
-                            JOIN business b ON e.category = 'business' AND e.category_id = b.id
-                            WHERE b.name = ? AND b.owner_id = ?";
+FROM expenses e
+JOIN business b ON e.category = 'business' AND e.category_id = b.id
+WHERE b.name = ? AND b.owner_id = ?";
     $stmtBusinessExpenses = $conn->prepare($sqlBusinessExpenses);
     $stmtBusinessExpenses->bind_param("si", $businessName, $owner_id);
     $stmtBusinessExpenses->execute();
@@ -154,11 +150,11 @@ foreach ($businessData as $businessName => $branches) {
 
     // Fetch total sales directly made by the business
     $sqlBusinessSales = "
-            SELECT SUM(s.total_sales) AS total_sales
-            FROM sales s
-            JOIN products p ON s.product_id = p.id
-            JOIN business b ON p.business_id = b.id
-            WHERE s.branch_id = 0 AND b.name = ? AND b.owner_id = ?";
+SELECT SUM(s.total_sales) AS total_sales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+WHERE s.branch_id = 0 AND b.name = ? AND b.owner_id = ?";
     $stmtBusinessSales = $conn->prepare($sqlBusinessSales);
     $stmtBusinessSales->bind_param("si", $businessName, $owner_id);
     $stmtBusinessSales->execute();
@@ -181,10 +177,10 @@ foreach ($businessData as $businessName => $branches) {
 
         // Fetch total expenses for the branch
         $sqlBranchExpenses = "SELECT SUM(e.amount) AS total_expenses
-                              FROM expenses e
-                              JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
-                              JOIN business b ON br.business_id = b.id
-                              WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
+FROM expenses e
+JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
+JOIN business b ON br.business_id = b.id
+WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
         $stmtBranchExpenses = $conn->prepare($sqlBranchExpenses);
         $stmtBranchExpenses->bind_param("ssi", $branchLocation, $businessName, $owner_id);
         $stmtBranchExpenses->execute();
@@ -196,10 +192,10 @@ foreach ($businessData as $businessName => $branches) {
 
         // Fetch total sales for the branch
         $sqlBranchSales = "SELECT SUM(s.total_sales) AS total_sales
-                           FROM sales s
-                           JOIN branch br ON s.branch_id = br.id
-                           JOIN business b ON br.business_id = b.id
-                           WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
+FROM sales s
+JOIN branch br ON s.branch_id = br.id
+JOIN business b ON br.business_id = b.id
+WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
         $stmtBranchSales = $conn->prepare($sqlBranchSales);
         $stmtBranchSales->bind_param("ssi", $branchLocation, $businessName, $owner_id);
         $stmtBranchSales->execute();
@@ -218,42 +214,42 @@ foreach ($businessData as $businessName => $branches) {
 }
 
 // Get daily sales and expenses for the past 30 days for the owner
-$sqlDaily = "SELECT 
-    dates.date,
-    b.name as business_name,
-    COALESCE(s.daily_sales, 0) as daily_sales,
-    COALESCE(e.daily_expenses, 0) as daily_expenses
+$sqlDaily = "SELECT
+dates.date,
+b.name as business_name,
+COALESCE(s.daily_sales, 0) as daily_sales,
+COALESCE(e.daily_expenses, 0) as daily_expenses
 FROM (
-    SELECT DATE(created_at) as date
-    FROM sales 
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    UNION
-    SELECT DATE(created_at) as date
-    FROM expenses
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+SELECT DATE(created_at) as date
+FROM sales
+WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+UNION
+SELECT DATE(created_at) as date
+FROM expenses
+WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
 ) dates
 LEFT JOIN (
-    SELECT 
-        DATE(s.created_at) as date,
-        b.name as business_name,
-        SUM(s.total_sales) as daily_sales
-    FROM sales s
-    JOIN products p ON s.product_id = p.id
-    JOIN business b ON p.business_id = b.id
-    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    AND b.owner_id = ?
-    GROUP BY DATE(s.created_at), b.name
+SELECT
+DATE(s.created_at) as date,
+b.name as business_name,
+SUM(s.total_sales) as daily_sales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+AND b.owner_id = ?
+GROUP BY DATE(s.created_at), b.name
 ) s ON dates.date = s.date
 LEFT JOIN (
-    SELECT 
-        DATE(e.created_at) as date,
-        b.name as business_name,
-        SUM(e.amount) as daily_expenses
-    FROM expenses e
-    JOIN business b ON e.category = 'business' AND e.category_id = b.id
-    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    AND b.owner_id = ?
-    GROUP BY DATE(e.created_at), b.name
+SELECT
+DATE(e.created_at) as date,
+b.name as business_name,
+SUM(e.amount) as daily_expenses
+FROM expenses e
+JOIN business b ON e.category = 'business' AND e.category_id = b.id
+WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+AND b.owner_id = ?
+GROUP BY DATE(e.created_at), b.name
 ) e ON dates.date = e.date AND s.business_name = e.business_name
 JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
 WHERE b.owner_id = ?
@@ -277,42 +273,42 @@ while ($row = $resultDaily->fetch_assoc()) {
 }
 
 // Get monthly cash flow for the past 12 months for the owner
-$sqlMonthly = "SELECT 
-    dates.month,
-    b.name as business_name,
-    COALESCE(s.monthly_sales, 0) as monthly_inflow,
-    COALESCE(e.monthly_expenses, 0) as monthly_outflow
+$sqlMonthly = "SELECT
+dates.month,
+b.name as business_name,
+COALESCE(s.monthly_sales, 0) as monthly_inflow,
+COALESCE(e.monthly_expenses, 0) as monthly_outflow
 FROM (
-    SELECT DATE_FORMAT(created_at, '%Y-%m') as month
-    FROM sales 
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-    UNION
-    SELECT DATE_FORMAT(created_at, '%Y-%m') as month
-    FROM expenses
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+SELECT DATE_FORMAT(created_at, '%Y-%m') as month
+FROM sales
+WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+UNION
+SELECT DATE_FORMAT(created_at, '%Y-%m') as month
+FROM expenses
+WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
 ) dates
 LEFT JOIN (
-    SELECT 
-        DATE_FORMAT(s.created_at, '%Y-%m') as month,
-        b.name as business_name,
-        SUM(s.total_sales) as monthly_sales
-    FROM sales s
-    JOIN products p ON s.product_id = p.id
-    JOIN business b ON p.business_id = b.id
-    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-    AND b.owner_id = ?
-    GROUP BY DATE_FORMAT(s.created_at, '%Y-%m'), b.name
+SELECT
+DATE_FORMAT(s.created_at, '%Y-%m') as month,
+b.name as business_name,
+SUM(s.total_sales) as monthly_sales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+AND b.owner_id = ?
+GROUP BY DATE_FORMAT(s.created_at, '%Y-%m'), b.name
 ) s ON dates.month = s.month
 LEFT JOIN (
-    SELECT 
-        DATE_FORMAT(e.created_at, '%Y-%m') as month,
-        b.name as business_name,
-        SUM(e.amount) as monthly_expenses
-    FROM expenses e
-    JOIN business b ON e.category = 'business' AND e.category_id = b.id
-    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-    AND b.owner_id = ?
-    GROUP BY DATE_FORMAT(e.created_at, '%Y-%m'), b.name
+SELECT
+DATE_FORMAT(e.created_at, '%Y-%m') as month,
+b.name as business_name,
+SUM(e.amount) as monthly_expenses
+FROM expenses e
+JOIN business b ON e.category = 'business' AND e.category_id = b.id
+WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+AND b.owner_id = ?
+GROUP BY DATE_FORMAT(e.created_at, '%Y-%m'), b.name
 ) e ON dates.month = e.month AND s.business_name = e.business_name
 JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
 WHERE b.owner_id = ?
@@ -334,16 +330,16 @@ while ($row = $resultMonthly->fetch_assoc()) {
 }
 
 // Get product performance data for the owner
-$sqlProducts = "SELECT 
-    p.name as product_name,
-    b.name as business_name,
-    SUM(s.total_sales) as revenue,
-    COUNT(*) as units_sold,
-    SUM(s.total_sales) - (p.price * COUNT(*)) as profit
+$sqlProducts = "SELECT
+p.name as product_name,
+b.name as business_name,
+SUM(s.total_sales) as revenue,
+COUNT(*) as units_sold,
+SUM(s.total_sales) - (p.price * COUNT(*)) as profit
 FROM sales s
 JOIN products p ON s.product_id = p.id
 JOIN business b ON p.business_id = b.id
-WHERE b.owner_id = ? 
+WHERE b.owner_id = ?
 AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
 GROUP BY p.id, p.name, b.name
 ORDER BY revenue DESC";
@@ -366,10 +362,10 @@ while ($row = $resultProducts->fetch_assoc()) {
 // 6
 // Fetch Category-Wise Expenses
 $categoryQuery = "
-    SELECT category, SUM(amount) AS total_amount
-    FROM expenses
-    WHERE owner_id = $owner_id
-    GROUP BY category
+SELECT category, SUM(amount) AS total_amount
+FROM expenses
+WHERE owner_id = $owner_id
+GROUP BY category
 ";
 $categoryResult = $conn->query($categoryQuery);
 
@@ -380,13 +376,13 @@ while ($row = $categoryResult->fetch_assoc()) {
 
 // Fetch Recurring vs One-Time Expenses by Month
 $recurringQuery = "
-    SELECT 
-        month,
-        SUM(amount) AS recurring,
-        SUM(DISTINCT amount) AS oneTime
-    FROM expenses
-    WHERE owner_id = $owner_id
-    GROUP BY month
+SELECT
+month,
+SUM(amount) AS recurring,
+SUM(DISTINCT amount) AS oneTime
+FROM expenses
+WHERE owner_id = $owner_id
+GROUP BY month
 ";
 $recurringResult = $conn->query($recurringQuery);
 
@@ -413,13 +409,13 @@ $business_id = $business['id'];
 
 // Fetch Products & Their Stock Levels
 $productQuery = "
-    SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
-    FROM products p
-    LEFT JOIN sales s ON p.id = s.product_id
-    WHERE p.business_id = $business_id
-    GROUP BY p.id, p.name, p.price
-    ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products
+SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
+FROM products p
+LEFT JOIN sales s ON p.id = s.product_id
+WHERE p.business_id = $business_id
+GROUP BY p.id, p.name, p.price
+ORDER BY total_sold DESC
+LIMIT 10"; // Show top 10 products
 
 $productResult = $conn->query($productQuery);
 
@@ -435,12 +431,12 @@ while ($row = $productResult->fetch_assoc()) {
 
 // Fetch Sales Data for Turnover Chart
 $salesQuery = "
-    SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
-    FROM sales s
-    JOIN products p ON s.product_id = p.id
-    WHERE p.business_id = $business_id
-    GROUP BY sale_month, p.name
-    ORDER BY sale_month ASC";
+SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
+FROM sales s
+JOIN products p ON s.product_id = p.id
+WHERE p.business_id = $business_id
+GROUP BY sale_month, p.name
+ORDER BY sale_month ASC";
 
 $salesResult = $conn->query($salesQuery);
 
@@ -460,9 +456,9 @@ $inventoryData = [
 // 8
 // Fetch Total Sales
 $salesQuery = "
-    SELECT SUM(total_sales) AS total_sales
-    FROM sales 
-    WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
+SELECT SUM(total_sales) AS total_sales
+FROM sales
+WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
 ";
 $salesResult = $conn->query($salesQuery);
 $salesData = $salesResult->fetch_assoc();
@@ -470,9 +466,9 @@ $totalSales = $salesData['total_sales'] ?? 0;
 
 // Fetch Total Expenses
 $expensesQuery = "
-    SELECT SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = $owner_id
+SELECT SUM(amount) AS total_expenses
+FROM expenses
+WHERE owner_id = $owner_id
 ";
 $expensesResult = $conn->query($expensesQuery);
 $expensesData = $expensesResult->fetch_assoc();
@@ -480,11 +476,11 @@ $totalExpenses = $expensesData['total_expenses'] ?? 0;
 
 // Fetch Revenue Growth (Current vs Previous Month)
 $revenueGrowthQuery = "
-    SELECT 
-        SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) THEN total_sales ELSE 0 END) AS currentMonthSales,
-        SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) - 1 THEN total_sales ELSE 0 END) AS previousMonthSales
-    FROM sales 
-    WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
+SELECT
+SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) THEN total_sales ELSE 0 END) AS currentMonthSales,
+SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) - 1 THEN total_sales ELSE 0 END) AS previousMonthSales
+FROM sales
+WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
 ";
 $revenueGrowthResult = $conn->query($revenueGrowthQuery);
 $revenueGrowthData = $revenueGrowthResult->fetch_assoc();
@@ -506,15 +502,15 @@ function formatCurrency($value)
 // 9
 // Fetch monthly sales for past 12 months
 $salesForecastQuery = "
-    SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_sales) AS total_sales
-    FROM sales
-    WHERE product_id IN (
-        SELECT id FROM products WHERE business_id IN (
-            SELECT id FROM business WHERE owner_id = ?
-        )
-    )
-    GROUP BY month
-    ORDER BY month ASC
+SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_sales) AS total_sales
+FROM sales
+WHERE product_id IN (
+SELECT id FROM products WHERE business_id IN (
+SELECT id FROM business WHERE owner_id = ?
+)
+)
+GROUP BY month
+ORDER BY month ASC
 ";
 $stmt = $conn->prepare($salesForecastQuery);
 $stmt->bind_param("i", $owner_id);
@@ -528,11 +524,11 @@ while ($row = $result->fetch_assoc()) {
 
 // Fetch monthly expenses for past 12 months
 $expenseForecastQuery = "
-    SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = ?
-    GROUP BY month
-    ORDER BY month ASC
+SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(amount) AS total_expenses
+FROM expenses
+WHERE owner_id = ?
+GROUP BY month
+ORDER BY month ASC
 ";
 $stmt = $conn->prepare($expenseForecastQuery);
 $stmt->bind_param("i", $owner_id);
@@ -551,11 +547,11 @@ $expensesJson = json_encode($expenseData);
 // 10
 // Fetch total monthly expenses for the owner
 $expenseQuery = "
-    SELECT month, SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = ?
-    GROUP BY month
-    ORDER BY month ASC
+SELECT month, SUM(amount) AS total_expenses
+FROM expenses
+WHERE owner_id = ?
+GROUP BY month
+ORDER BY month ASC
 ";
 $stmt = $conn->prepare($expenseQuery);
 $stmt->bind_param("i", $owner_id);
@@ -591,17 +587,17 @@ $breachMonthsJson = json_encode($breachMonths);
 
 
 // Get customer demographics data
-$sqlDemographics = "SELECT 
-    br.location,
-    p.name as product_name,
-    COUNT(*) as purchase_count,
-    SUM(s.total_sales) as total_revenue
+$sqlDemographics = "SELECT
+br.location,
+p.name as product_name,
+COUNT(*) as purchase_count,
+SUM(s.total_sales) as total_revenue
 FROM sales s
 JOIN branch br ON s.branch_id = br.id
 JOIN products p ON s.product_id = p.id
 JOIN business b ON p.business_id = b.id
 WHERE b.owner_id = ?
-    AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
 GROUP BY br.location, p.name
 ORDER BY total_revenue DESC
 LIMIT 10";
@@ -623,32 +619,18 @@ while ($row = $resultDemographics->fetch_assoc()) {
 
 // Get trend analysis data for current year
 $sqlTrends = "WITH RECURSIVE months AS (
-    SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01') as date
-    UNION ALL
-    SELECT DATE_ADD(date, INTERVAL 1 MONTH)
-    FROM months
-    WHERE DATE_ADD(date, INTERVAL 1 MONTH) <= CURDATE()
-),
-monthly_data AS (
-    SELECT 
-        DATE_FORMAT(m.date, '%Y-%m') as month,
-        COALESCE(SUM(DISTINCT s.total_sales), 0) as monthly_sales,
-        COALESCE(SUM(DISTINCT e.amount), 0) as monthly_expenses,
-        COALESCE(SUM(DISTINCT (s.total_sales - (s.quantity * p.price))), 0) as monthly_profit
-    FROM months m
-    LEFT JOIN sales s ON DATE_FORMAT(s.created_at, '%Y-%m') = DATE_FORMAT(m.date, '%Y-%m')
-    LEFT JOIN products p ON s.product_id = p.id
-    LEFT JOIN business b ON p.business_id = b.id
-    LEFT JOIN branch br ON s.branch_id = br.id
-    LEFT JOIN expenses e ON DATE_FORMAT(e.created_at, '%Y-%m') = DATE_FORMAT(m.date, '%Y-%m')
-        AND ((e.category = 'business' AND e.category_id = b.id)
-        OR (e.category = 'branch' AND e.category_id = br.id))
-    WHERE b.owner_id = ?
-    GROUP BY m.date
-)
-SELECT * FROM monthly_data
-ORDER BY month ASC";
-
+SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01') as date
+UNION ALL
+SELECT DATE_ADD(date, INTERVAL 1 MONTH)
+FROM months
+WHERE DATE_ADD(date, INTERVAL 1 MONTH) <= CURDATE() ), monthly_data AS ( SELECT DATE_FORMAT(m.date, '%Y-%m' ) as month,
+    COALESCE(SUM(DISTINCT s.total_sales), 0) as monthly_sales, COALESCE(SUM(DISTINCT e.amount), 0) as monthly_expenses,
+    COALESCE(SUM(DISTINCT (s.total_sales - (s.quantity * p.price))), 0) as monthly_profit FROM months m LEFT JOIN sales
+    s ON DATE_FORMAT(s.created_at, '%Y-%m' )=DATE_FORMAT(m.date, '%Y-%m' ) LEFT JOIN products p ON s.product_id=p.id
+    LEFT JOIN business b ON p.business_id=b.id LEFT JOIN branch br ON s.branch_id=br.id LEFT JOIN expenses e ON
+    DATE_FORMAT(e.created_at, '%Y-%m' )=DATE_FORMAT(m.date, '%Y-%m' ) AND ((e.category='business' AND
+    e.category_id=b.id) OR (e.category='branch' AND e.category_id=br.id)) WHERE b.owner_id=? GROUP BY m.date ) SELECT *
+    FROM monthly_data ORDER BY month ASC";
 $stmtTrends = $conn->prepare($sqlTrends);
 $stmtTrends->bind_param("i", $owner_id);
 $stmtTrends->execute();
@@ -706,20 +688,22 @@ while ($row = $resultTrends->fetch_assoc()) {
                                             echo '<h5>' . $businessName . '</h5>';
 
                                             // Fetch business-level sales and expenses
-                                            $businessSales = $processedData[$businessName]['Business/Main Branch']['sales'] ?? 0;
-                                            $businessExpenses = $processedData[$businessName]['Business/Main Branch']['expenses'] ?? 0;
+                                            $businessSales = $processedData[$businessName]['Business/Main Branch']['sales'] ?? null;
+                                            $businessExpenses = $processedData[$businessName]['Business/Main Branch']['expenses'] ?? null;
 
                                             // Main Branch Table
-                                            echo '<table class="table table-striped table-hover mt-4">';
-                                            echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses/Main Branch</th></tr></thead>';
-                                            echo '<thead class="table-dark"><tr><th>Total Sales (₱)</th><th>Total Expenses (₱)</th></tr></thead>';
-                                            echo '<tbody>';
-                                            echo '<tr>';
-                                            echo '<td>' . number_format($businessSales, 2) . '</td>';
-                                            echo '<td>' . number_format($businessExpenses, 2) . '</td>';
-                                            echo '</tr>';
-                                            echo '</tbody>';
-                                            echo '</table>';
+                                            if ($businessSales !== null || $businessExpenses !== null) {
+                                                echo '<table class="table table-striped table-hover mt-4">';
+                                                echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses/Main Branch</th></tr></thead>';
+                                                echo '<thead class="table-dark"><tr><th>Total Sales (₱)</th><th>Total Expenses (₱)</th></tr></thead>';
+                                                echo '<tbody>';
+                                                echo '<tr>';
+                                                echo '<td>' . number_format($businessSales, 2) . '</td>';
+                                                echo '<td>' . number_format($businessExpenses, 2) . '</td>';
+                                                echo '</tr>';
+                                                echo '</tbody>';
+                                                echo '</table>';
+                                            }
 
                                             // Branch-Level Table
                                             echo '<table class="table table-striped table-hover mt-4">';
@@ -728,14 +712,21 @@ while ($row = $resultTrends->fetch_assoc()) {
 
                                             // Loop through each branch of the business and display the expenses
                                             foreach ($branches as $branchLocation) {
-                                                $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'];
-                                                $totalSales = $processedData[$businessName][$branchLocation]['sales'];
-
-                                                echo '<tr>';
-                                                echo '<td>' . $branchLocation . '</td>';
-                                                echo '<td>' . number_format($totalSales, 2) . '</td>';
-                                                echo '<td>' . number_format($totalExpenses, 2) . '</td>';
-                                                echo '</tr>';
+                                                if ($branchLocation === 'No Branch for this Business') {
+                                                    echo '<tr><td colspan="3" class="text-center">No Branch for this Business</td></tr>';
+                                                } else {
+                                                    $totalSales = $processedData[$businessName][$branchLocation]['sales'] ?? null;
+                                                    $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'] ?? null;
+                                                    echo '<tr>';
+                                                    echo '<td>' . $branchLocation . '</td>';
+                                                    if ($totalSales !== null || $totalExpenses !== null) {
+                                                        echo '<td>' . number_format($totalSales, 2) . '</td>';
+                                                        echo '<td>' . number_format($totalExpenses, 2) . '</td>';
+                                                    } else {
+                                                        echo '<td colspan="2" class="text-center">No Data Available</td>';
+                                                    }
+                                                    echo '</tr>';
+                                                }
                                             }
 
                                             echo '</tbody>';
@@ -994,12 +985,14 @@ while ($row = $resultTrends->fetch_assoc()) {
                                                         <td><?php echo htmlspecialchars($product['type']); ?></td>
                                                         <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
                                                         <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
+                                                    <td colspan="6" style="text-align: center;">No Popular Products
+                                                        Found
                                                     </td>
                                                 </tr>
                                             <?php endif; ?>
