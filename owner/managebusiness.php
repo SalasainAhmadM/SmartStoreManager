@@ -79,10 +79,10 @@ $product_stmt->close();
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-cogs me-2"></i> Manage Business </b></h1>
 
-                    <button id="uploadDataButton" class="btn btn-success"><i class="fa-solid fa-upload"></i> Upload
+                    <button id="uploadDataButton" class="btn btn-success mt-4"><i class="fa-solid fa-upload"></i> Upload
                         Data</button>
 
-                    <ul class="nav nav-pills nav-fill mt-5">
+                    <ul class="nav nav-pills nav-fill mt-4">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
                                 <i class="fas fa-list me-2"></i>
