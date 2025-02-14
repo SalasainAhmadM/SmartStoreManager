@@ -395,13 +395,13 @@ $product_stmt->close();
                 title: 'Upload or Download Data',
                 html: `
                 <div class="mt-3 mb-3 position-relative">
-                    <form action="../import_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                    <form action="../import_excel_display_business.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
                         <i class="fa-solid fa-upload"></i>
                         <label for="file" class="mb-2">Upload Data:</label>
                         <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
                         <input type="submit" value="Upload Excel" class="form-control">
                     </form>
-                    <form action="../export_excel.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                    <form action="../export_excel_add_business.php" method="POST" class="top-0 end-0 mt-2 me-2">
                         <button class="btn btn-success" type="submit">
                             <i class="fa-solid fa-download"></i> Download Data Template
                         </button>
