@@ -53,24 +53,7 @@
         <input type="submit" value="Upload Excel">
     </form>
 
-    <!-- Display Uploaded Data -->
-    <?php
-    if (isset($_GET['data'])) {
-        $data = json_decode($_GET['data'], true);
-        if (!empty($data)) {
-            echo "<table>";
-            echo "<tr><th>Name</th><th>Birthday</th><th>Age</th></tr>";
-            foreach ($data as $row) {
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['birthday']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['age']) . "</td>";
-                echo "</tr>";
-            }
-            echo "</table>";
-        }
-    }
-    ?>
+
 </body>
 
 </html>
