@@ -78,6 +78,10 @@ $product_stmt->close();
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-cogs me-2"></i> Manage Business </b></h1>
+
+                    <button id="uploadDataButton" class="btn btn-success"><i class="fa-solid fa-upload"></i> Upload
+                        Data</button>
+
                     <ul class="nav nav-pills nav-fill mt-5">
                         <li class="nav-item">
                             <a class="nav-link active" data-tab="businesslist">
@@ -386,6 +390,31 @@ $product_stmt->close();
 
     <script src="../js/print_report.js"></script>
     <script>
+        document.getElementById('uploadDataButton').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Upload or Download Data',
+                html: `
+                <div class="mt-3 mb-3 position-relative">
+                    <form action="../import_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                        <i class="fa-solid fa-upload"></i>
+                        <label for="file" class="mb-2">Upload Data:</label>
+                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                        <input type="submit" value="Upload Excel" class="form-control">
+                    </form>
+                    <form action="../export_excel.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa-solid fa-download"></i> Download Data Template
+                        </button>
+                    </form>
+                </div>
+                `,
+                showConfirmButton: false, // Remove default confirmation button
+                customClass: {
+                    popup: 'swal2-modal-wide' // Optional for larger modals
+                }
+            });
+        });
+
         const ownerId = <?php echo json_encode($owner_id); ?>;
 
         //  <input type="text" id="business-branch" class="form-control mb-2" placeholder="Branch Location">
@@ -958,6 +987,8 @@ $product_stmt->close();
             const details = document.getElementById(id);
             details.style.display = details.style.display === "none" ? "block" : "none";
         }
+
+
     </script>
 
 </body>
