@@ -1,3 +1,4 @@
+
 // Global variables to store chart instances
 let financialChart = null;
 let salesExpensesChart = null;
@@ -9,7 +10,6 @@ let selectedBusinessName = null;
 var labels = [];
 var salesData = [];
 var expensesData = [];
-
 
 // Loop through the processed data to extract labels (branch names) and the corresponding sales and expenses
 for (var businessName in chartData) {
