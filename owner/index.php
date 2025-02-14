@@ -1393,16 +1393,22 @@ $breachMonthsJson = json_encode($breachMonths);
             const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
             const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?>');
 
+            // Convert month numbers to month names
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
             // Convert object to arrays for Chart.js
-            const labels = Object.keys(expenseData);
+            const labels = Object.keys(expenseData).map(month => monthNames[month - 1]); // Convert month number to name
             const expenses = Object.values(expenseData);
-            const thresholdValues = labels.map(month => thresholds[month] || 0);
+            const thresholdValues = Object.keys(expenseData).map(month => thresholds[month] || 0);
 
             // Bar Chart for Expense Threshold
             new Chart(document.getElementById("expenseThresholdChart"), {
                 type: "bar",
                 data: {
-                    labels: labels.map(month => `Month ${month}`),
+                    labels: labels, // Now it shows Month Names
                     datasets: [
                         {
                             label: "Monthly Expenses",
@@ -1435,7 +1441,7 @@ $breachMonthsJson = json_encode($breachMonths);
                 breachMonths.forEach(month => {
                     let listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-danger";
-                    listItem.textContent = `⚠️ High Expense in Month ${month}`;
+                    listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
                     breachList.appendChild(listItem);
                 });
             } else {
@@ -1445,6 +1451,7 @@ $breachMonthsJson = json_encode($breachMonths);
                 breachList.appendChild(listItem);
             }
         });
+
     </script>
     <script src="../js/chart.js"></script>
 
