@@ -90,15 +90,14 @@ $sql = "SELECT
 FROM
     sales s
 JOIN products p ON s.product_id = p.id
-LEFT JOIN business b ON p.business_id = b.id
+LEFT JOIN business b ON p.business_id = b.id  -- Join business table through products.business_id
 WHERE s.total_sales > 0
-AND b.owner_id = ?
 GROUP BY p.name, b.name, p.type, p.price, p.description
 ORDER BY total_sales DESC
 LIMIT 10"; // Limit to top 10 products
 
+
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -109,6 +108,7 @@ if ($result->num_rows > 0) {
         $popularProducts[] = $row;
     }
 }
+
 
 
 // Query to fetch activities for the owner
@@ -358,229 +358,80 @@ while ($row = $resultProducts->fetch_assoc()) {
     ];
 }
 
-// 6
-// Fetch Category-Wise Expenses
-$categoryQuery = "
-    SELECT category, SUM(amount) AS total_amount
-    FROM expenses
-    WHERE owner_id = $owner_id
-    GROUP BY category
-";
-$categoryResult = $conn->query($categoryQuery);
+// Get customer demographics data
+$sqlDemographics = "SELECT 
+    br.location,
+    p.name as product_name,
+    COUNT(*) as purchase_count,
+    SUM(s.total_sales) as total_revenue
+FROM sales s
+JOIN branch br ON s.branch_id = br.id
+JOIN products p ON s.product_id = p.id
+JOIN business b ON p.business_id = b.id
+WHERE b.owner_id = ?
+    AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+GROUP BY br.location, p.name
+ORDER BY total_revenue DESC
+LIMIT 10";
 
-$categoryData = [];
-while ($row = $categoryResult->fetch_assoc()) {
-    $categoryData[$row['category']] = '₱' . number_format($row['total_amount'], 2);
-}
+$stmtDemographics = $conn->prepare($sqlDemographics);
+$stmtDemographics->bind_param("i", $owner_id);
+$stmtDemographics->execute();
+$resultDemographics = $stmtDemographics->get_result();
 
-// Fetch Recurring vs One-Time Expenses by Month
-$recurringQuery = "
-    SELECT 
-        month,
-        SUM(amount) AS recurring,
-        SUM(DISTINCT amount) AS oneTime
-    FROM expenses
-    WHERE owner_id = $owner_id
-    GROUP BY month
-";
-$recurringResult = $conn->query($recurringQuery);
-
-$recurringData = [];
-while ($row = $recurringResult->fetch_assoc()) {
-    $recurringData[$row['month']] = [
-        'recurring' => '₱' . number_format($row['recurring'], 2),
-        'oneTime' => '₱' . number_format($row['oneTime'], 2)
+$demographicsData = [];
+while ($row = $resultDemographics->fetch_assoc()) {
+    $demographicsData[] = [
+        'location' => $row['location'],
+        'product_name' => $row['product_name'],
+        'purchase_count' => intval($row['purchase_count']),
+        'total_revenue' => floatval($row['total_revenue'])
     ];
 }
 
-// Structure Data for Charts
-$expenseDataBreakdown = [
-    'categories' => $categoryData,
-    'recurringByMonth' => $recurringData
-];
-
-// 7
-// Get the business ID of the logged-in owner
-$businessQuery = "SELECT id FROM business WHERE owner_id = $owner_id";
-$businessResult = $conn->query($businessQuery);
-$business = $businessResult->fetch_assoc();
-$business_id = $business['id'];
-
-// Fetch Products & Their Stock Levels
-$productQuery = "
-    SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
-    FROM products p
-    LEFT JOIN sales s ON p.id = s.product_id
-    WHERE p.business_id = $business_id
-    GROUP BY p.id, p.name, p.price
-    ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products
-
-$productResult = $conn->query($productQuery);
-
-$products = [];
-$stockLevels = [];
-$salesTurnover = [];
-
-while ($row = $productResult->fetch_assoc()) {
-    $products[] = $row['name'];
-    $stockLevels[] = rand(10, 100); // Placeholder stock levels (Replace with actual stock table if available)
-    $salesTurnover[$row['name']] = $row['total_sold'];
-}
-
-// Fetch Sales Data for Turnover Chart
-$salesQuery = "
-    SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
-    FROM sales s
-    JOIN products p ON s.product_id = p.id
-    WHERE p.business_id = $business_id
-    GROUP BY sale_month, p.name
-    ORDER BY sale_month ASC";
-
-$salesResult = $conn->query($salesQuery);
-
-$salesByMonth = [];
-while ($row = $salesResult->fetch_assoc()) {
-    $salesByMonth[$row['sale_month']][$row['name']] = $row['total_sold'];
-}
-
-// Prepare Data for JSON Output
-$inventoryData = [
-    'products' => $products,
-    'stockLevels' => $stockLevels,
-    'salesTurnover' => $salesTurnover,
-    'salesByMonth' => $salesByMonth
-];
-
-// 8
-// Fetch Total Sales
-$salesQuery = "
-    SELECT SUM(total_sales) AS total_sales
-    FROM sales 
-    WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
-";
-$salesResult = $conn->query($salesQuery);
-$salesData = $salesResult->fetch_assoc();
-$totalSales = $salesData['total_sales'] ?? 0;
-
-// Fetch Total Expenses
-$expensesQuery = "
-    SELECT SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = $owner_id
-";
-$expensesResult = $conn->query($expensesQuery);
-$expensesData = $expensesResult->fetch_assoc();
-$totalExpenses = $expensesData['total_expenses'] ?? 0;
-
-// Fetch Revenue Growth (Current vs Previous Month)
-$revenueGrowthQuery = "
+// Get trend analysis data for current year
+$sqlTrends = "WITH RECURSIVE months AS (
+    SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01') as date
+    UNION ALL
+    SELECT DATE_ADD(date, INTERVAL 1 MONTH)
+    FROM months
+    WHERE DATE_ADD(date, INTERVAL 1 MONTH) <= CURDATE()
+),
+monthly_data AS (
     SELECT 
-        SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) THEN total_sales ELSE 0 END) AS currentMonthSales,
-        SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) - 1 THEN total_sales ELSE 0 END) AS previousMonthSales
-    FROM sales 
-    WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
-";
-$revenueGrowthResult = $conn->query($revenueGrowthQuery);
-$revenueGrowthData = $revenueGrowthResult->fetch_assoc();
+        DATE_FORMAT(m.date, '%Y-%m') as month,
+        COALESCE(SUM(DISTINCT s.total_sales), 0) as monthly_sales,
+        COALESCE(SUM(DISTINCT e.amount), 0) as monthly_expenses,
+        COALESCE(SUM(DISTINCT (s.total_sales - (s.quantity * p.price))), 0) as monthly_profit
+    FROM months m
+    LEFT JOIN sales s ON DATE_FORMAT(s.created_at, '%Y-%m') = DATE_FORMAT(m.date, '%Y-%m')
+    LEFT JOIN products p ON s.product_id = p.id
+    LEFT JOIN business b ON p.business_id = b.id
+    LEFT JOIN branch br ON s.branch_id = br.id
+    LEFT JOIN expenses e ON DATE_FORMAT(e.created_at, '%Y-%m') = DATE_FORMAT(m.date, '%Y-%m')
+        AND ((e.category = 'business' AND e.category_id = b.id)
+        OR (e.category = 'branch' AND e.category_id = br.id))
+    WHERE b.owner_id = ?
+    GROUP BY m.date
+)
+SELECT * FROM monthly_data
+ORDER BY month ASC";
 
-$currentMonthSales = $revenueGrowthData['currentMonthSales'] ?? 0;
-$previousMonthSales = $revenueGrowthData['previousMonthSales'] ?? 0;
-$growthRate = $previousMonthSales > 0 ? (($currentMonthSales - $previousMonthSales) / $previousMonthSales) * 100 : 0;
+$stmtTrends = $conn->prepare($sqlTrends);
+$stmtTrends->bind_param("i", $owner_id);
+$stmtTrends->execute();
+$resultTrends = $stmtTrends->get_result();
 
-// Calculate KPIs
-$grossProfitPercentage = $totalSales > 0 ? (($totalSales - $totalExpenses) / $totalSales) * 100 : 0;
-$roi = $totalExpenses > 0 ? (($totalSales - $totalExpenses) / $totalExpenses) * 100 : 0;
-
-// Format as currency (₱)
-function formatCurrency($value)
-{
-    return "₱" . number_format($value, 2);
+$trendData = [];
+while ($row = $resultTrends->fetch_assoc()) {
+    $trendData[] = [
+        'month' => $row['month'],
+        'sales' => floatval($row['monthly_sales']),
+        'expenses' => floatval($row['monthly_expenses']),
+        'profit' => floatval($row['monthly_profit'])
+    ];
 }
 
-// 9
-// Fetch monthly sales for past 12 months
-$salesForecastQuery = "
-    SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_sales) AS total_sales
-    FROM sales
-    WHERE product_id IN (
-        SELECT id FROM products WHERE business_id IN (
-            SELECT id FROM business WHERE owner_id = ?
-        )
-    )
-    GROUP BY month
-    ORDER BY month ASC
-";
-$stmt = $conn->prepare($salesForecastQuery);
-$stmt->bind_param("i", $owner_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$salesData = [];
-while ($row = $result->fetch_assoc()) {
-    $salesData[$row['month']] = $row['total_sales'];
-}
-
-// Fetch monthly expenses for past 12 months
-$expenseForecastQuery = "
-    SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = ?
-    GROUP BY month
-    ORDER BY month ASC
-";
-$stmt = $conn->prepare($expenseForecastQuery);
-$stmt->bind_param("i", $owner_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$expenseData = [];
-while ($row = $result->fetch_assoc()) {
-    $expenseData[$row['month']] = $row['total_expenses'];
-}
-
-// Convert PHP arrays to JSON for JavaScript
-$salesJson = json_encode($salesData);
-$expensesJson = json_encode($expenseData);
-
-// 10
-// Fetch total monthly expenses for the owner
-$expenseQuery = "
-    SELECT month, SUM(amount) AS total_expenses
-    FROM expenses
-    WHERE owner_id = ?
-    GROUP BY month
-    ORDER BY month ASC
-";
-$stmt = $conn->prepare($expenseQuery);
-$stmt->bind_param("i", $owner_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$expenseData = [];
-$thresholds = [];
-$breachMonths = [];
-
-while ($row = $result->fetch_assoc()) {
-    $totalExpense = $row['total_expenses'];
-    $month = $row['month'];
-
-    // Set dynamic threshold (e.g., 80% of the total monthly expenses)
-    $threshold = $totalExpense * 0.8;
-    $thresholds[$month] = $threshold;
-
-    $expenseData[$month] = $totalExpense;
-
-    // Check if the expense exceeds the threshold
-    if ($totalExpense > $threshold) {
-        $breachMonths[] = $month;
-    }
-}
-
-// Convert data to JSON for JavaScript
-$expensesJson = json_encode($expenseData);
-$thresholdsJson = json_encode($thresholds);
-$breachMonthsJson = json_encode($breachMonths);
 ?>
 
 
@@ -593,6 +444,7 @@ $breachMonthsJson = json_encode($breachMonths);
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="d-flex">
@@ -672,7 +524,7 @@ $breachMonthsJson = json_encode($breachMonths);
 
                                 <!-- Original Chart -->
                                 <div class="chart-container mb-4">
-                                    <canvas id="financialChart"></canvas>
+                                <canvas id="financialChart"></canvas>
                                 </div>
 
                                 <!-- Sales vs Expenses Chart -->
@@ -693,8 +545,6 @@ $breachMonthsJson = json_encode($breachMonths);
                                     <canvas id="cashFlowChart"></canvas>
                                 </div>
 
-                                <!-- 6 -->
-
                             </div>
 
 
@@ -711,108 +561,12 @@ $breachMonthsJson = json_encode($breachMonths);
                                         <canvas id="businessPerformanceChart"></canvas>
                                     </div>
                                 </div>
-
+                                
                                 <!-- Revenue Contribution Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Revenue Contribution by Business</b></h5>
                                         <canvas id="revenueContributionChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-pie"></i> Expense Breakdown</b></h1>
-                            <div class="row">
-                                <!-- Category-Wise Expenses -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Category-Wise Expenses</b></h5>
-                                        <canvas id="categoryExpenseChart"></canvas>
-                                    </div>
-                                </div>
-
-                                <!-- Recurring vs. One-Time Expenses -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Recurring vs. One-Time Expenses</b></h5>
-                                        <canvas id="recurringExpenseChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-boxes-stacked"></i> Inventory Management</b></h1>
-                            <div class="row">
-                                <!-- Stock Levels Chart -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Levels of Top Products</b></h5>
-                                        <canvas id="stockLevelChart"></canvas>
-                                    </div>
-                                </div>
-
-                                <!-- Stock Turnover Chart -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Turnover Over Time</b></h5>
-                                        <canvas id="stockTurnoverChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Key Performance Indicators (KPIs)</b></h1>
-                            <div class="row">
-                                <!-- Gross Profit Percentage -->
-                                <div class="col-md-4">
-                                    <div class="card text-center shadow p-4">
-                                        <h5><b>Gross Profit %</b></h5>
-                                        <h3 class="text-success">
-                                            <b><?php echo number_format($grossProfitPercentage, 2); ?>%</b>
-                                        </h3>
-                                    </div>
-                                </div>
-
-                                <!-- Revenue Growth Rate -->
-                                <div class="col-md-4">
-                                    <div class="card text-center shadow p-4">
-                                        <h5><b>Revenue Growth Rate</b></h5>
-                                        <h3 class="<?php echo $growthRate >= 0 ? 'text-primary' : 'text-danger'; ?>">
-                                            <b><?php echo number_format($growthRate, 2); ?>%</b>
-                                        </h3>
-                                    </div>
-                                </div>
-
-                                <!-- Return on Investment (ROI) -->
-                                <div class="col-md-4">
-                                    <div class="card text-center shadow p-4">
-                                        <h5><b>Return on Investment (ROI)</b></h5>
-                                        <h3 class="text-info"><b><?php echo number_format($roi, 2); ?>%</b></h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Forecasting & Predictions</b></h1>
-                            <div class="row">
-                                <!-- Sales Forecast -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5><b>Sales Forecast</b></h5>
-                                        <canvas id="salesForecastChart"></canvas>
-                                    </div>
-                                </div>
-
-                                <!-- Expense Forecast -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5><b>Expense Forecast</b></h5>
-                                        <canvas id="expenseForecastChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -828,7 +582,7 @@ $breachMonthsJson = json_encode($breachMonths);
                                         <canvas id="topProductsChart"></canvas>
                                     </div>
                                 </div>
-
+                                
                                 <!-- Low-Performing Products Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
@@ -847,7 +601,107 @@ $breachMonthsJson = json_encode($breachMonths);
                             </div>
                         </div>
 
+                        <!-- Customer Demographics -->
+                        <div class="col-md-12">
+                            <div class="chart-container mb-4" style="height: 400px;">
+                                <h5 class="mt-5"><b>Customer Demographics - Top Products by Location</b></h5>
+                                <canvas id="demographicsChart"></canvas>
+                            </div>
+                        </div>
 
+                        <!-- Trend Analysis -->
+                        <div class="col-md-12 mt-5">
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Trend Analysis</b></h1>
+                            <div class="row">
+                                <!-- Seasonal Trends Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Seasonal Trends</b></h5>
+                                        <canvas id="seasonalTrendsChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Growth Rate Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Growth Rate Analysis</b></h5>
+                                        <canvas id="growthRateChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Popular Products Section -->
+                        <div class="col-md-12 mt-5">
+                            <h1><b><i class="fa-solid fa-lightbulb"></i> Insights</b></h1>
+                            <div class="col-md-12 dashboard-content">
+
+                                <div class="mb-5 position-relative">
+                                    <button id="uploadDataButton" class="btn btn-success"><i class="fa-solid fa-upload"></i> Upload Data</button>
+                                </div>
+
+                                <!-- Display Uploaded Data -->
+                                <?php
+                                if (isset($_GET['data'])) {
+                                    $data = json_decode($_GET['data'], true);
+                                    $yearMonth = isset($_GET['yearMonth']) ? htmlspecialchars($_GET['yearMonth']) : 'Unknown Period';
+
+                                    if (!empty($data)) {
+                                        echo "<h3 class='mb-3'>Sales Report for $yearMonth</h3>";
+
+                                        echo "<div class='scrollable-table'>";
+                                        echo "<table class='table mb-3'>";
+                                        echo "<thead class='table-dark position-sticky top-0'>
+                                                <tr>
+                                                    <th>Business <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Branches <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Total Sales (₱) <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                    <th>Total Expenses (₱) <button class='btn text-white'><i class='fas fa-sort'></i></button></th>
+                                                </tr>
+                                                </thead>";
+                                        foreach ($data as $row) {
+                                            echo "<tr>";
+                                            echo "<td>" . htmlspecialchars($row['business']) . "</td>";
+                                            echo "<td>" . htmlspecialchars($row['branches']) . "</td>";
+                                            echo "<td>" . htmlspecialchars(number_format($row['sales'], 2)) . "</td>";
+                                            echo "<td>" . htmlspecialchars(number_format($row['expenses'], 2)) . "</td>";
+                                            echo "</tr>";
+                                        }
+                                        echo "</table>";
+                                        echo "</div>";
+                                    } else {
+                                        echo "<p>No data available.</p>";
+                                    }
+                                } else {
+                                    echo "<p>No data received.</p>";
+                                }
+                                ?>
+
+
+                                <button class="btn btn-success mb-5 mt-3" type="submit">
+                                    <i class="fa-solid fa-file"></i> Generate Insight
+                                </button>
+
+                                <div>
+                                    <h5><b>Predicted Growth:</b></h5>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
+                                        tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
+                                        tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
+                                        felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum
+                                        dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus
+                                        porttitor. Vestibulum pretium auctor condimentum.</p>
+                                </div>
+                                <div>
+                                    <h5><b>Advice:</b></h5>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tincidunt
+                                        tellus quis ligula semper, vitae bibendum felis lacinia. Donec eleifend
+                                        tellus ac massa malesuada, a pellentesque dolor scelerisque. Sed feugiat
+                                        felis vel odio condimentum aliquet. Nulla sit amet urna sed est elementum
+                                        dapibus non ac mauris. Aenean nec est diam. Maecenas a nisi ut nibh luctus
+                                        porttitor. Vestibulum pretium auctor condimentum.</p>
+                                </div>
+                            </div>
+                        </div>
 
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
@@ -858,70 +712,36 @@ $breachMonthsJson = json_encode($breachMonths);
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php if (!empty($popularProducts)): ?>
-                                                <?php foreach ($popularProducts as $product): ?>
-                                                    <tr>
-                                                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['business_name']); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['type']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
-                                                        <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
+                                            <?php foreach ($popularProducts as $product): ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
-                                                    </td>
+                                                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['business_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
+                                                    <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                    <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
                                                 </tr>
-                                            <?php endif; ?>
+                                            <?php endforeach; ?>
                                         </tbody>
-
                                     </table>
 
-                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
-                                        onclick="printTable('product-table', 'Popular Products')">
+                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts" onclick="printTable('product-table', 'Popular Products')">
                                         <i class="fas fa-print me-2"></i> Print Report (Popular Products)
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <!--  -->
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds</b></h1>
-                            <div class="row">
-                                <!-- Expense Threshold Bar Chart -->
-                                <div class="col-md-8">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5><b>Expense Threshold Breach</b></h5>
-                                        <canvas id="expenseThresholdChart"></canvas>
-                                    </div>
-                                </div>
 
-                                <!-- Breach Notifications -->
-                                <div class="col-md-4">
-                                    <div class="alert-container">
-                                        <h5><b>⚠️ Threshold Breaches</b></h5>
-                                        <ul id="breachList" class="list-group"></ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div id="recentActivitiesSection">
                             <div class="col-md-12 mt-5">
@@ -960,8 +780,7 @@ $breachMonthsJson = json_encode($breachMonths);
                                                             ?>
                                                         </td>
 
-                                                        <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?>
-                                                        </td>
+                                                        <td><?php echo date('F j, Y, g:i a', strtotime($activity['created_at'])); ?></td>
                                                         <td>
                                                             <?php echo $activity['status']; ?>
                                                         </td>
@@ -1004,7 +823,7 @@ $breachMonthsJson = json_encode($breachMonths);
     </script> -->
 
     <script>
-        document.getElementById('uploadDataButton').addEventListener('click', function () {
+        document.getElementById('uploadDataButton').addEventListener('click', function() {
             Swal.fire({
                 title: 'Upload or Download Data',
                 html: `
@@ -1070,9 +889,9 @@ $breachMonthsJson = json_encode($breachMonths);
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
-                        method: 'POST',
-                        body: formData
-                    })
+                            method: 'POST',
+                            body: formData
+                        })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -1182,276 +1001,8 @@ $breachMonthsJson = json_encode($breachMonths);
         var dailyData = <?php echo json_encode($dailyData); ?>;
         var monthlyData = <?php echo json_encode($monthlyData); ?>;
         var productData = <?php echo json_encode($productData); ?>;
-
-        // 6
-        var expenseData = <?php echo json_encode($expenseDataBreakdown); ?>;
-
-        // Pie Chart for Category-Wise Expenses
-        var categoryLabels = Object.keys(expenseData.categories);
-        var categoryValues = Object.values(expenseData.categories).map(value => parseFloat(value.replace('₱', '').replace(',', '')));
-
-        var ctx1 = document.getElementById('categoryExpenseChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'pie',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    data: categoryValues,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                return '₱' + tooltipItem.raw.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Stacked Bar Chart for Recurring vs. One-Time Expenses per Month
-        var months = Object.keys(expenseData.recurringByMonth);
-        var recurringValues = months.map(m => parseFloat(expenseData.recurringByMonth[m].recurring.replace('₱', '').replace(',', '')));
-        var oneTimeValues = months.map(m => parseFloat(expenseData.recurringByMonth[m].oneTime.replace('₱', '').replace(',', '')));
-
-        var ctx2 = document.getElementById('recurringExpenseChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [{
-                    label: 'Recurring Expenses',
-                    data: recurringValues,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }, {
-                    label: 'One-Time Expenses',
-                    data: oneTimeValues,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgb(255, 99, 132)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function (value) {
-                                return '₱' + value.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                return '₱' + tooltipItem.raw.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // 7
-        var inventoryData = <?php echo json_encode($inventoryData); ?>;
-
-        // Bar Chart: Stock Levels
-        var ctx1 = document.getElementById('stockLevelChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: inventoryData.products,
-                datasets: [{
-                    label: 'Stock Levels',
-                    data: inventoryData.stockLevels,
-                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                    borderColor: 'rgb(153, 102, 255)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Line Chart: Stock Turnover Over Time
-        var months = Object.keys(inventoryData.salesByMonth);
-        var productNames = inventoryData.products;
-        var datasets = productNames.map(product => ({
-            label: product,
-            data: months.map(month => inventoryData.salesByMonth[month]?.[product] || 0),
-            borderWidth: 2,
-            fill: false
-        }));
-
-        var ctx2 = document.getElementById('stockTurnoverChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                return tooltipItem.dataset.label + ': ' + tooltipItem.raw + ' units sold';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // 9
-        document.addEventListener("DOMContentLoaded", function () {
-            // Parse JSON data from PHP
-            const salesData = JSON.parse('<?php echo $salesJson; ?>');
-            const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
-
-            // Convert object to arrays for Chart.js
-            const labels = Object.keys(salesData);
-            const salesValues = Object.values(salesData);
-            const expenseValues = Object.values(expenseData);
-
-            // Predict next 3 months using simple average
-            function predictFutureValues(values) {
-                let sum = values.reduce((a, b) => a + b, 0);
-                let avg = sum / values.length;
-                return [avg * 1.05, avg * 1.1, avg * 1.15]; // 5%, 10%, 15% increase
-            }
-
-            const futureMonths = ["Next Month", "2nd Month", "3rd Month"];
-            const futureSales = predictFutureValues(salesValues);
-            const futureExpenses = predictFutureValues(expenseValues);
-
-            // Merge past and future data
-            const forecastLabels = [...labels, ...futureMonths];
-            const forecastSales = [...salesValues, ...futureSales];
-            const forecastExpenses = [...expenseValues, ...futureExpenses];
-
-            // Sales Forecast Chart
-            new Chart(document.getElementById("salesForecastChart"), {
-                type: "line",
-                data: {
-                    labels: forecastLabels,
-                    datasets: [{
-                        label: "Sales Forecast",
-                        data: forecastSales,
-                        borderColor: "blue",
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgb(75, 192, 192)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                }
-            });
-
-            // Expense Forecast Chart
-            new Chart(document.getElementById("expenseForecastChart"), {
-                type: "line",
-                data: {
-                    labels: forecastLabels,
-                    datasets: [{
-                        label: "Expense Forecast",
-                        data: forecastExpenses,
-                        borderColor: "red",
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                }
-            });
-        });
-
-        // 10
-        document.addEventListener("DOMContentLoaded", function () {
-            // Parse JSON data from PHP
-            const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
-            const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
-            const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?>');
-
-            // Convert month numbers to month names
-            const monthNames = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-
-            // Convert object to arrays for Chart.js
-            const labels = Object.keys(expenseData).map(month => monthNames[month - 1]); // Convert month number to name
-            const expenses = Object.values(expenseData);
-            const thresholdValues = Object.keys(expenseData).map(month => thresholds[month] || 0);
-
-            // Bar Chart for Expense Threshold
-            new Chart(document.getElementById("expenseThresholdChart"), {
-                type: "bar",
-                data: {
-                    labels: labels, // Now it shows Month Names
-                    datasets: [
-                        {
-                            label: "Monthly Expenses",
-                            data: expenses,
-                            backgroundColor: expenses.map((value, index) =>
-                                value > thresholdValues[index] ? "red" : "blue"
-                            )
-                        },
-                        {
-                            label: "Dynamic Threshold (80%)",
-                            data: thresholdValues,
-                            type: "line",
-                            borderColor: "orange",
-                            borderWidth: 2,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: "top" }
-                    }
-                }
-            });
-
-            // Show threshold breach alerts
-            const breachList = document.getElementById("breachList");
-            if (breachMonths.length > 0) {
-                breachMonths.forEach(month => {
-                    let listItem = document.createElement("li");
-                    listItem.className = "list-group-item list-group-item-danger";
-                    listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
-                    breachList.appendChild(listItem);
-                });
-            } else {
-                let listItem = document.createElement("li");
-                listItem.className = "list-group-item list-group-item-success";
-                listItem.textContent = "✅ No threshold breaches!";
-                breachList.appendChild(listItem);
-            }
-        });
-
+        var demographicsData = <?php echo json_encode($demographicsData); ?>;
+        var trendData = <?php echo json_encode($trendData); ?>;
     </script>
     <script src="../js/chart.js"></script>
 
