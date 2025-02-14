@@ -706,6 +706,225 @@ function updateProductCharts() {
     });
 }
 
+// Customer Demographics Chart
+function updateDemographicsChart() {
+    const ctx = document.getElementById('demographicsChart').getContext('2d');
+    
+    // Process data for visualization
+    const locations = [...new Set(demographicsData.map(d => d.location))];
+    const products = [...new Set(demographicsData.map(d => d.product_name))];
+    
+    // Create datasets
+    const datasets = products.map(product => {
+        const data = locations.map(location => {
+            const entry = demographicsData.find(d => 
+                d.location === location && d.product_name === product
+            );
+            return entry ? entry.total_revenue : 0;
+        });
+        
+        return {
+            label: product,
+            data: data,
+            backgroundColor: `hsla(${Math.random() * 360}, 70%, 50%, 0.2)`,
+            borderColor: `hsla(${Math.random() * 360}, 70%, 50%, 1)`,
+            borderWidth: 1
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: locations,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Location'
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue (₱)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            return `${context.dataset.label}: ₱${value.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Trend Analysis Charts
+function updateTrendCharts() {
+    // Format month labels
+    const formatMonth = (monthStr) => {
+        const date = new Date(monthStr + '-01');
+        return date.toLocaleDateString('en-US', { 
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    // Seasonal Trends Chart
+    const seasonalCtx = document.getElementById('seasonalTrendsChart').getContext('2d');
+    new Chart(seasonalCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(d => formatMonth(d.month)),
+            datasets: [
+                {
+                    label: 'Sales',
+                    data: trendData.map(d => d.sales),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Expenses',
+                    data: trendData.map(d => d.expenses),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₱' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Growth Rate Chart
+    const growthCtx = document.getElementById('growthRateChart').getContext('2d');
+    
+    // Calculate percentage changes between months
+    const growthRates = trendData.map((data, index) => {
+        if (index === 0) return {
+            month: data.month,
+            sales: 0,
+            expenses: 0,
+            profit: 0
+        };
+        
+        const prevMonth = trendData[index - 1];
+        return {
+            month: data.month,
+            sales: ((data.sales - prevMonth.sales) / prevMonth.sales) * 100,
+            expenses: ((data.expenses - prevMonth.expenses) / prevMonth.expenses) * 100,
+            profit: ((data.profit - prevMonth.profit) / prevMonth.profit) * 100
+        };
+    });
+
+    new Chart(growthCtx, {
+        type: 'line',
+        data: {
+            labels: growthRates.map(d => formatMonth(d.month)),
+            datasets: [
+                {
+                    label: 'Sales Growth',
+                    data: growthRates.map(d => d.sales),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Expenses Growth',
+                    data: growthRates.map(d => d.expenses),
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Profit Growth',
+                    data: growthRates.map(d => d.profit),
+                    borderColor: 'rgb(153, 102, 255)',
+                    tension: 0.4,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(1) + '%';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Growth Rate (%)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.raw.toFixed(1) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Initialize all charts when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the main financial chart
@@ -724,4 +943,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize product analysis charts
     updateProductCharts();
+
+    // Initialize demographics chart
+    updateDemographicsChart();
+
+    // Initialize trend charts
+    updateTrendCharts();
 });
