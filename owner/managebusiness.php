@@ -993,7 +993,6 @@ $product_stmt->close();
             window.history.replaceState({}, document.title, newUrl); // Update the URL without refreshing
         }
 
-        // Show success alert if "?imported=true" exists in the URL
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('imported')) {

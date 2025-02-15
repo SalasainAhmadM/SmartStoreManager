@@ -1,4 +1,4 @@
-<?php 
+<?php
 require 'vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -46,12 +46,12 @@ $sheet->getStyle('A3:D3')->applyFromArray($headerStyle);
 $sheet->getStyle('A4:D4')->applyFromArray($headerStyle);
 
 // Auto-size columns
-foreach(range('A','D') as $col) {
+foreach (range('A', 'D') as $col) {
     $sheet->getColumnDimension($col)->setAutoSize(true);
 }
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="business_template.xlsx"');
+header('Content-Disposition: attachment;filename="Business_Template.xlsx"');
 header('Cache-Control: max-age=0');
 
 $writer = new Xlsx($spreadsheet);

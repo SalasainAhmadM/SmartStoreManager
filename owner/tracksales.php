@@ -153,6 +153,7 @@ WHERE b.owner_id = ? AND s.date = ?
                             <button id="uploadDataButton" class="btn btn-success">
                                 <i class="fa-solid fa-upload"></i> Upload Data
                             </button>
+
                         </div>
                     </div>
 
@@ -233,30 +234,131 @@ WHERE b.owner_id = ? AND s.date = ?
     </div>
 
     <script>
-        document.getElementById('uploadDataButton').addEventListener('click', function () {
-            Swal.fire({
-                title: 'Upload or Download Data',
-                html: `
-                <div class="mt-3 mb-3 position-relative">
-                    <form action="../import_excel_display_business.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
-                        <i class="fa-solid fa-upload"></i>
-                        <label for="file" class="mb-2">Upload Data:</label>
-                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
-                        <input type="submit" value="Upload Excel" class="form-control">
-                    </form>
-                    <form action="../export_excel_add_business.php" method="POST" class="top-0 end-0 mt-2 me-2">
-                        <button class="btn btn-success" type="submit">
-                            <i class="fa-solid fa-download"></i> Download Data Template
-                        </button>
-                    </form>
-                </div>
-                `,
-                showConfirmButton: false, // Remove default confirmation button
-                customClass: {
-                    popup: 'swal2-modal-wide' // Optional for larger modals
-                }
-            });
+        document.getElementById("uploadDataButton").addEventListener("click", function () {
+            const selectedBusiness = document.getElementById("businessSelect").value;
+
+            if (!selectedBusiness) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "No Business Selected",
+                    text: "Please select a business first.",
+                });
+                return;
+            }
+
+            fetch("../endpoints/sales/fetch_branches.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ business_id: selectedBusiness }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        const branches = data.branches;
+                        let branchOptions = '<option value="">Select a Branch</option>';
+                        branches.forEach((branch) => {
+                            branchOptions += `<option value="${branch.id}">${branch.location}</option>`;
+                        });
+
+                        const products = productsByBusiness[selectedBusiness] || [];
+                        let productOptions = '<option value="">Select a Product</option>';
+                        products.forEach((product) => {
+                            productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
+                        });
+
+                        Swal.fire({
+                            title: "Upload or Download Data",
+                            html: `
+                    <label for="branchSelect">Branch</label>
+                    <select id="branchSelect" class="form-control mb-2">${branchOptions}</select>
+
+                    <label for="productSelect">Product</label>
+                    <select id="productSelect" class="form-control mb-2">${productOptions}</select>
+
+                    <div class="mt-3 mb-3 position-relative">
+                        <form action="../import_excel_display_sales.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                            <i class="fa-solid fa-upload"></i>
+                            <label for="file" class="mb-2">Upload Data:</label>
+                            <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                            <input type="hidden" name="selectedBusiness" id="hiddenBusiness">
+                            <input type="hidden" name="selectedBranch" id="hiddenBranch">
+                            <input type="hidden" name="branch_id" id="hiddenBranchId">
+                            <input type="hidden" name="business_id" id="hiddenBusinessId" value="${selectedBusiness}">
+                            <input type="hidden" name="selectedProduct" id="hiddenProduct">
+                            <input type="hidden" name="product_id" id="hiddenProductId">
+                            <input type="hidden" name="productPrice" id="hiddenPrice">
+                            <input type="submit" value="Upload Excel" class="form-control">
+                        </form>
+
+                        <form id="exportExcelForm" action="../export_excel_add_sales.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                            <input type="hidden" name="selectedBusiness" id="hiddenBusinessExport">
+                            <input type="hidden" name="selectedBranch" id="hiddenBranchExport">
+                            <input type="hidden" name="branch_id" id="hiddenBranchIdExport">
+                            <input type="hidden" name="business_id" id="hiddenBusinessIdExport" value="${selectedBusiness}">
+                            <input type="hidden" name="selectedProduct" id="hiddenProductExport">
+                            <input type="hidden" name="product_id" id="hiddenProductIdExport">
+                            <input type="hidden" name="productPrice" id="hiddenPriceExport">
+                            <button class="btn btn-success" type="submit">
+                                <i class="fa-solid fa-download"></i> Download Data Template
+                            </button>
+                        </form>
+                    </div>
+                    `,
+                            showConfirmButton: false,
+                            customClass: { popup: "swal2-modal-wide" }
+                        });
+
+                        // Listen for changes and set hidden input values before submitting form
+                        document.getElementById("branchSelect").addEventListener("change", function () {
+                            document.getElementById("hiddenBranch").value = this.options[this.selectedIndex].text;
+                            document.getElementById("hiddenBranchExport").value = this.options[this.selectedIndex].text;
+                            document.getElementById("hiddenBranchId").value = this.value;
+                            document.getElementById("hiddenBranchIdExport").value = this.value;
+                        });
+
+                        document.getElementById("productSelect").addEventListener("change", function () {
+                            document.getElementById("hiddenProduct").value = this.options[this.selectedIndex].text;
+                            document.getElementById("hiddenProductExport").value = this.options[this.selectedIndex].text;
+                            document.getElementById("hiddenProductId").value = this.value;
+                            document.getElementById("hiddenProductIdExport").value = this.value;
+                            document.getElementById("hiddenPrice").value = this.options[this.selectedIndex].getAttribute("data-price");
+                            document.getElementById("hiddenPriceExport").value = this.options[this.selectedIndex].getAttribute("data-price");
+                        });
+
+                        // Set business name
+                        const businessText = document.getElementById("businessSelect").options[document.getElementById("businessSelect").selectedIndex].text;
+                        document.getElementById("hiddenBusiness").value = businessText;
+                        document.getElementById("hiddenBusinessExport").value = businessText;
+                        document.getElementById("hiddenBusinessId").value = selectedBusiness;
+                        document.getElementById("hiddenBusinessIdExport").value = selectedBusiness;
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                })
+                .catch(() => {
+                    Swal.fire("Error", "Failed to fetch branches.", "error");
+                });
         });
+
+
+        function removeQueryParam() {
+            const newUrl = window.location.pathname; // Get the base URL without parameters
+            window.history.replaceState({}, document.title, newUrl); // Update the URL without refreshing
+        }
+        // Show success alert if "?imported=true" exists in the URL
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('imported')) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Data imported successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    removeQueryParam();
+                });
+            }
+        };
     </script>
     <script src="../js/print_report.js"></script>
 
