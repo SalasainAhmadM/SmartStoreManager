@@ -137,17 +137,25 @@ WHERE b.owner_id = ? AND s.date = ?
                     <h1><b><i class="fas fa-chart-line me-2"></i> Track Sales</b></h1>
 
                     <!-- Search Bar for Sales -->
-                    <div class="mt-5 position-relative">
-                        <form class="d-flex" role="search">
-                            <input id="saleSearchBar" class="form-control me-2 w-50" type="search"
+                    <div class="mt-5 d-flex justify-content-between align-items-center gap-2">
+                        <!-- Search Bar -->
+                        <form class="d-flex flex-grow-1" role="search">
+                            <input id="saleSearchBar" class="form-control w-50" type="search"
                                 placeholder="Search sale.." aria-label="Search" onkeyup="searchSales()">
                         </form>
-                        <!-- Add Sale Button -->
-                        <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2" type="button"
-                            id="addSaleButton">
-                            <i class="fas fa-plus me-2"></i> Add Sale
-                        </button>
+
+                        <!-- Buttons Container -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" type="button" id="addSaleButton">
+                                <i class="fas fa-plus me-2"></i> Add Sale
+                            </button>
+
+                            <button id="uploadDataButton" class="btn btn-success">
+                                <i class="fa-solid fa-upload"></i> Upload Data
+                            </button>
+                        </div>
                     </div>
+
 
                     <!-- Business Selection Dropdown -->
                     <div class="mt-4">
@@ -225,7 +233,30 @@ WHERE b.owner_id = ? AND s.date = ?
     </div>
 
     <script>
-
+        document.getElementById('uploadDataButton').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Upload or Download Data',
+                html: `
+                <div class="mt-3 mb-3 position-relative">
+                    <form action="../import_excel_display_business.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                        <i class="fa-solid fa-upload"></i>
+                        <label for="file" class="mb-2">Upload Data:</label>
+                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                        <input type="submit" value="Upload Excel" class="form-control">
+                    </form>
+                    <form action="../export_excel_add_business.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa-solid fa-download"></i> Download Data Template
+                        </button>
+                    </form>
+                </div>
+                `,
+                showConfirmButton: false, // Remove default confirmation button
+                customClass: {
+                    popup: 'swal2-modal-wide' // Optional for larger modals
+                }
+            });
+        });
     </script>
     <script src="../js/print_report.js"></script>
 

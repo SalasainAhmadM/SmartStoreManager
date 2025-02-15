@@ -988,7 +988,25 @@ $product_stmt->close();
             details.style.display = details.style.display === "none" ? "block" : "none";
         }
 
+        function removeQueryParam() {
+            const newUrl = window.location.pathname; // Get the base URL without parameters
+            window.history.replaceState({}, document.title, newUrl); // Update the URL without refreshing
+        }
 
+        // Show success alert if "?imported=true" exists in the URL
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('imported')) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Data imported successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    removeQueryParam();
+                });
+            }
+        };
     </script>
 
 </body>
