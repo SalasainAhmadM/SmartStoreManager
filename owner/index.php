@@ -405,44 +405,51 @@ $expenseDataBreakdown = [
 $businessQuery = "SELECT id FROM business WHERE owner_id = $owner_id";
 $businessResult = $conn->query($businessQuery);
 $business = $businessResult->fetch_assoc();
-$business_id = $business['id'];
+$business_id = $business['id'] ?? null; // Avoid errors if no business is found
 
-// Fetch Products & Their Stock Levels
-$productQuery = "
-SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
-FROM products p
-LEFT JOIN sales s ON p.id = s.product_id
-WHERE p.business_id = $business_id
-GROUP BY p.id, p.name, p.price
-ORDER BY total_sold DESC
-LIMIT 10"; // Show top 10 products
-
-$productResult = $conn->query($productQuery);
-
+// Initialize arrays
 $products = [];
 $stockLevels = [];
 $salesTurnover = [];
-
-while ($row = $productResult->fetch_assoc()) {
-    $products[] = $row['name'];
-    $stockLevels[] = rand(10, 100); // Placeholder stock levels (Replace with actual stock table if available)
-    $salesTurnover[$row['name']] = $row['total_sold'];
-}
-
-// Fetch Sales Data for Turnover Chart
-$salesQuery = "
-SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
-FROM sales s
-JOIN products p ON s.product_id = p.id
-WHERE p.business_id = $business_id
-GROUP BY sale_month, p.name
-ORDER BY sale_month ASC";
-
-$salesResult = $conn->query($salesQuery);
-
 $salesByMonth = [];
-while ($row = $salesResult->fetch_assoc()) {
-    $salesByMonth[$row['sale_month']][$row['name']] = $row['total_sold'];
+
+if ($business_id) {
+    // Fetch Products & Their Stock Levels
+    $productQuery = "
+    SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
+    FROM products p
+    LEFT JOIN sales s ON p.id = s.product_id
+    WHERE p.business_id = $business_id
+    GROUP BY p.id, p.name, p.price
+    ORDER BY total_sold DESC
+    LIMIT 10"; // Show top 10 products
+
+    $productResult = $conn->query($productQuery);
+
+    if ($productResult->num_rows > 0) {
+        while ($row = $productResult->fetch_assoc()) {
+            $products[] = $row['name'];
+            $stockLevels[] = rand(10, 100); // Placeholder stock levels (Replace with actual stock table if available)
+            $salesTurnover[$row['name']] = $row['total_sold'];
+        }
+    }
+
+    // Fetch Sales Data for Turnover Chart
+    $salesQuery = "
+    SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
+    FROM sales s
+    JOIN products p ON s.product_id = p.id
+    WHERE p.business_id = $business_id
+    GROUP BY sale_month, p.name
+    ORDER BY sale_month ASC";
+
+    $salesResult = $conn->query($salesQuery);
+
+    if ($salesResult->num_rows > 0) {
+        while ($row = $salesResult->fetch_assoc()) {
+            $salesByMonth[$row['sale_month']][$row['name']] = $row['total_sold'];
+        }
+    }
 }
 
 // Prepare Data for JSON Output
