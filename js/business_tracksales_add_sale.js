@@ -238,6 +238,14 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                         <label for="saleDate">Sales Date</label>
                         <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
                     `,
+                    didOpen: () => {
+                        // Initialize Select2 for searchable product dropdown
+                        $("#productSelect").select2({
+                            width: "100%",
+                            placeholder: "Select a Product",
+                            allowClear: true
+                        });
+                    },
                     showCancelButton: true,
                     confirmButtonText: "Add Sales",
                     preConfirm: () => {

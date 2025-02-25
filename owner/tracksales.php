@@ -122,6 +122,9 @@ WHERE b.owner_id = ? AND s.date = ?
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script> -->
+
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
@@ -178,7 +181,8 @@ WHERE b.owner_id = ? AND s.date = ?
 
 
 
-                    <h2 class="mt-5 mb-3"><b>Sales Log</b> <i class="fas fa-info-circle" onclick="showInfo('Sales Log', 
+                    <h2 class="mt-5 mb-3"><b>Sales Log</b> <i class="fas fa-info-circle"
+                            onclick="showInfo('Sales Log', 
                         'A sales log is a record of all transactions, tracking what was sold, when, and for how much. It helps businesses monitor revenue, analyze trends, and keep finances organized.');">
                         </i>
                     </h2>
