@@ -75,23 +75,51 @@ while ($row = $result->fetch_assoc()) {
     $businessData[$row['business_name']][] = $row['branch_location'] ?? 'No Branch for this Business';
 }
 
-// Query to fetch popular products
-$sql = "SELECT
-p.name AS product_name,
-COALESCE(b.name, 'Direct Business') AS business_name,
-p.type,
-p.price,
-p.description,
-SUM(s.total_sales) AS total_sales
-FROM
-sales s
-JOIN products p ON s.product_id = p.id
-LEFT JOIN business b ON p.business_id = b.id
-WHERE s.total_sales > 0
-AND b.owner_id = ?
-GROUP BY p.name, b.name, p.type, p.price, p.description
-ORDER BY total_sales DESC
-LIMIT 10"; // Limit to top 10 products
+// Fetch popular products based on selected month
+$selectedMonth = isset($_GET['month']) ? intval($_GET['month']) : 0; // Default to "All Time"
+$year = date('Y'); // Automatically select the current year
+
+if ($selectedMonth == 0) {
+    // If "All Time" is selected, do not filter by month
+    $sql = "SELECT
+        p.name AS product_name,
+        COALESCE(b.name, 'Direct Business') AS business_name,
+        p.type,
+        p.price,
+        p.description,
+        SUM(s.total_sales) AS total_sales
+    FROM
+        sales s
+    JOIN products p ON s.product_id = p.id
+    LEFT JOIN business b ON p.business_id = b.id
+    WHERE s.total_sales > 0
+    AND b.owner_id = ?
+    GROUP BY p.name, b.name, p.type, p.price, p.description
+    ORDER BY total_sales DESC
+    LIMIT 10"; // Limit to top 10 products
+} else {
+    // Filter by selected month
+    $sql = "SELECT
+        p.name AS product_name,
+        COALESCE(b.name, 'Direct Business') AS business_name,
+        p.type,
+        p.price,
+        p.description,
+        SUM(s.total_sales) AS total_sales
+    FROM
+        sales s
+    JOIN products p ON s.product_id = p.id
+    LEFT JOIN business b ON p.business_id = b.id
+    WHERE s.total_sales > 0
+    AND b.owner_id = ?
+    AND MONTH(s.date) = ? AND YEAR(s.date) = ?
+    GROUP BY p.name, b.name, p.type, p.price, p.description
+    ORDER BY total_sales DESC
+    LIMIT 10"; // Limit to top 10 products
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iii", $owner_id, $selectedMonth, $year);
+}
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $owner_id);
@@ -652,6 +680,10 @@ while ($row = $resultTrends->fetch_assoc()) {
         'profit' => floatval($row['monthly_profit'])
     ];
 }
+
+
+
+
 ?>
 
 
@@ -783,7 +815,7 @@ while ($row = $resultTrends->fetch_assoc()) {
 
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison</b></h1>
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison</i></h1>
                             <div class="row">
                                 <!-- Business Performance Chart -->
                                 <div class="col-md-6">
@@ -962,26 +994,35 @@ while ($row = $resultTrends->fetch_assoc()) {
 
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
-                                <h1 class="section-title">
-                                    <b><i class="fas fa-boxes icon"></i> Popular Products <i class="fas fa-info-circle" onclick="showInfo('Business List', 'Popular products are best-selling or highly rated items that attract significant customer interest due to their quality, demand, or trendiness. They often include electronics, fashion, beauty, home essentials, and seasonal favorites.');"></i></i>
-                                    </b>
-                                </h1>
+                                <h1><b><i class="fa-solid fa-boxes icon"></i> Popular Products</b></h1>
                                 <div class="col-md-12 dashboard-content">
+                                    <div class="mb-3">
+                                        <label for="monthFilter"><b>Filter by Month:</b></label>
+                                        <select id="monthFilter" class="form-control" onchange="filterProductsByMonth(this.value)">
+                                            <option value="0">All Time</option>
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+                                        </select>
+                                    </div>
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i
-                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Product</th>
+                                                <th>Business</th>
+                                                <th>Type</th>
+                                                <th>Price</th>
+                                                <th>Description</th>
+                                                <th>Total Sales</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -993,28 +1034,23 @@ while ($row = $resultTrends->fetch_assoc()) {
                                                         <td><?php echo htmlspecialchars($product['type']); ?></td>
                                                         <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
                                                         <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?>
-                                                        </td>
+                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products
-                                                        Found
-                                                    </td>
+                                                    <td colspan="6" style="text-align: center;">No Popular Products Found</td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
-
                                     </table>
-
-                                    <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
-                                        onclick="printTable('product-table', 'Popular Products')">
-                                        <i class="fas fa-print me-2"></i> Generate Report (Popular Products)
-                                    </button>
                                 </div>
                             </div>
                         </div>
+
+
+
+
                         <!--  -->
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds</b></h1>
@@ -1581,6 +1617,31 @@ while ($row = $resultTrends->fetch_assoc()) {
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
+
+    <script>
+        function setActiveMonth(element) {
+            // Remove active class from all dropdown items
+            const items = document.querySelectorAll('#monthDropdownMenu .dropdown-item');
+            items.forEach(item => item.classList.remove('active'));
+
+            // Add active class to the selected item
+            element.classList.add('active');
+
+            // Get the selected month value
+            const monthValue = element.getAttribute('data-value');
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const selectedMonth = monthNames[monthValue - 1]; // Get the month name
+
+            // Update the selected month and year display
+            document.getElementById('selectedMonthYear').textContent = `Selected Month: ${selectedMonth} ${new Date().getFullYear()}`;
+
+            // Redirect to the same page with the selected month as a query parameter
+            window.location.href = `index.php?month=${monthValue}`;
+        }
+    </script>
 
 </body>
 
