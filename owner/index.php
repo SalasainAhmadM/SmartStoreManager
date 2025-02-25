@@ -963,10 +963,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
                                 <h1 class="section-title">
-                                    <b><i class="fas fa-boxes icon"></i> Popular Products 
-                                    <i class="fas fa-info-circle" onclick="showInfo('Popular Products', 
-                                    'Popular products are the go-to choices for many people, loved for their quality, usefulness, or trendiness.');">
-                                    </i>
+                                    <b><i class="fas fa-boxes icon"></i> Popular Products <i class="fas fa-info-circle" onclick="showInfo('Business List', 'Popular products are best-selling or highly rated items that attract significant customer interest due to their quality, demand, or trendiness. They often include electronics, fashion, beauty, home essentials, and seasonal favorites.');"></i></i>
                                     </b>
                                 </h1>
                                 <div class="col-md-12 dashboard-content">

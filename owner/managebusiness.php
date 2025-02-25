@@ -195,7 +195,7 @@ $product_stmt->close();
 
                                     <div id="business<?php echo $business['id']; ?>" class="business-details card-one"
                                         style="display: none; margin-top: 10px;">
-                                        <i class="fas fa-info-circle"></i>
+                                        <i class="fas fa-info-circle" onclick="showInfo('Branch List', 'A record of all business branches, including their locations, contact details, and management information. It helps keep track of multiple branches and their operations.');"></i>
                                         <p><strong>Business ID:</strong> <?php echo $business['id']; ?></p>
                                         <p><strong>Updated At:</strong> <?php echo $business['updated_at']; ?></p>
 
@@ -291,6 +291,7 @@ $product_stmt->close();
 
                                     <div id="business-<?php echo $business['id']; ?>" class="business-details card-one"
                                         style="display: none; margin-top: 10px;">
+                                        <i class="fas fa-info-circle" onclick="showInfo('Manage Product', 'The process of organizing and overseeing products, including adding new items, updating details, setting prices, and managing inventory to ensure smooth business operations.');"></i>
                                         <p><strong>Business ID:</strong> <?php echo htmlspecialchars($business['id']); ?>
                                         </p>
 
