@@ -963,7 +963,11 @@ while ($row = $resultTrends->fetch_assoc()) {
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
                                 <h1 class="section-title">
-                                    <b><i class="fas fa-boxes icon"></i> Popular Products</b>
+                                    <b><i class="fas fa-boxes icon"></i> Popular Products 
+                                    <i class="fas fa-info-circle" onclick="showInfo('Popular Products', 
+                                    'Popular products are the go-to choices for many people, loved for their quality, usefulness, or trendiness.');">
+                                    </i>
+                                    </b>
                                 </h1>
                                 <div class="col-md-12 dashboard-content">
                                     <table class="table table-hover" id="product-table">
@@ -1579,6 +1583,7 @@ while ($row = $resultTrends->fetch_assoc()) {
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+    <script src="../js/show_info.js"></script>
 
 </body>
 

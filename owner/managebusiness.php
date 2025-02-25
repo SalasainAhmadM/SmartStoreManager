@@ -121,7 +121,7 @@ $product_stmt->close();
                         </div>
 
                         <div class="col-md-12 mt-5 scrollable-table">
-                            <h4 class="mb-3">Business List</h4>
+                            <h4 class="mb-3">Business List <i class="fas fa-info-circle" onclick="showInfo('Business List', 'This table displays all businesses owned by you, including their details such as asset size and employee count.');"></i></h4>
                             <table class="table table-striped table-hover mt-4" id="businessTable">
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
@@ -195,6 +195,7 @@ $product_stmt->close();
 
                                     <div id="business<?php echo $business['id']; ?>" class="business-details card-one"
                                         style="display: none; margin-top: 10px;">
+                                        <i class="fas fa-info-circle"></i>
                                         <p><strong>Business ID:</strong> <?php echo $business['id']; ?></p>
                                         <p><strong>Updated At:</strong> <?php echo $business['updated_at']; ?></p>
 
@@ -256,7 +257,7 @@ $product_stmt->close();
 
                                             <button class="btn btn-primary mt-2 mb-5"
                                                 onclick="printContent('business<?php echo $business['id']; ?>', 'Branch List for <?php echo $business['name']; ?>')">
-                                                <i class="fas fa-print me-2"></i> Generate Report (Branch List)
+                                                <i class="fas fa-print me-2"></i> Print Report (Branch List)
                                             </button>
 
                                         </div>
@@ -361,7 +362,7 @@ $product_stmt->close();
 
                                             <button class="btn btn-primary mt-2 mb-5"
                                                 onclick="printContent('business-<?php echo $business['id']; ?>', 'Product List for <?php echo $business['name']; ?>')">
-                                                <i class="fas fa-print me-2"></i> Generate Report (Product List)
+                                                <i class="fas fa-print me-2"></i> Print Report (Product List)
                                             </button>
 
                                         </div>
@@ -387,7 +388,7 @@ $product_stmt->close();
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
-
+    <script src="../js/show_info.js"></script>
     <script src="../js/print_report.js"></script>
     <script>
         document.getElementById('uploadDataButton').addEventListener('click', function () {

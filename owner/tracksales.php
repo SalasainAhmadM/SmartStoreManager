@@ -178,7 +178,10 @@ WHERE b.owner_id = ? AND s.date = ?
 
 
 
-                    <h2 class="mt-5 mb-3"><b>Sales Log</b></h2>
+                    <h2 class="mt-5 mb-3"><b>Sales Log</b> <i class="fas fa-info-circle" onclick="showInfo('Sales Log', 
+                        'A sales log is a record of all transactions, tracking what was sold, when, and for how much. It helps businesses monitor revenue, analyze trends, and keep finances organized.');">
+                        </i>
+                    </h2>
 
                     <div id="salesLogTableSection">
 
@@ -367,7 +370,7 @@ WHERE b.owner_id = ? AND s.date = ?
 
     <script src="../js/business_tracksales_filter.js"></script>
     <script src="../js/business_tracksales_add_sale.js"></script>
-
+    <script src="../js/show_info.js"></script>
 </body>
 
 </html>

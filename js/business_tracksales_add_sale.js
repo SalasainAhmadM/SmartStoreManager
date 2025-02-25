@@ -31,7 +31,9 @@ document.getElementById("businessSelect").addEventListener("change", function ()
         };
   
         let tableHTML = `
-            <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b></h2>
+            <h2 class="mt-5 mb-3"><b>Today’s Sales for ${businesses[selectedBusiness]} (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})</b> <i class="fas fa-info-circle" onclick="showInfo('Todays Sale', 
+                        'Today’s sales refer to all transactions made within the day, showing total revenue and helping track business performance in real time.');">
+                        </i></h2>
             <div class="scrollable-table" id="businessSalesTable">
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
@@ -80,7 +82,7 @@ document.getElementById("businessSelect").addEventListener("change", function ()
             </div>
             <button class="btn btn-primary mt-2 mb-5" 
     onclick="printContent('businessSalesTable', '${businesses[selectedBusiness]} Sales (${new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })})')">
-    <i class="fas fa-print me-2"></i> Print Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
+    <i class="fas fa-print me-2"></i> Generate Report (Today’s Sales for ${businesses[selectedBusiness]} Log) 
 </button>
 
         `;
