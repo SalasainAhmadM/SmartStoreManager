@@ -120,8 +120,34 @@ $product_stmt->close();
                             </button>
                         </div>
 
-                        <div class="col-md-12 mt-5 scrollable-table">
+                        
                             <h4 class="mb-3">Business List <i class="fas fa-info-circle" onclick="showInfo('Business List', 'This table displays all businesses owned by you, including their details such as asset size and employee count.');"></i></h4>
+                            <div class="mb-3">
+                                <label for="monthFilter"><b>Filter by Month:</b></label>
+                                <select id="monthFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
+                                    <option value="0">All Time</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="yearFilter"><b>Filter by Year:</b></label>
+                                <select id="yearFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
+                                    <option value="0">All Years</option>
+                                    <!-- Years will be dynamically populated here -->
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-5 scrollable-table">
                             <table class="table table-striped table-hover mt-4" id="businessTable">
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
@@ -390,7 +416,10 @@ $product_stmt->close();
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
-    <script src="../js/print_report.js"></script>
+    <script src="../js/print_report.js"></script>   
+    <script src="../js/filter_month_year_manage_business.js"></script>
+
+
     <script>
         document.getElementById('uploadDataButton').addEventListener('click', function () {
             Swal.fire({
@@ -1009,6 +1038,7 @@ $product_stmt->close();
             }
         };
     </script>
+
 
 </body>
 

@@ -1619,45 +1619,45 @@ while ($row = $resultTrends->fetch_assoc()) {
     <script src="../js/show_info.js"></script>
 
     <script>
-    function filterProductsByMonth(selectedMonth) {
-        // Get the owner ID from the session or URL
-        const ownerId = <?php echo json_encode($owner_id); ?>;
+function filterProductsByMonth(selectedMonth) {
+    // Get the owner ID from the session or URL
+    const ownerId = <?php echo json_encode($owner_id); ?>;
 
-        // Send an AJAX request to fetch filtered products
-        fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
-            .then(response => response.json())
-            .then(data => {
-                // Clear the existing table rows
-                const tableBody = document.querySelector('#product-table tbody');
-                tableBody.innerHTML = '';
+    // Send an AJAX request to fetch filtered products
+    fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
+        .then(response => response.json())
+        .then(data => {
+            // Clear the existing table rows
+            const tableBody = document.querySelector('#product-table tbody');
+            tableBody.innerHTML = '';
 
-                // Populate the table with the filtered data
-                if (data.length > 0) {
-                    data.forEach(product => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${product.product_name}</td>
-                            <td>${product.business_name}</td>
-                            <td>${product.type}</td>
-                            <td>₱${parseFloat(product.price).toFixed(2)}</td>
-                            <td>${product.description}</td>
-                            <td>₱${parseFloat(product.total_sales).toFixed(2)}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                } else {
-                    // If no products are found, display a message
+            // Populate the table with the filtered data
+            if (data.length > 0) {
+                data.forEach(product => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td colspan="6" style="text-align: center;">No Popular Products Found</td>
+                        <td>${product.product_name}</td>
+                        <td>${product.business_name}</td>
+                        <td>${product.type}</td>
+                        <td>₱${parseFloat(product.price).toFixed(2)}</td>
+                        <td>${product.description}</td>
+                        <td>₱${parseFloat(product.total_sales).toFixed(2)}</td>
                     `;
                     tableBody.appendChild(row);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching filtered products:', error);
-            });
-    }
+                });
+            } else {
+                // If no products are found, display a message
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="6" style="text-align: center;">No Popular Products Found</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching filtered products:', error);
+        });
+}
     </script>
     
 </body>
