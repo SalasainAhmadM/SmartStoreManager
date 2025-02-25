@@ -12,7 +12,7 @@ $selectedMonth = isset($_GET['month']) ? intval($_GET['month']) : 0; // Default 
 $year = date('Y'); // Automatically select the current year
 
 if ($selectedMonth == 0) {
-    // If "All Time" is selected, do not filter by month
+    // If "All Time" is selected, calculate total sales for all time
     $sql = "SELECT
         p.name AS product_name,
         COALESCE(b.name, 'Direct Business') AS business_name,
@@ -30,7 +30,7 @@ if ($selectedMonth == 0) {
     ORDER BY total_sales DESC
     LIMIT 10"; // Limit to top 10 products
 } else {
-    // Filter by selected month
+    // Filter by selected month and year
     $sql = "SELECT
         p.name AS product_name,
         COALESCE(b.name, 'Direct Business') AS business_name,
@@ -44,7 +44,8 @@ if ($selectedMonth == 0) {
     LEFT JOIN business b ON p.business_id = b.id
     WHERE s.total_sales > 0
     AND b.owner_id = ?
-    AND MONTH(s.date) = ? AND YEAR(s.date) = ?
+    AND MONTH(s.date) = ? 
+    AND YEAR(s.date) = ?
     GROUP BY p.name, b.name, p.type, p.price, p.description
     ORDER BY total_sales DESC
     LIMIT 10"; // Limit to top 10 products
