@@ -283,7 +283,7 @@ $product_stmt->close();
 
                                             <button class="btn btn-primary mt-2 mb-5"
                                                 onclick="printContent('business<?php echo $business['id']; ?>', 'Branch List for <?php echo $business['name']; ?>')">
-                                                <i class="fas fa-print me-2"></i> Print Report (Branch List)
+                                                <i class="fas fa-print me-2"></i> Generate Report (Branch List)
                                             </button>
 
                                         </div>
@@ -389,7 +389,7 @@ $product_stmt->close();
 
                                             <button class="btn btn-primary mt-2 mb-5"
                                                 onclick="printContent('business-<?php echo $business['id']; ?>', 'Product List for <?php echo $business['name']; ?>')">
-                                                <i class="fas fa-print me-2"></i> Print Report (Product List)
+                                                <i class="fas fa-print me-2"></i> Generate Report (Product List)
                                             </button>
 
                                         </div>
