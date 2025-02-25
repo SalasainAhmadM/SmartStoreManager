@@ -19,6 +19,7 @@ $address = $data['address'];
 $password = password_hash($data['password'], PASSWORD_BCRYPT);
 $ownerId = $data['ownerId'];
 
+// Check if email already exists
 $checkQuery = "SELECT id FROM manager WHERE email = ? UNION SELECT id FROM owner WHERE email = ?";
 $checkStmt = $conn->prepare($checkQuery);
 $checkStmt->bind_param("ss", $email, $email);
@@ -27,6 +28,18 @@ $checkResult = $checkStmt->get_result();
 
 if ($checkResult->num_rows > 0) {
     echo json_encode(['success' => false, 'message' => 'Email is already registered']);
+    exit;
+}
+
+// Check if username already exists
+$checkUsernameQuery = "SELECT id FROM manager WHERE user_name = ? UNION SELECT id FROM owner WHERE user_name = ?";
+$checkUsernameStmt = $conn->prepare($checkUsernameQuery);
+$checkUsernameStmt->bind_param("ss", $username, $username);
+$checkUsernameStmt->execute();
+$checkUsernameResult = $checkUsernameStmt->get_result();
+
+if ($checkUsernameResult->num_rows > 0) {
+    echo json_encode(['success' => false, 'message' => 'Username is already taken']);
     exit;
 }
 

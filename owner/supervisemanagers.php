@@ -155,6 +155,9 @@ while ($row = $result->fetch_assoc()) {
                                             <th>Email <button class="btn text-white"><i
                                                         class="fas fa-sort"></i></button>
                                             </th>
+                                            <th>Username <button class="btn text-white"><i
+                                                        class="fas fa-sort"></i></button>
+                                            </th>
                                             <th>Phone <button class="btn text-white"><i
                                                         class="fas fa-sort"></i></button>
                                             </th>
@@ -176,6 +179,7 @@ while ($row = $result->fetch_assoc()) {
                                                         <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
                                                     </td>
                                                     <td><?= htmlspecialchars($manager['email']) ?></td>
+                                                    <td><?= htmlspecialchars($manager['user_name']) ?></td>
                                                     <td><?= htmlspecialchars($manager['contact_number']) ?></td>
                                                     <td><?= htmlspecialchars($manager['address']) ?></td>
                                                     <td class="text-center">
@@ -197,7 +201,7 @@ while ($row = $result->fetch_assoc()) {
 
                                 <button class="btn btn-primary mt-2 mb-5" id="managerListTable"
                                     onclick="printContent('managerListTableSection', 'Manager List Report')">
-                                    <i class="fas fa-print me-2"></i> Print Report (Manager List)
+                                    <i class="fas fa-print me-2"></i> Generate Report (Manager List)
                                 </button>
 
                             </div>
