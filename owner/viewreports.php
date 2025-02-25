@@ -115,7 +115,7 @@ $salesData = fetchSalesData($owner_id);
                         <b><i class="fas fa-chart-bar me-2"></i> View Reports</b>
                     </h1>
 
-                    <h5 class="mt-5"><b>Business Overview:</b></h5>
+                    <h5 class="mt-5"><b>Business Overview:</b> <i class="fas fa-info-circle" onclick="showInfo('Business Overview', 'This table provides an overview of each business, including total sales and expenses.');"></i></h5>
 
                     <div class="table-container scrollable-table-two">
                         <table class="table table-striped table-hover mt-4">
@@ -266,6 +266,7 @@ $salesData = fetchSalesData($owner_id);
     <script src="../js/owner_view_reports.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+    <script src="../js/show_info.js"></script>
 </body>
 
 </html>

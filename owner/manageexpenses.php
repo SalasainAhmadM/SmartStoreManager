@@ -100,6 +100,9 @@ $stmt->close();
                         <div class="w-50">
                             <h2>Expenses List for <span id="businessName"></span> for the month of
                                 <span id="currentMonthYear"></span>
+                                <i class="fas fa-info-circle" onclick="showInfo('Business Expenses', 
+                                    'Business expenses are the costs a company incurs to keep things running, like rent, salaries, supplies, and marketing. They are essential for day-to-day operations and can often be deducted from taxes.');">
+                                    </i>
                             </h2>
                         </div>
 
@@ -180,6 +183,7 @@ $stmt->close();
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+    <script src="../js/show_info.js"></script>
 
 </body>
 

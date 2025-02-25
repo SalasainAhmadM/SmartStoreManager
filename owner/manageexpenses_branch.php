@@ -109,7 +109,9 @@ $stmt->close();
                             <div class="w-50">
                                 <h2>Expenses List for <span id="businessName"></span> - Branch: <span
                                         id="branchName"></span>
-                                    for the month of <span id="currentMonthYear"></span></h2>
+                                    for the month of <span id="currentMonthYear"></span>
+                                    <i class="fas fa-info-circle" onclick="showInfo('Expenses List', 'This section shows the expenses incurred by the selected business or branch for the specified month.');"></i>
+                                </h2>
                             </div>
 
                             <button class="btn btn-success ms-auto m-1" id="addExpenseBtn" type="button">
@@ -216,7 +218,7 @@ $stmt->close();
         <script src="../js/print_report.js"></script>
         <script src="../js/sidebar.js"></script>
         <script src="../js/sort_items.js"></script>
-
+        <script src="../js/show_info.js"></script>
 </body>
 
 </html>
