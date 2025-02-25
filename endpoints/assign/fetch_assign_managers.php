@@ -16,7 +16,7 @@ try {
     if ($branchId) {
         // Fetch managers for the branch
         $query = "
-            SELECT m.id, m.first_name, m.middle_name, m.last_name
+            SELECT m.id, m.user_name
             FROM manager m
             JOIN branch b ON b.manager_id = m.id
             WHERE b.id = $branchId
@@ -24,7 +24,7 @@ try {
     } else {
         // Fetch the business manager if no branch is provided
         $query = "
-            SELECT m.id, m.first_name, m.middle_name , m.last_name
+            SELECT m.id, m.user_name
             FROM manager m
             JOIN business b ON b.manager_id = m.id
             WHERE b.id = $businessId
@@ -37,9 +37,7 @@ try {
         while ($row = $result->fetch_assoc()) {
             $response['managers'][] = [
                 'id' => $row['id'],
-                'first_name' => $row['first_name'],
-                'middle_name' => $row['middle_name'],
-                'last_name' => $row['last_name']
+                'user_name' => $row['user_name']
             ];
         }
         $response['success'] = true;
