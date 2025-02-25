@@ -242,7 +242,7 @@ $salesData = fetchSalesData($owner_id);
             <p><b>Total Business/Branch Sales:</b> ₱${combinedSales.toLocaleString()}</p>
             <p><b>Total Business/Branch Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
             <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(branches)}, ${JSON.stringify(business)})'>
-                <i class="fas fa-print me-2"></i> Print Report
+                <i class="fas fa-print me-2"></i> Generate Report
             </button>
         </div>`;
 

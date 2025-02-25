@@ -1009,7 +1009,7 @@ while ($row = $resultTrends->fetch_assoc()) {
 
                                     <button class="btn btn-primary mt-2 mb-5" id="printPopularProducts"
                                         onclick="printTable('product-table', 'Popular Products')">
-                                        <i class="fas fa-print me-2"></i> Print Report (Popular Products)
+                                        <i class="fas fa-print me-2"></i> Generate Report (Popular Products)
                                     </button>
                                 </div>
                             </div>

@@ -222,7 +222,7 @@ WHERE b.owner_id = ? AND s.date = ?
 
                         <button class="btn btn-primary mt-2 mb-5" id="salesLogTable"
                             onclick="printContent('salesLogTableSection', 'Sales Log Report')">
-                            <i class="fas fa-print me-2"></i> Print Report (Sales Log)
+                            <i class="fas fa-print me-2"></i> Generate Report (Sales Log)
                         </button>
 
                     </div>

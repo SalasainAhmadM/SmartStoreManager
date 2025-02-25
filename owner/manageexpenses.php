@@ -149,7 +149,7 @@ $stmt->close();
 
                     <button class="btn btn-primary mt-2 mb-5" id="expensesListTable"
                         onclick="printContent('expensesPanel', 'Expenses List Report for <?php echo $name; ?>')">
-                        <i class="fas fa-print me-2"></i> Print Report (Expenses List)
+                        <i class="fas fa-print me-2"></i> Generate Report (Expenses List)
                     </button>
 
                 </div>
