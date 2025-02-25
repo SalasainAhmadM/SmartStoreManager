@@ -203,18 +203,23 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                         branchOptions += `<option value="${branch.id}">${branch.location}</option>`;
                     });
                 }
-    
+
+                // Filter unique products using a Map
                 const products = productsByBusiness[selectedBusiness] || [];
+                const uniqueProducts = Array.from(
+                    new Map(products.map((product) => [product.id, product])).values()
+                );
+
                 let productOptions = '<option value="">Select a Product</option>';
-                products.forEach((product) => {
+                uniqueProducts.forEach((product) => {
                     productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
                 });
-    
+
                 // Get the current date in Asia/Manila timezone
                 const today = new Date().toLocaleDateString("en-CA", {
                     timeZone: "Asia/Manila",
                 });
-    
+
                 Swal.fire({
                     title: "Add Sales",
                     html: `
@@ -233,6 +238,14 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                         <label for="saleDate">Sales Date</label>
                         <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
                     `,
+                    didOpen: () => {
+                        // Initialize Select2 for searchable product dropdown
+                        $("#productSelect").select2({
+                            width: "100%",
+                            placeholder: "Select a Product",
+                            allowClear: true
+                        });
+                    },
                     showCancelButton: true,
                     confirmButtonText: "Add Sales",
                     preConfirm: () => {
@@ -242,12 +255,12 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                         const amountSold = parseInt(document.getElementById("amountSold").value, 10);
                         const totalSales = parseFloat(document.getElementById("totalSales").value.replace("₱", ""));
                         const saleDate = document.getElementById("saleDate").value;
-    
+
                         if (!productId || !amountSold || isNaN(totalSales)) {
                             Swal.showValidationMessage("Please complete all fields.");
                             return false;
                         }
-    
+
                         return {
                             branchId,
                             productId,
@@ -260,7 +273,7 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const saleData = result.value;
-    
+
                         fetch("../endpoints/sales/add_sales.php", {
                             method: "POST",
                             headers: {
@@ -294,6 +307,19 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                             });
                     }
                 });
+
+                // Update total sales dynamically
+                document.getElementById("amountSold").addEventListener("input", (event) => {
+                    const productSelect = document.getElementById("productSelect");
+                    const selectedProduct = uniqueProducts.find(
+                        (product) => product.id == productSelect.value
+                    );
+                    if (selectedProduct) {
+                        const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
+                        document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
+                    }
+                });
+
             } else {
                 Swal.fire("Error", data.message, "error");
             }
@@ -301,23 +327,8 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
         .catch(() => {
             Swal.fire("Error", "Failed to fetch branches.", "error");
         });
-    
+});
 
-  
-    document.addEventListener("input", (event) => {
-        if (event.target.id === "amountSold") {
-            const productSelect = document.getElementById("productSelect");
-            const selectedProduct = productsByBusiness[selectedBusiness].find(
-                (product) => product.id == productSelect.value
-            );
-            if (selectedProduct) {
-                const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
-                document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
-            }
-        }
-    });
-  });
-  
   // Function to add sale to the table dynamically
   function addSaleToTable(branchId, productId, amountSold, totalSales, saleDate) {
     const table = document.getElementById(`salesTable${branchId}`).getElementsByTagName("tbody")[0];
