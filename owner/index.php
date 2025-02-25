@@ -1618,31 +1618,6 @@ while ($row = $resultTrends->fetch_assoc()) {
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
 
-    <script>
-        function setActiveMonth(element) {
-            // Remove active class from all dropdown items
-            const items = document.querySelectorAll('#monthDropdownMenu .dropdown-item');
-            items.forEach(item => item.classList.remove('active'));
-
-            // Add active class to the selected item
-            element.classList.add('active');
-
-            // Get the selected month value
-            const monthValue = element.getAttribute('data-value');
-            const monthNames = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-            const selectedMonth = monthNames[monthValue - 1]; // Get the month name
-
-            // Update the selected month and year display
-            document.getElementById('selectedMonthYear').textContent = `Selected Month: ${selectedMonth} ${new Date().getFullYear()}`;
-
-            // Redirect to the same page with the selected month as a query parameter
-            window.location.href = `index.php?month=${monthValue}`;
-        }
-    </script>
-
 </body>
 
 </html>
