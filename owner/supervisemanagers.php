@@ -146,7 +146,9 @@ while ($row = $result->fetch_assoc()) {
                             </div>
 
                             <div class="scrollable-table" id="managerListTableSection">
-                                <h4 class="mt-3">Manager List</h4>
+                                <h4 class="mt-3">Manager List <i class="fas fa-info-circle" onclick="showInfo('Manager List', 
+                                    'The Manager List is a record of all managers in a business, showing their names, roles, and responsibilities. It helps keep track of who’s in charge and makes communication easier.');">
+                                    </i></h4> 
                                 <table class="table table-striped table-hover mt-3" id="managerListTable">
                                     <thead class="table-dark position-sticky top-0">
                                         <tr>
@@ -222,7 +224,9 @@ while ($row = $result->fetch_assoc()) {
                                         placeholder="Search business or branch..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-                                <h4 class="mt-3">Assign Manager</h4>
+                                <h4 class="mt-3">Assign Manager <i class="fas fa-info-circle" onclick="showInfo('Assign Manager', 
+                                    'Assign Manager means selecting a person to take on a managerial role, giving them responsibilities to oversee operations, teams, or specific tasks within the business.');">
+                                    </i></h4>
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Business Name <button class="btn text-white"><i
@@ -272,7 +276,7 @@ while ($row = $result->fetch_assoc()) {
 
                             <button class="btn btn-primary mt-2 mb-5" id="assignManagerTable"
                                 onclick="printContent('assignManagerTableSection', 'Business Branches Report')">
-                                <i class="fas fa-print me-2"></i> Print Report (Business Branches)
+                                <i class="fas fa-print me-2"></i> Generate Report (Business Branches)
                             </button>
 
                         </div>
@@ -437,6 +441,7 @@ while ($row = $result->fetch_assoc()) {
     <script src="../js/print_report.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+    <script src="../js/show_info.js"></script>
 
     <script>
         let selectedManagerId = null;
