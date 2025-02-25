@@ -20,13 +20,16 @@ $query = "
     SELECT
         b.id AS business_id,  
         b.name AS business_name, 
+        b.manager_id AS business_manager_id,
         br.id AS branch_id, 
-        br.location AS branch_location
+        br.location AS branch_location,
+        br.manager_id AS branch_manager_id
     FROM business b
     LEFT JOIN branch br ON b.id = br.business_id
     WHERE b.owner_id = ?
     ORDER BY b.name, br.id
 ";
+
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $owner_id);
@@ -35,23 +38,33 @@ $result = $stmt->get_result();
 
 // Organize businesses and branches into an associative array
 $businesses = [];
+
 while ($row = $result->fetch_assoc()) {
-    $business_id = $row['business_id']; // Fetch the business_id here
+    $business_id = $row['business_id'];
     $business_name = $row['business_name'];
+    $business_manager_id = $row['business_manager_id']; // Business-level manager
+
     $branch = [
         'branch_id' => $row['branch_id'],
-        'branch_location' => $row['branch_location']
+        'branch_location' => $row['branch_location'],
+        'branch_manager_id' => $row['branch_manager_id'] // Branch-level manager
     ];
 
     if (!isset($businesses[$business_id])) {
         $businesses[$business_id] = [
             'business_name' => $business_name,
-            'branches' => []
+            'business_manager_id' => $business_manager_id,
+            'branches' => [],
+            'all_branches_have_managers' => true // Assume all branches have managers
         ];
     }
 
-    if ($branch['branch_id']) { // Add branch only if it exists
+    if ($branch['branch_id']) {
         $businesses[$business_id]['branches'][] = $branch;
+        // If a branch has no manager, update flag
+        if (!$branch['branch_manager_id']) {
+            $businesses[$business_id]['all_branches_have_managers'] = false;
+        }
     }
 }
 // Fetch managers with their assigned businesses or branches
@@ -146,9 +159,10 @@ while ($row = $result->fetch_assoc()) {
                             </div>
 
                             <div class="scrollable-table" id="managerListTableSection">
-                                <h4 class="mt-3">Manager List <i class="fas fa-info-circle" onclick="showInfo('Manager List', 
+                                <h4 class="mt-3">Manager List <i class="fas fa-info-circle"
+                                        onclick="showInfo('Manager List', 
                                     'The Manager List is a record of all managers in a business, showing their names, roles, and responsibilities. It helps keep track of who’s in charge and makes communication easier.');">
-                                    </i></h4> 
+                                    </i></h4>
                                 <table class="table table-striped table-hover mt-3" id="managerListTable">
                                     <thead class="table-dark position-sticky top-0">
                                         <tr>
@@ -224,7 +238,8 @@ while ($row = $result->fetch_assoc()) {
                                         placeholder="Search business or branch..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-                                <h4 class="mt-3">Assign Manager <i class="fas fa-info-circle" onclick="showInfo('Assign Manager', 
+                                <h4 class="mt-3">Assign Manager <i class="fas fa-info-circle"
+                                        onclick="showInfo('Assign Manager', 
                                     'Assign Manager means selecting a person to take on a managerial role, giving them responsibilities to oversee operations, teams, or specific tasks within the business.');">
                                     </i></h4>
                                 <thead class="table-dark position-sticky top-0">
@@ -239,7 +254,10 @@ while ($row = $result->fetch_assoc()) {
                                     </tr>
                                 </thead>
                                 <tbody id="business-table-body">
-                                    <?php foreach ($businesses as $business_id => $business): ?>
+                                    <?php foreach ($businesses as $business_id => $business):
+                                        // Condition to show/hide Assign Manager button
+                                        $show_assign_button = !$business['business_manager_id'] || !$business['all_branches_have_managers'];
+                                        ?>
                                         <tr>
                                             <td><?= htmlspecialchars($business['business_name']) ?></td>
                                             <td>
@@ -257,15 +275,17 @@ while ($row = $result->fetch_assoc()) {
                                                 </ul>
                                             </td>
                                             <td class="text-center">
-                                                <button class="btn btn-primary btn-sm assign-manager"
-                                                    data-business-id="<?= htmlspecialchars($business_id) ?>"
-                                                    data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
-                                                    Assign Manager
-                                                </button>
+                                                <?php if ($show_assign_button): ?>
+                                                    <button class="btn btn-primary btn-sm assign-manager"
+                                                        data-business-id="<?= htmlspecialchars($business_id) ?>"
+                                                        data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
+                                                        Assign Manager
+                                                    </button>
+                                                <?php endif; ?>
                                                 <button class="btn btn-info btn-sm list-managers"
                                                     data-business-id="<?= htmlspecialchars($business_id) ?>"
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
-                                                    List of Manager(s)
+                                                    Assigned Manager(s)
                                                 </button>
                                             </td>
                                         </tr>
@@ -921,11 +941,10 @@ while ($row = $result->fetch_assoc()) {
                     const branches = branchesData ? JSON.parse(branchesData) : [];
 
                     const managerOptions = managers.map(manager =>
-                        `<option value="${manager.id}">${manager.name}</option>`
+                        `<option value="${manager.id}">${manager.username}</option>`
                     ).join('');
 
                     if (branches.length > 0) {
-                        // If there are branches, ask if assigning to the main business or a branch
                         Swal.fire({
                             title: 'Assign Manager',
                             text: 'Do you want to assign the manager to the Main Branch (Business) or a specific Branch?',
@@ -935,15 +954,12 @@ while ($row = $result->fetch_assoc()) {
                             denyButtonText: 'Branch'
                         }).then(result => {
                             if (result.isConfirmed) {
-                                // Assign to Business
                                 assignToBusiness(businessId, managerOptions);
                             } else if (result.isDenied) {
-                                // Assign to a Branch
                                 assignToBranch(branches, managerOptions);
                             }
                         });
                     } else {
-                        // No branches, directly assign to business
                         assignToBusiness(businessId, managerOptions);
                     }
                 });
@@ -1070,7 +1086,7 @@ while ($row = $result->fetch_assoc()) {
                         if (businessData.success) {
                             managersHtml += `<p><strong>Business Manager:</strong> ${businessData.managers.length > 0
                                 ? businessData.managers.map(manager => `
-                                        Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                        Username: ${manager.user_name} (ID: ${manager.id})
                                         <button class="btn btn-danger btn-sm unassign-manager" 
                                                 data-manager-id="${manager.id}" 
                                                 data-type="business" 
@@ -1091,7 +1107,7 @@ while ($row = $result->fetch_assoc()) {
                                 if (branchData.success) {
                                     managersHtml += `<p><strong>Branch ${branch.branch_id} (${branch.branch_location}):</strong> ${branchData.managers.length > 0
                                         ? branchData.managers.map(manager => `
-                                                Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                                Username: ${manager.user_name} (ID: ${manager.id})
                                                 <button class="btn btn-danger btn-sm unassign-manager" 
                                                         data-manager-id="${manager.id}" 
                                                         data-type="branch" 

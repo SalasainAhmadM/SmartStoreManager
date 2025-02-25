@@ -146,7 +146,10 @@ while ($row = $result->fetch_assoc()) {
                             </div>
 
                             <div class="scrollable-table" id="managerListTableSection">
-                                <h4 class="mt-3">Manager List</h4>
+                                <h4 class="mt-3">Manager List <i class="fas fa-info-circle"
+                                        onclick="showInfo('Manager List', 
+                                    'The Manager List is a record of all managers in a business, showing their names, roles, and responsibilities. It helps keep track of who’s in charge and makes communication easier.');">
+                                    </i></h4>
                                 <table class="table table-striped table-hover mt-3" id="managerListTable">
                                     <thead class="table-dark position-sticky top-0">
                                         <tr>
@@ -222,7 +225,10 @@ while ($row = $result->fetch_assoc()) {
                                         placeholder="Search business or branch..." aria-label="Search">
                                     <ul id="suggestion-box" class="list-group position-absolute w-50"></ul>
                                 </form>
-                                <h4 class="mt-3">Assign Manager</h4>
+                                <h4 class="mt-3">Assign Manager <i class="fas fa-info-circle"
+                                        onclick="showInfo('Assign Manager', 
+                                    'Assign Manager means selecting a person to take on a managerial role, giving them responsibilities to oversee operations, teams, or specific tasks within the business.');">
+                                    </i></h4>
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
                                         <th>Business Name <button class="btn text-white"><i
@@ -261,17 +267,18 @@ while ($row = $result->fetch_assoc()) {
                                                 <button class="btn btn-info btn-sm list-managers"
                                                     data-business-id="<?= htmlspecialchars($business_id) ?>"
                                                     data-branches='<?= htmlspecialchars(json_encode($business['branches'])) ?>'>
-                                                    List of Manager(s)
+                                                    Assigned Manager(s)
                                                 </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
+
                             </table>
 
                             <button class="btn btn-primary mt-2 mb-5" id="assignManagerTable"
                                 onclick="printContent('assignManagerTableSection', 'Business Branches Report')">
-                                <i class="fas fa-print me-2"></i> Print Report (Business Branches)
+                                <i class="fas fa-print me-2"></i> Generate Report (Business Branches)
                             </button>
 
                         </div>
@@ -436,6 +443,7 @@ while ($row = $result->fetch_assoc()) {
     <script src="../js/print_report.js"></script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
+    <script src="../js/show_info.js"></script>
 
     <script>
         let selectedManagerId = null;
@@ -909,109 +917,94 @@ while ($row = $result->fetch_assoc()) {
             const buttons = document.querySelectorAll('.assign-manager');
 
             buttons.forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', async () => {
                     const businessId = button.getAttribute('data-business-id');
                     const branchesData = button.getAttribute('data-branches');
                     const branches = branchesData ? JSON.parse(branchesData) : [];
 
                     const managerOptions = managers.map(manager =>
-                        `<option value="${manager.id}">${manager.name}</option>`
+                        `<option value="${manager.id}">${manager.username}</option>`
                     ).join('');
 
-                    if (branches.length > 1) {
-                        // Multiple branches
-                        const branchOptions = branches.map(branch =>
-                            `<option value="${branch.branch_id}">${branch.branch_location} (ID: ${branch.branch_id})</option>`
-                        ).join('');
-
+                    if (branches.length > 0) {
                         Swal.fire({
-                            title: 'Assign to a Branch',
-                            html: `
-                        <label for="branch-select">Choose a branch:</label>
-                        <select id="branch-select" class="swal2-input">${branchOptions}</select>
-                        <label for="manager-select">Choose a manager:</label>
-                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
-                    `,
+                            title: 'Assign Manager',
+                            text: 'Do you want to assign the manager to the Main Branch (Business) or a specific Branch?',
+                            showDenyButton: true,
                             showCancelButton: true,
-                            confirmButtonText: 'Assign',
-                            preConfirm: () => {
-                                const selectedBranch = document.getElementById('branch-select')?.value;
-                                const selectedManager = document.getElementById('manager-select')?.value;
-
-                                if (!selectedBranch || !selectedManager) {
-                                    Swal.showValidationMessage('Please select both a branch and a manager.');
-                                    return false;
-                                }
-
-                                return { branch: selectedBranch, manager: selectedManager };
-                            }
+                            confirmButtonText: 'Main Branch (Business)',
+                            denyButtonText: 'Branch'
                         }).then(result => {
                             if (result.isConfirmed) {
-                                const { branch, manager } = result.value;
-                                assignManagerToBranch(branch, manager);
-                            }
-                        });
-                    } else if (branches.length === 1) {
-                        // Single branch
-                        const branchId = branches[0].branch_id;
-                        const branchLocation = branches[0].branch_location;
-
-                        Swal.fire({
-                            title: 'Assign to Branch?',
-                            html: `
-                        <p>${branchLocation} (ID: ${branchId})</p>
-                        <label for="manager-select">Choose a manager:</label>
-                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
-                    `,
-                            showCancelButton: true,
-                            confirmButtonText: 'Assign',
-                            preConfirm: () => {
-                                const selectedManager = document.getElementById('manager-select')?.value;
-
-                                if (!selectedManager) {
-                                    Swal.showValidationMessage('Please select a manager.');
-                                    return false;
-                                }
-
-                                return { branch: branchId, manager: selectedManager };
-                            }
-                        }).then(result => {
-                            if (result.isConfirmed) {
-                                const { branch, manager } = result.value;
-                                assignManagerToBranch(branch, manager);
+                                assignToBusiness(businessId, managerOptions);
+                            } else if (result.isDenied) {
+                                assignToBranch(branches, managerOptions);
                             }
                         });
                     } else {
-                        const businessName = button.closest('tr').querySelector('td:first-child').textContent;
-                        // No branches
-                        Swal.fire({
-                            title: 'Assign to Business?',
-                            html: `
-                                                <p>${businessName} (ID:${businessId})</p>
-                        <label for="manager-select">Choose a manager:</label>
-                        <select id="manager-select" class="swal2-input">${managerOptions}</select>
-                    `,
-                            showCancelButton: true,
-                            confirmButtonText: 'Assign',
-                            preConfirm: () => {
-                                const selectedManager = document.getElementById('manager-select')?.value;
-
-                                if (!selectedManager) {
-                                    Swal.showValidationMessage('Please select a manager.');
-                                    return false;
-                                }
-
-                                return { business: businessId, manager: selectedManager };
-                            }
-                        }).then(result => {
-                            if (result.isConfirmed) {
-                                const { business, manager } = result.value;
-                                assignManagerToBusiness(business, manager);
-                            }
-                        });
+                        assignToBusiness(businessId, managerOptions);
                     }
                 });
             });
+
+            function assignToBusiness(businessId, managerOptions) {
+                Swal.fire({
+                    title: 'Assign to Business?',
+                    html: `
+                <p>Business ID: ${businessId}</p>
+                <label for="manager-select">Choose a manager:</label>
+                <select id="manager-select" class="swal2-input">${managerOptions}</select>
+            `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Assign',
+                    preConfirm: () => {
+                        const selectedManager = document.getElementById('manager-select')?.value;
+                        if (!selectedManager) {
+                            Swal.showValidationMessage('Please select a manager.');
+                            return false;
+                        }
+                        return { business: businessId, manager: selectedManager };
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const { business, manager } = result.value;
+                        assignManagerToBusiness(business, manager);
+                    }
+                });
+            }
+
+            function assignToBranch(branches, managerOptions) {
+                const branchOptions = branches.map(branch =>
+                    `<option value="${branch.branch_id}">${branch.branch_location} (ID: ${branch.branch_id})</option>`
+                ).join('');
+
+                Swal.fire({
+                    title: 'Assign to a Branch',
+                    html: `
+                <label for="branch-select">Choose a branch:</label>
+                <select id="branch-select" class="swal2-input">${branchOptions}</select>
+                <label for="manager-select">Choose a manager:</label>
+                <select id="manager-select" class="swal2-input">${managerOptions}</select>
+            `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Assign',
+                    preConfirm: () => {
+                        const selectedBranch = document.getElementById('branch-select')?.value;
+                        const selectedManager = document.getElementById('manager-select')?.value;
+
+                        if (!selectedBranch || !selectedManager) {
+                            Swal.showValidationMessage('Please select both a branch and a manager.');
+                            return false;
+                        }
+                        return { branch: selectedBranch, manager: selectedManager };
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const { branch, manager } = result.value;
+                        assignManagerToBranch(branch, manager);
+                    }
+                });
+            }
 
             async function assignManagerToBranch(branchId, managerId) {
                 try {
@@ -1052,8 +1045,9 @@ while ($row = $result->fetch_assoc()) {
                     console.error('Error:', error);
                 }
             }
-
         });
+
+
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1074,7 +1068,7 @@ while ($row = $result->fetch_assoc()) {
                         if (businessData.success) {
                             managersHtml += `<p><strong>Business Manager:</strong> ${businessData.managers.length > 0
                                 ? businessData.managers.map(manager => `
-                                        Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                        Username: ${manager.user_name} (ID: ${manager.id})
                                         <button class="btn btn-danger btn-sm unassign-manager" 
                                                 data-manager-id="${manager.id}" 
                                                 data-type="business" 
@@ -1095,7 +1089,7 @@ while ($row = $result->fetch_assoc()) {
                                 if (branchData.success) {
                                     managersHtml += `<p><strong>Branch ${branch.branch_id} (${branch.branch_location}):</strong> ${branchData.managers.length > 0
                                         ? branchData.managers.map(manager => `
-                                                Name: ${manager.first_name} ${manager.middle_name} ${manager.last_name} (ID: ${manager.id})
+                                                Username: ${manager.user_name} (ID: ${manager.id})
                                                 <button class="btn btn-danger btn-sm unassign-manager" 
                                                         data-manager-id="${manager.id}" 
                                                         data-type="branch" 
