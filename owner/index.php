@@ -997,7 +997,7 @@ while ($row = $resultTrends->fetch_assoc()) {
                                 <h1><b><i class="fa-solid fa-boxes icon"></i> Popular Products</b></h1>
                                 <div class="col-md-12 dashboard-content">
                                     <div class="mb-3">
-                                        <label for="monthFilter"><b>Filter by Month:</b></label>
+                                    <label for="monthFilter"><b>Filter by Month (<?php echo date("Y"); ?>):</b></label>
                                         <select id="monthFilter" class="form-control" onchange="filterProductsByMonth(this.value)">
                                             <option value="0">All Time</option>
                                             <option value="1">January</option>
@@ -1017,12 +1017,12 @@ while ($row = $resultTrends->fetch_assoc()) {
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product</th>
-                                                <th>Business</th>
-                                                <th>Type</th>
-                                                <th>Price</th>
-                                                <th>Description</th>
-                                                <th>Total Sales</th>
+                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
