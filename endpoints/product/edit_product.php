@@ -8,13 +8,14 @@ $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['id'];
 $name = $data['name'];
 $type = $data['type'];
+$size = $data['size'];
 $price = $data['price'];
 $description = $data['description'];
 $updated_at = date('Y-m-d H:i:s');
 
-$query = "UPDATE products SET name = ?, type = ?, price = ?, description = ?, updated_at = ? WHERE id = ?";
+$query = "UPDATE products SET name = ?, type = ?, size = ?, price = ?, description = ?, updated_at = ? WHERE id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param('sssssi', $name, $type, $price, $description, $updated_at, $id);
+$stmt->bind_param('ssssssi', $name, $type, $size, $price, $description, $updated_at, $id);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true]);

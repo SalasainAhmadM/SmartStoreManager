@@ -51,3 +51,98 @@ function printContent(tabId, title) {
   // Refresh the page
   location.reload();
 }
+
+
+
+
+
+
+function printSingleLine(id, type) {
+    // Find the row to print
+    const element = document.querySelector(`tr[data-id="${id}"][data-type="${type}"]`);
+    if (element) {
+        // Open a new window for printing
+        const printWindow = window.open('', '', 'height=500,width=800');
+        printWindow.document.write('<html><head><title>Print</title>');
+        printWindow.document.write('<style>');
+        printWindow.document.write(`
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            table, th, td {
+                border: 1px solid black;
+            }
+            th, td {
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .print-button {
+                display: none; /* Hide print buttons in the printed output */
+            }
+            h1 {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            button {
+                display: none;
+            }
+        `);
+        printWindow.document.write('</style>');
+        printWindow.document.write('</head><body>');
+
+        // Add a header to indicate the type of data (business or branch)
+        const headerTitle = type === 'business' ? 'Business Data' : 'Branch Data';
+        printWindow.document.write(`<h1>${headerTitle}</h1>`);
+
+        // Create a table for printing
+        printWindow.document.write('<table>');
+        printWindow.document.write('<thead>');
+
+        // Get the header row and remove <i> tags
+        const headerRow = element.closest('table').querySelector('thead').outerHTML;
+        const cleanedHeaderRow = headerRow.replace(/<i[^>]*>.*?<\/i>/gi, ''); // Remove <i> tags
+        printWindow.document.write(cleanedHeaderRow.replace(/<th[^>]*>Action<\/th>/i, '')); // Remove "Action" header
+        printWindow.document.write('</thead>');
+        printWindow.document.write('<tbody>');
+
+        // Clone the row and remove the last cell (Action column)
+        const rowClone = element.cloneNode(true);
+        rowClone.deleteCell(rowClone.cells.length - 1); // Remove the last cell
+        printWindow.document.write(rowClone.outerHTML); // Add the modified row
+
+        printWindow.document.write('</tbody>');
+        printWindow.document.write('</table>');
+
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    } else {
+        alert('Element not found');
+    }
+}
+
+// Add event listeners to all print buttons
+document.addEventListener('DOMContentLoaded', function () {
+    const printButtons = document.querySelectorAll('.print-button');
+
+    printButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const type = this.getAttribute('data-type'); // Get the type (business or branch)
+            printSingleLine(id, type);
+        });
+    });
+});

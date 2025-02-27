@@ -53,6 +53,26 @@ foreach ($businesses as $business) {
 }
 
 $product_stmt->close();
+
+// Fetch unique product types
+$type_query = "SELECT DISTINCT type FROM products";
+$type_stmt = $conn->prepare($type_query);
+$type_stmt->execute();
+$type_result = $type_stmt->get_result();
+
+$product_types = [];
+while ($row = $type_result->fetch_assoc()) {
+    $product_types[] = $row['type'];
+}
+$type_stmt->close();
+
+// Define size options for different categories
+$size_options = [
+    'Clothing' => ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    'Shoes' => ['5', '6', '7', '8', '9', '10', '11', '12'],
+    'Food' => ['Small (250g)', 'Medium (500g)', 'Large (1kg)'],
+    // Add more categories and sizes as needed
+];
 ?>
 
 
@@ -169,9 +189,8 @@ $product_stmt->close();
                                 <tbody id="business-table-body">
                                     <?php if (!empty($businesses)): ?>
                                         <?php foreach ($businesses as $business): ?>
-                                            <tr data-id="<?php echo $business['id']; ?>">
-                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
-                                                </td>
+                                            <tr data-id="<?php echo $business['id']; ?>" data-type="business">
+                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['description']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['asset']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
@@ -181,8 +200,11 @@ $product_stmt->close();
                                                     <a href="#" class="edit-button text-primary me-3" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="#" class="delete-button text-danger" title="Delete">
+                                                    <a href="#" class="delete-button text-danger me-3" title="Delete">
                                                         <i class="fas fa-trash"></i>
+                                                    </a>
+                                                    <a href="#" class="print-button text-primary" title="Print" data-id="<?php echo $business['id']; ?>" data-type="business">
+                                                        <i class="fas fa-print"></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -257,18 +279,19 @@ $product_stmt->close();
                                                 <tbody>
                                                     <?php if (isset($branches_by_business[$business['id']])): ?>
                                                         <?php foreach ($branches_by_business[$business['id']] as $branch): ?>
-                                                            <tr>
+                                                            <tr data-id="<?php echo $branch['id']; ?>" data-type="branch">
                                                                 <td><?php echo htmlspecialchars($branch['location']); ?></td>
                                                                 <td><?php echo $branch['created_at']; ?></td>
                                                                 <td><?php echo $branch['updated_at']; ?></td>
                                                                 <td class="text-center">
-                                                                    <a href="#" class="text-primary me-3" title="Edit"
-                                                                        onclick="editBranch(<?php echo $branch['id']; ?>)">
+                                                                    <a href="#" class="text-primary me-3" title="Edit" onclick="editBranch(<?php echo $branch['id']; ?>)">
                                                                         <i class="fas fa-edit"></i>
                                                                     </a>
-                                                                    <a href="#" class="text-danger" title="Delete"
-                                                                        onclick="deleteBranch(<?php echo $branch['id']; ?>)">
+                                                                    <a href="#" class="text-danger me-3" title="Delete" onclick="deleteBranch(<?php echo $branch['id']; ?>)">
                                                                         <i class="fas fa-trash"></i>
+                                                                    </a>
+                                                                    <a href="#" class="print-button text-primary" title="Print" data-id="<?php echo $branch['id']; ?>" data-type="branch">
+                                                                        <i class="fas fa-print"></i>
                                                                     </a>
                                                                 </td>
                                                             </tr>
@@ -333,7 +356,7 @@ $product_stmt->close();
                                         </div>
 
                                         <div class="scrollable-table">
-                                            <table class="table" id="product-table" id="productTable">
+                                            <table class="table" id="product-table">
                                                 <thead class="table-dark position-sticky top-0">
                                                     <tr>
                                                         <th>Product ID <button class="btn text-white"><i
@@ -341,6 +364,8 @@ $product_stmt->close();
                                                         <th>Name <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Type <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
+                                                        <th>Size/Weight <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Price <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
@@ -362,6 +387,7 @@ $product_stmt->close();
                                                                     <?php echo htmlspecialchars($product['name']); ?>
                                                                 </td>
                                                                 <td><?php echo htmlspecialchars($product['type']); ?></td>
+                                                                <td><?php echo htmlspecialchars($product['size']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['price']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['description']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['created_at']); ?></td>
@@ -380,7 +406,7 @@ $product_stmt->close();
                                                         <?php endforeach; ?>
                                                     <?php else: ?>
                                                         <tr>
-                                                            <td colspan="8" class="text-center">No products available for this
+                                                            <td colspan="9" class="text-center">No products available for this
                                                                 business yet.</td>
                                                         </tr>
                                                     <?php endif; ?>
@@ -752,55 +778,62 @@ $product_stmt->close();
 
         // Add Product
         function addProduct(businessId) {
+            const productTypesOptions = <?php echo json_encode($product_types); ?>; // Pass PHP array to JavaScript
+            const sizeOptions = <?php echo json_encode($size_options); ?>; // Pass size options to JavaScript
+
+            const typeOptions = productTypesOptions.map(type => `<option value="${type}">${type}</option>`).join('');
+            const sizeDropdown = Object.keys(sizeOptions).map(category => {
+                const sizes = sizeOptions[category].map(size => `<option value="${size}">${size}</option>`).join('');
+                return `<optgroup label="${category}">${sizes}</optgroup>`;
+            }).join('');
+
             Swal.fire({
                 title: 'Add Product',
                 html: `
-        <input id="product-name" class="form-control mb-2" placeholder="Product Name">
-        <input id="product-type" class="form-control mb-2" placeholder="Product Type">
-        <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
-        <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
-    `,
-                confirmButtonText: 'Add Product',
-                focusConfirm: false,
+                    <input id="product-name" class="form-control mb-2" placeholder="Product Name">
+                    <select id="product-type" class="form-control mb-2">
+                        <option value="">Select Type</option>
+                        ${typeOptions}
+                    </select>
+                    <input id="product-type-custom" class="form-control mb-2" placeholder="Or specify a new type (optional)">
+                    <select id="product-size" class="form-control mb-2">
+                        <option value="">Select Size</option>
+                        ${sizeDropdown}
+                    </select>
+                    <input id="product-size-custom" class="form-control mb-2" placeholder="Or specify a new size (optional)">
+                    <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
+                    <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
+                `,
                 showCancelButton: true,
+                confirmButtonText: 'Add Product',
                 preConfirm: () => {
                     const name = document.getElementById('product-name').value;
-                    const type = document.getElementById('product-type').value;
+                    const type = document.getElementById('product-type').value || document.getElementById('product-type-custom').value; // Use custom type if selected
+                    const size = document.getElementById('product-size').value || document.getElementById('product-size-custom').value; // Use custom size if selected
                     const price = document.getElementById('product-price').value;
                     const description = document.getElementById('product-description').value;
 
-                    if (!name || !type || !price || !description) {
+                    if (!name || !type || !size || !price || !description) {
                         Swal.showValidationMessage('Please fill out all fields');
                     }
+
                     return {
+                        business_id: businessId,
                         name,
                         type,
+                        size,
                         price,
                         description
                     };
                 }
-            }).then((result) => {
+            }).then(result => {
                 if (result.isConfirmed) {
-                    const {
-                        name,
-                        type,
-                        price,
-                        description
-                    } = result.value;
-
-                    // Send data to add_product.php
                     fetch('../endpoints/product/add_product.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            business_id: businessId,
-                            name,
-                            type,
-                            price,
-                            description
-                        })
+                        body: JSON.stringify(result.value)
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -827,6 +860,7 @@ $product_stmt->close();
                         html: `
                 <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
                 <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
+                <input id="product-size" class="form-control mb-2" placeholder="Product Size" value="${data.size}">
                 <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
                 <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
             `,
@@ -835,16 +869,18 @@ $product_stmt->close();
                         preConfirm: () => {
                             const name = document.getElementById('product-name').value;
                             const type = document.getElementById('product-type').value;
+                            const size = document.getElementById('product-size').value;
                             const price = document.getElementById('product-price').value;
                             const description = document.getElementById('product-description').value;
 
-                            if (!name || !type || !price || !description) {
+                            if (!name || !type || !size || !price || !description) {
                                 Swal.showValidationMessage('Please fill out all fields');
                             }
 
                             return {
                                 name,
                                 type,
+                                size,
                                 price,
                                 description
                             };

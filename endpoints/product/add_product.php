@@ -2,33 +2,31 @@
 header('Content-Type: application/json');
 require_once '../../conn/conn.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
-if (!$data) {
-    echo json_encode(['success' => false, 'message' => 'Invalid request']);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
 
-$business_id = $data['business_id'];
-$name = $data['name'];
-$type = $data['type'];
-$price = $data['price'];
-$description = $data['description'];
+    if (isset($data['business_id'], $data['name'], $data['type'], $data['size'], $data['price'], $data['description'])) {
+        $businessId = intval($data['business_id']);
+        $name = $data['name'];
+        $type = $data['type'];
+        $size = $data['size'];
+        $price = floatval($data['price']);
+        $description = $data['description'];
 
-if (!$business_id || !$name || !$type || !$price || !$description) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required']);
-    exit;
-}
+        $query = "INSERT INTO products (business_id, name, type, size, price, description) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("isssss", $businessId, $name, $type, $size, $price, $description);
 
-$sql = "INSERT INTO products (name, description, price, type, business_id, created_at) 
-        VALUES (?, ?, ?, ?, ?, NOW())";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('ssssi', $name, $description, $price, $type, $business_id);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => true]);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to add product.']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid input.']);
+    }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to add product']);
+    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
 }
 
 $stmt->close();
