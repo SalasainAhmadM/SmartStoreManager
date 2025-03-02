@@ -846,7 +846,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
 
                                 <div class="mt-3">    
-                                    <label for="monthFilter"><b>Filter by Month (<?php echo date("Y"); ?>):</b></label>
+                                    <label for="monthFilter"><b>Filter Sales vs Expenses by Month (<?php echo date("Y"); ?>):</b></label>
                                     <select id="monthFilter" class="form-control" onchange="filterSalesExpensesByMonth(this.value)">
                                         <option value="0">Select Month</option>
                                         <option value="1">January</option>
