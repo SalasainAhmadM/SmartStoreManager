@@ -680,7 +680,7 @@ ol, ul {
 /* Container for the highlighted chart */
 
 .scroll-container {
-  height: 100vw; /* 100% of the viewport height */
+  height: 125vw; /* 100% of the viewport height */
   overflow-y: auto;
   padding: 0 0.5rem;
 }
