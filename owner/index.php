@@ -683,7 +683,55 @@ while ($row = $resultTrends->fetch_assoc()) {
 
 
 
+// Add this function to your PHP script
+function fetchFilteredData($owner_id, $selectedMonth) {
+    global $conn;
 
+    // Validate input
+    $selectedMonth = intval($selectedMonth);
+    if ($selectedMonth < 1 || $selectedMonth > 12) {
+        die(json_encode(['error' => 'Invalid month selected.']));
+    }
+
+    // Fetch sales and expenses for the selected month
+    $year = date('Y'); // Current year
+    $sql = "
+        SELECT
+            DATE(s.created_at) AS date,
+            SUM(s.total_sales) AS daily_sales,
+            SUM(e.amount) AS daily_expenses
+        FROM sales s
+        LEFT JOIN expenses e ON DATE(s.created_at) = DATE(e.created_at)
+        WHERE s.owner_id = ?
+        AND MONTH(s.created_at) = ?
+        AND YEAR(s.created_at) = ?
+        GROUP BY DATE(s.created_at)
+        ORDER BY DATE(s.created_at) ASC
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iii", $owner_id, $selectedMonth, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = [
+            'date' => $row['date'],
+            'sales' => floatval($row['daily_sales']),
+            'expenses' => floatval($row['daily_expenses'])
+        ];
+    }
+
+    return json_encode($data);
+}
+
+// Handle AJAX request
+if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
+    $owner_id = intval($_GET['owner_id']);
+    $selectedMonth = intval($_GET['month']);
+    echo fetchFilteredData($owner_id, $selectedMonth);
+    exit;
+}
 ?>
 
 
@@ -786,13 +834,40 @@ while ($row = $resultTrends->fetch_assoc()) {
                                 <!-- Original Chart -->
                                 <div class="chart-container mb-4">
                                     <canvas id="financialChart"></canvas>
+                                    <button class="btn btn-dark mt-2 mb-5" id="printChartButton">
+                                    <i class="fas fa-print me-2"></i> Generate Report
+                                </button>
                                 </div>
 
                                 <!-- Sales vs Expenses Chart -->
                                 <div class="chart-container mb-4">
                                     <h6>Sales vs Expenses</h6>
-                                    <canvas id="salesExpensesChart"></canvas>
+                                    <canvas id="salesExpensesChart"></canvas>                         
                                 </div>
+
+                                <div class="mt-3">    
+                                    <label for="monthFilter"><b>Filter by Month (<?php echo date("Y"); ?>):</b></label>
+                                    <select id="monthFilter" class="form-control" onchange="filterSalesExpensesByMonth(this.value)">
+                                        <option value="0">Select Month</option>
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-dark mt-2 mb-5" onclick="printFinancialOverviewAndSalesvsExpensesTable()">
+                                    <i class="fas fa-print me-2"></i> Generate Report
+                                </button>
+                            
+
 
                                 <!-- Profit Margin Chart -->
                                 <div class="chart-container mb-4">
@@ -1044,7 +1119,10 @@ while ($row = $resultTrends->fetch_assoc()) {
                                             <?php endif; ?>
                                         </tbody>
                                     </table>
-                                </div>
+                                    <button class="btn btn-primary mt-2 mb-5" onclick="printPopularProducts()">
+                                        <i class="fas fa-print me-2"></i> Generate Report
+                                    </button>
+                                </div>                              
                             </div>
                         </div>
 
@@ -1617,49 +1695,110 @@ while ($row = $resultTrends->fetch_assoc()) {
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
+        
 
+
+
+    
     <script>
-function filterProductsByMonth(selectedMonth) {
-    // Get the owner ID from the session or URL
-    const ownerId = <?php echo json_encode($owner_id); ?>;
+    function filterProductsByMonth(selectedMonth) {
+        // Get the owner ID from the session or URL
+        const ownerId = <?php echo json_encode($owner_id); ?>;
 
-    // Send an AJAX request to fetch filtered products
-    fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
-        .then(response => response.json())
-        .then(data => {
-            // Clear the existing table rows
-            const tableBody = document.querySelector('#product-table tbody');
-            tableBody.innerHTML = '';
+        // Send an AJAX request to fetch filtered products
+        fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear the existing table rows
+                const tableBody = document.querySelector('#product-table tbody');
+                tableBody.innerHTML = '';
 
-            // Populate the table with the filtered data
-            if (data.length > 0) {
-                data.forEach(product => {
+                // Populate the table with the filtered data
+                if (data.length > 0) {
+                    data.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${product.product_name}</td>
+                            <td>${product.business_name}</td>
+                            <td>${product.type}</td>
+                            <td>₱${parseFloat(product.price).toFixed(2)}</td>
+                            <td>${product.description}</td>
+                            <td>₱${parseFloat(product.total_sales).toFixed(2)}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    // If no products are found, display a message
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${product.product_name}</td>
-                        <td>${product.business_name}</td>
-                        <td>${product.type}</td>
-                        <td>₱${parseFloat(product.price).toFixed(2)}</td>
-                        <td>${product.description}</td>
-                        <td>₱${parseFloat(product.total_sales).toFixed(2)}</td>
+                        <td colspan="6" style="text-align: center;">No Popular Products Found</td>
                     `;
                     tableBody.appendChild(row);
-                });
-            } else {
-                // If no products are found, display a message
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center;">No Popular Products Found</td>
-                `;
-                tableBody.appendChild(row);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching filtered products:', error);
-        });
-}
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching filtered products:', error);
+            });
+    }
     </script>
-    
+
+    <script>
+        function printPopularProducts() {
+            const table = document.getElementById('product-table');
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.open();
+            printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Print Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    h1 {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    table, th, td {
+                        border: 1px solid black;
+                    }
+                    th, td {
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    thead {
+                        background-color: #333;
+                        color: #fff;
+                    }
+                    tfoot {
+                        background-color: #f1f1f1;
+                        font-weight: bold;
+                    }
+                    button, .btn, .fas.fa-sort {
+                        display: none; /* Hide sort icons and buttons in print */
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Popular Products Report</h1>
+                ${table.outerHTML}               
+            </body>
+            </html>
+            `);
+            printWindow.print();
+            printWindow.document.close();
+        }
+    </script>
 </body>
 
 </html>
