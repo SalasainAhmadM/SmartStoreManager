@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $data = json_decode($_POST['data'], true);
     $businessInfo = $data['business'];
     $products = $data['products'];
+    $branches = $data['branches'];
 
     // Insert business information
     $stmt = $conn->prepare("INSERT INTO business (name, description, asset, employee_count, owner_id) VALUES (?, ?, ?, ?, ?)");
@@ -31,9 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     }
     $stmt->close();
 
+    // Insert branches
+    $stmt = $conn->prepare("INSERT INTO branch (location, business_id, manager_id) VALUES (?, ?, ?)");
+    foreach ($branches as $branch) {
+        $stmt->bind_param("sii", $branch['location'], $business_id, $branch['manager_id']);
+        $stmt->execute();
+    }
+    $stmt->close();
+
     header("Location: ./owner/managebusiness.php?imported=true");
     exit();
-
 }
 
 if (isset($_FILES['file']['tmp_name'])) {
@@ -66,6 +74,21 @@ if (isset($_FILES['file']['tmp_name'])) {
                 'description' => $sheet->getCell("D$row")->getValue()
             ];
             $row++;
+        }
+
+        // Extract branch information (starting from Row 5 after products)
+        $branches = [];
+        $row2 = 17;
+        while (true) {
+            $location = $sheet->getCell("A$row2")->getValue();
+            if (empty($location))
+                break; // Stop if no more branches
+
+            $branches[] = [
+                'location' => $location,
+                'manager_id' => $sheet->getCell("B$row2")->getValue()
+            ];
+            $row2++;
         }
 
         // Display the data in tables
@@ -123,9 +146,25 @@ if (isset($_FILES['file']['tmp_name'])) {
                 </tbody>
             </table>
 
+            <h2>Branches</h2>
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($branches as $branch): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($branch['location']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
             <form id="importForm" action="import_excel_display_business.php" method="POST" class="mt-4">
                 <input type="hidden" name="data"
-                    value='<?php echo htmlspecialchars(json_encode(['business' => $businessInfo, 'products' => $products])); ?>'>
+                    value='<?php echo htmlspecialchars(json_encode(['business' => $businessInfo, 'products' => $products, 'branches' => $branches])); ?>'>
                 <button type="button" class="btn btn-primary" id="confirmImport">Confirm Import</button>
                 <a href="./owner/managebusiness.php" class="btn btn-secondary">Cancel</a>
             </form>

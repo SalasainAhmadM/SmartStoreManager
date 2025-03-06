@@ -171,7 +171,6 @@ function filterSalesLog() {
 }
 
 
-// Handle "Add Sale" button click
 document.getElementById("addSaleButton").addEventListener("click", function () {
     const selectedBusiness = document.getElementById("businessSelect").value;
 
@@ -184,35 +183,24 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
         return;
     }
 
-    // Fetch branches
     fetch("../endpoints/sales/fetch_branches.php", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ business_id: selectedBusiness }),
     })
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
                 const branches = data.branches;
-                const hasBranches = branches.length > 0;
                 let branchOptions = '<option value="">Select a Branch</option>';
-                if (hasBranches) {
-                    branches.forEach((branch) => {
-                        branchOptions += `<option value="${branch.id}">${branch.location}</option>`;
-                    });
-                }
+                branches.forEach((branch) => {
+                    branchOptions += `<option value="${branch.id}">${branch.location}</option>`;
+                });
 
-                // Filter unique products using a Map
-                const products = productsByBusiness[selectedBusiness] || [];
-                const uniqueProducts = Array.from(
-                    new Map(products.map((product) => [product.id, product])).values()
-                );
-
+                const products = (productsByBusiness[selectedBusiness] || []).filter(product => product.status !== 'Unavailable');
                 let productOptions = '<option value="">Select a Product</option>';
-                uniqueProducts.forEach((product) => {
-                    productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} (₱${product.price})</option>`;
+                products.forEach((product) => {
+                    productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
                 });
 
                 // Get the current date in Asia/Manila timezone
@@ -223,18 +211,18 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                 Swal.fire({
                     title: "Add Sales",
                     html: `
-                        ${hasBranches ? `
-                            <label for="branchSelect">Branch</label>
-                            <select id="branchSelect" class="form-control mb-2">${branchOptions}</select>
-                        ` : `
-                            <p class="text-danger">No branches available for this business.</p>
-                        `}
+                        <label for="branchSelect">Branch</label>
+                        <select id="branchSelect" class="form-control mb-2">${branchOptions}</select>
+
                         <label for="productSelect">Product</label>
                         <select id="productSelect" class="form-control mb-2">${productOptions}</select>
+
                         <label for="amountSold">Amount Sold</label>
                         <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
+
                         <label for="totalSales">Total Sales</label>
                         <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
+
                         <label for="saleDate">Sales Date</label>
                         <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
                     `,
@@ -249,14 +237,14 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                     showCancelButton: true,
                     confirmButtonText: "Add Sales",
                     preConfirm: () => {
-                        const branchId = hasBranches ? document.getElementById("branchSelect").value : null;
+                        const branchId = document.getElementById("branchSelect").value;
                         const productSelect = document.getElementById("productSelect");
                         const productId = productSelect.value;
                         const amountSold = parseInt(document.getElementById("amountSold").value, 10);
                         const totalSales = parseFloat(document.getElementById("totalSales").value.replace("₱", ""));
                         const saleDate = document.getElementById("saleDate").value;
 
-                        if (!productId || !amountSold || isNaN(totalSales)) {
+                        if ( !productId || !amountSold || isNaN(totalSales)) {
                             Swal.showValidationMessage("Please complete all fields.");
                             return false;
                         }
@@ -294,13 +282,6 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                                     Swal.fire("Success", data.message, "success").then(() => {
                                         window.location.reload();
                                     });
-                                    addSaleToTable(
-                                        saleData.branchId,
-                                        saleData.productId,
-                                        saleData.amountSold,
-                                        saleData.totalSales,
-                                        saleData.saleDate
-                                    );
                                 } else {
                                     Swal.fire("Error", data.message, "error");
                                 }
@@ -308,17 +289,62 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                     }
                 });
 
-                // Update total sales dynamically
-                document.getElementById("amountSold").addEventListener("input", (event) => {
+               
+
+                 // Function to update total sales dynamically
+    function updateTotalSales() {
+        const productSelect = document.getElementById("productSelect");
+        const amountSold = document.getElementById("amountSold");
+        const totalSales = document.getElementById("totalSales");
+
+        if (!productSelect || !amountSold || !totalSales) return;
+
+        amountSold.addEventListener("input", () => {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const price = selectedOption ? parseFloat(selectedOption.getAttribute("data-price")) : 0;
+            const quantity = parseInt(amountSold.value || 0, 10);
+            totalSales.value = `₱${(price * quantity).toFixed(2)}`;
+        });
+
+        productSelect.addEventListener("change", () => {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const price = selectedOption ? parseFloat(selectedOption.getAttribute("data-price")) : 0;
+            const quantity = parseInt(amountSold.value || 0, 10);
+            totalSales.value = `₱${(price * quantity).toFixed(2)}`;
+        });
+    }
+
+    updateTotalSales(); // Initialize on modal open
+
+    // Fetch product availability when branch is selected
+    document.getElementById("branchSelect").addEventListener("change", function () {
+        const selectedBranch = this.value;
+
+        fetch("../endpoints/sales/fetch_product_availability.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ business_id: selectedBusiness, branch_id: selectedBranch }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
                     const productSelect = document.getElementById("productSelect");
-                    const selectedProduct = uniqueProducts.find(
-                        (product) => product.id == productSelect.value
-                    );
-                    if (selectedProduct) {
-                        const total = selectedProduct.price * parseInt(event.target.value || 0, 10);
-                        document.getElementById("totalSales").value = `₱${total.toFixed(2)}`;
-                    }
-                });
+                    let productOptions = '<option value="">Select a Product</option>';
+                    data.products.forEach((product) => {
+                        if (product.status !== "Unavailable") {
+                            productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
+                        }
+                    });
+                    productSelect.innerHTML = productOptions;
+                    updateTotalSales(); // Re-bind total sales calculation after updating product list
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            })
+            .catch(() => {
+                Swal.fire("Error", "Failed to fetch product availability.", "error");
+            });
+    });
 
             } else {
                 Swal.fire("Error", data.message, "error");
@@ -328,6 +354,7 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
             Swal.fire("Error", "Failed to fetch branches.", "error");
         });
 });
+
 
   // Function to add sale to the table dynamically
   function addSaleToTable(branchId, productId, amountSold, totalSales, saleDate) {

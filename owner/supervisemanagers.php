@@ -75,6 +75,7 @@ $query = "
         m.middle_name,
         m.last_name,
         m.email,
+        m.user_name,
         m.contact_number,
         b.name AS business_name,
         br.location AS branch_location
@@ -313,6 +314,8 @@ while ($row = $result->fetch_assoc()) {
                                         </th>
                                         <th>Email <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
+                                        <th>Username <button class="btn text-white"><i class="fas fa-sort"></i></button>
+                                        </th>
                                         <th>Phone <button class="btn text-white"><i class="fas fa-sort"></i></button>
                                         </th>
                                         <th>Assigned Business/Branches <button class="btn text-white"><i
@@ -327,6 +330,7 @@ while ($row = $result->fetch_assoc()) {
                                                     <?= htmlspecialchars($manager['first_name'] . ' ' . $manager['middle_name'] . ' ' . $manager['last_name']) ?>
                                                 </td>
                                                 <td><?= htmlspecialchars($manager['email']) ?></td>
+                                                <td><?= htmlspecialchars($manager['user_name']) ?></td>
                                                 <td><?= htmlspecialchars($manager['contact_number']) ?></td>
                                                 <td>
                                                     <?php if ($manager['business_name']): ?>

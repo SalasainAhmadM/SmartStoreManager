@@ -31,19 +31,25 @@ $sheet->setCellValue('B4', 'Type');
 $sheet->setCellValue('C4', 'Price');
 $sheet->setCellValue('D4', 'Description');
 
-// Style the headers
-$headerStyle = [
-    'font' => [
-        'bold' => true
-    ],
-    'alignment' => [
-        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT
-    ]
-];
+// Branches Section
+$sheet->mergeCells('A15:D15');
+$sheet->setCellValue('A15', 'Branch/Branches');
+$sheet->getStyle('A15')->getAlignment()->setHorizontal('left');
+$sheet->getStyle('A15')->applyFromArray(['font' => ['bold' => true]]);
 
+// Locations Section
+$sheet->setCellValue('A16', 'Locations');
+
+// Style headers
+$headerStyle = [
+    'font' => ['bold' => true],
+    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT]
+];
 $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
 $sheet->getStyle('A3:D3')->applyFromArray($headerStyle);
 $sheet->getStyle('A4:D4')->applyFromArray($headerStyle);
+$sheet->getStyle('A15')->applyFromArray($headerStyle);
+$sheet->getStyle('A16')->applyFromArray($headerStyle);
 
 // Auto-size columns
 foreach (range('A', 'D') as $col) {

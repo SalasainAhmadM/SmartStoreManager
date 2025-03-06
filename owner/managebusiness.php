@@ -140,34 +140,36 @@ $size_options = [
                             </button>
                         </div>
 
-                        
-                            <h4 class="mb-3">Business List <i class="fas fa-info-circle" onclick="showInfo('Business List', 'This table displays all businesses owned by you, including their details such as asset size and employee count.');"></i></h4>
-                            <div class="mb-3">
-                                <label for="monthFilter"><b>Filter by Month:</b></label>
-                                <select id="monthFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
-                                    <option value="0">All Time</option>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="yearFilter"><b>Filter by Year:</b></label>
-                                <select id="yearFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
-                                    <option value="0">All Years</option>
-                                    <!-- Years will be dynamically populated here -->
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-5 scrollable-table">
+
+                        <h4 class="mb-3">Business List <i class="fas fa-info-circle"
+                                onclick="showInfo('Business List', 'This table displays all businesses owned by you, including their details such as asset size and employee count.');"></i>
+                        </h4>
+                        <div class="mb-3">
+                            <label for="monthFilter"><b>Filter by Month:</b></label>
+                            <select id="monthFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
+                                <option value="0">All Time</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="yearFilter"><b>Filter by Year:</b></label>
+                            <select id="yearFilter" class="form-control" onchange="filterProductsByMonthAndYear()">
+                                <option value="0">All Years</option>
+                                <!-- Years will be dynamically populated here -->
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-5 scrollable-table">
                             <table class="table table-striped table-hover mt-4" id="businessTable">
                                 <thead class="table-dark position-sticky top-0">
                                     <tr>
@@ -190,7 +192,8 @@ $size_options = [
                                     <?php if (!empty($businesses)): ?>
                                         <?php foreach ($businesses as $business): ?>
                                             <tr data-id="<?php echo $business['id']; ?>" data-type="business">
-                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?></td>
+                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
+                                                </td>
                                                 <td><?php echo htmlspecialchars($business['description']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['asset']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
@@ -203,8 +206,13 @@ $size_options = [
                                                     <a href="#" class="delete-button text-danger me-3" title="Delete">
                                                         <i class="fas fa-trash"></i>
                                                     </a>
-                                                    <a href="#" class="print-button text-primary" title="Print" data-id="<?php echo $business['id']; ?>" data-type="business">
+                                                    <a href="#" class="print-button text-primary me-3" title="Print"
+                                                        data-id="<?php echo $business['id']; ?>" data-type="business">
                                                         <i class="fas fa-print"></i>
+                                                    </a>
+                                                    <a href="#" class="text-success" title="Edit Product Availability"
+                                                        onclick="editProductAvailabilityBusiness(<?php echo $business['id']; ?>)">
+                                                        <i class="fas fa-box"></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -243,7 +251,8 @@ $size_options = [
 
                                     <div id="business<?php echo $business['id']; ?>" class="business-details card-one"
                                         style="display: none; margin-top: 10px;">
-                                        <i class="fas fa-info-circle" onclick="showInfo('Branch List', 'A record of all business branches, including their locations, contact details, and management information. It helps keep track of multiple branches and their operations.');"></i>
+                                        <i class="fas fa-info-circle"
+                                            onclick="showInfo('Branch List', 'A record of all business branches, including their locations, contact details, and management information. It helps keep track of multiple branches and their operations.');"></i>
                                         <p><strong>Business ID:</strong> <?php echo $business['id']; ?></p>
                                         <p><strong>Updated At:</strong> <?php echo $business['updated_at']; ?></p>
 
@@ -284,14 +293,22 @@ $size_options = [
                                                                 <td><?php echo $branch['created_at']; ?></td>
                                                                 <td><?php echo $branch['updated_at']; ?></td>
                                                                 <td class="text-center">
-                                                                    <a href="#" class="text-primary me-3" title="Edit" onclick="editBranch(<?php echo $branch['id']; ?>)">
+                                                                    <a href="#" class="text-primary me-3" title="Edit"
+                                                                        onclick="editBranch(<?php echo $branch['id']; ?>)">
                                                                         <i class="fas fa-edit"></i>
                                                                     </a>
-                                                                    <a href="#" class="text-danger me-3" title="Delete" onclick="deleteBranch(<?php echo $branch['id']; ?>)">
+                                                                    <a href="#" class="text-danger me-3" title="Delete"
+                                                                        onclick="deleteBranch(<?php echo $branch['id']; ?>)">
                                                                         <i class="fas fa-trash"></i>
                                                                     </a>
-                                                                    <a href="#" class="print-button text-primary" title="Print" data-id="<?php echo $branch['id']; ?>" data-type="branch">
+                                                                    <a href="#" class="print-button text-primary me-3" title="Print"
+                                                                        data-id="<?php echo $branch['id']; ?>" data-type="branch">
                                                                         <i class="fas fa-print"></i>
+                                                                    </a>
+                                                                    <a href="#" class="text-success"
+                                                                        title="Edit Product Availability"
+                                                                        onclick="editProductAvailability(<?php echo $branch['id']; ?>, <?php echo $business['id']; ?>)">
+                                                                        <i class="fas fa-box"></i>
                                                                     </a>
                                                                 </td>
                                                             </tr>
@@ -340,7 +357,8 @@ $size_options = [
 
                                     <div id="business-<?php echo $business['id']; ?>" class="business-details card-one"
                                         style="display: none; margin-top: 10px;">
-                                        <i class="fas fa-info-circle" onclick="showInfo('Manage Product', 'The process of organizing and overseeing products, including adding new items, updating details, setting prices, and managing inventory to ensure smooth business operations.');"></i>
+                                        <i class="fas fa-info-circle"
+                                            onclick="showInfo('Manage Product', 'The process of organizing and overseeing products, including adding new items, updating details, setting prices, and managing inventory to ensure smooth business operations.');"></i>
                                         <p><strong>Business ID:</strong> <?php echo htmlspecialchars($business['id']); ?>
                                         </p>
 
@@ -371,6 +389,8 @@ $size_options = [
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Description <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
+                                                        <!-- <th>Status <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th> -->
                                                         <th>Created At <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Updated At <button class="btn text-white"><i
@@ -390,6 +410,7 @@ $size_options = [
                                                                 <td><?php echo htmlspecialchars($product['size']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['price']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['description']); ?></td>
+                                                                <!-- <td><?php echo htmlspecialchars($product['status']); ?></td> -->
                                                                 <td><?php echo htmlspecialchars($product['created_at']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
                                                                 <td class="text-center">
@@ -442,7 +463,7 @@ $size_options = [
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
-    <script src="../js/print_report.js"></script>   
+    <script src="../js/print_report.js"></script>
     <script src="../js/filter_month_year_manage_business.js"></script>
 
 
@@ -858,12 +879,12 @@ $size_options = [
                     Swal.fire({
                         title: 'Edit Product',
                         html: `
-                <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
-                <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
-                <input id="product-size" class="form-control mb-2" placeholder="Product Size" value="${data.size}">
-                <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
-                <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
-            `,
+                    <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
+                    <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
+                    <input id="product-size" class="form-control mb-2" placeholder="Product Size" value="${data.size}">
+                    <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
+                    <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
+                `,
                         showCancelButton: true,
                         confirmButtonText: 'Save Changes',
                         preConfirm: () => {
@@ -911,6 +932,72 @@ $size_options = [
                     });
                 });
         }
+        // function editProduct(productId) {
+        //     fetch(`../endpoints/product/fetch_product.php?id=${productId}`)
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             Swal.fire({
+        //                 title: 'Edit Product',
+        //                 html: `
+        //             <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
+        //             <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
+        //             <input id="product-size" class="form-control mb-2" placeholder="Product Size" value="${data.size}">
+        //             <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
+        //             <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
+        //             <select id="product-status" class="form-control mb-2">
+        //                 <option value="Available" ${data.status === 'Available' ? 'selected' : ''}>Available</option>
+        //                 <option value="Unavailable" ${data.status === 'Unavailable' ? 'selected' : ''}>Unavailable</option>
+        //             </select>
+        //         `,
+        //                 showCancelButton: true,
+        //                 confirmButtonText: 'Save Changes',
+        //                 preConfirm: () => {
+        //                     const name = document.getElementById('product-name').value;
+        //                     const type = document.getElementById('product-type').value;
+        //                     const size = document.getElementById('product-size').value;
+        //                     const price = document.getElementById('product-price').value;
+        //                     const description = document.getElementById('product-description').value;
+        //                     const status = document.getElementById('product-status').value;
+
+        //                     if (!name || !type || !size || !price || !description || !status) {
+        //                         Swal.showValidationMessage('Please fill out all fields');
+        //                     }
+
+        //                     return {
+        //                         name,
+        //                         type,
+        //                         size,
+        //                         price,
+        //                         description,
+        //                         status
+        //                     };
+        //                 }
+        //             }).then(result => {
+        //                 if (result.isConfirmed) {
+        //                     fetch('../endpoints/product/edit_product.php', {
+        //                         method: 'POST',
+        //                         headers: {
+        //                             'Content-Type': 'application/json'
+        //                         },
+        //                         body: JSON.stringify({
+        //                             id: productId,
+        //                             ...result.value
+        //                         })
+        //                     })
+        //                         .then(response => response.json())
+        //                         .then(data => {
+        //                             if (data.success) {
+        //                                 Swal.fire('Success', 'Product updated successfully!', 'success').then(() => {
+        //                                     location.reload();
+        //                                 });
+        //                             } else {
+        //                                 Swal.fire('Error', 'Failed to update product!', 'error');
+        //                             }
+        //                         });
+        //                 }
+        //             });
+        //         });
+        // }
 
         // Delete Product
         function deleteProduct(productId) {
@@ -944,6 +1031,169 @@ $size_options = [
                                 Swal.fire('Error', 'Failed to delete product!', 'error');
                             }
                         });
+                }
+            });
+        }
+
+        // Product Availability
+        function editProductAvailability(branchId, businessId) {
+            $.ajax({
+                url: '../endpoints/product/fetch_product_availability.php',
+                type: 'POST',
+                data: { branch_id: branchId, business_id: businessId },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        let productOptions = '';
+
+                        if (data.products.length === 0) {
+                            productOptions = `<div class="text-center text-muted">No products available for this branch.</div>`;
+                        } else {
+                            data.products.forEach(product => {
+                                let formattedPrice = parseFloat(product.price).toLocaleString('en-US');
+                                let availability = product.status === 'Available' ? 'selected' : '';
+                                let unavailable = product.status === 'Unavailable' ? 'selected' : '';
+
+                                productOptions += `
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="product-info">
+                                    <label>${product.name} - ${product.size} (₱${formattedPrice})</label>
+                                </div>
+                                <div>
+                                    <select class="form-control product-status" data-product-id="${product.id}">
+                                        <option value="Available" ${availability}>Available</option>
+                                        <option value="Unavailable" ${unavailable}>Unavailable</option>
+                                    </select>
+                                </div>
+                            </div>
+                        `;
+                            });
+                        }
+
+                        Swal.fire({
+                            title: 'Edit Product Availability',
+                            html: `<div>${productOptions}</div>`,
+                            showCancelButton: true,
+                            confirmButtonText: 'Update',
+                            preConfirm: () => {
+                                let updates = [];
+                                $('.product-status').each(function () {
+                                    let productId = $(this).data('product-id');
+                                    let status = $(this).val();
+                                    updates.push({ product_id: productId, status: status });
+                                });
+                                return updates;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed && data.products.length > 0) {
+                                $.ajax({
+                                    url: '../endpoints/product/update_product_availability.php',
+                                    type: 'POST',
+                                    data: {
+                                        branch_id: branchId,
+                                        business_id: businessId,
+                                        updates: JSON.stringify(result.value)
+                                    },
+                                    dataType: 'json',
+                                    success: function (updateData) {
+                                        if (updateData.success) {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: 'Product availability updated.',
+                                                icon: 'success'
+                                            }).then(() => {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            Swal.fire('Error!', 'Failed to update availability.', 'error');
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error!', 'Failed to fetch products.', 'error');
+                    }
+                }
+            });
+        }
+
+        function editProductAvailabilityBusiness(businessId) {
+            $.ajax({
+                url: '../endpoints/product/fetch_product_availability_business.php',
+                type: 'POST',
+                data: { business_id: businessId },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        let productOptions = '';
+
+                        if (data.products.length === 0) {
+                            productOptions = `<div class="text-center text-muted">No products available for this business.</div>`;
+                        } else {
+                            data.products.forEach(product => {
+                                let formattedPrice = parseFloat(product.price).toLocaleString('en-US');
+                                let availability = product.status === 'Available' ? 'selected' : '';
+                                let unavailable = product.status === 'Unavailable' ? 'selected' : '';
+
+                                productOptions += `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="product-info">
+                                <label>${product.name} - ${product.size} (₱${formattedPrice})</label>
+                            </div>
+                            <div>
+                                <select class="form-control product-status" data-product-id="${product.id}">
+                                    <option value="Available" ${availability}>Available</option>
+                                    <option value="Unavailable" ${unavailable}>Unavailable</option>
+                                </select>
+                            </div>
+                        </div>`;
+                            });
+                        }
+
+                        Swal.fire({
+                            title: 'Edit Product Availability',
+                            html: `<div>${productOptions}</div>`,
+                            showCancelButton: true,
+                            confirmButtonText: 'Update',
+                            preConfirm: () => {
+                                let updates = [];
+                                $('.product-status').each(function () {
+                                    let productId = $(this).data('product-id');
+                                    let status = $(this).val();
+                                    updates.push({ product_id: productId, status: status });
+                                });
+                                return updates;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed && data.products.length > 0) {
+                                $.ajax({
+                                    url: '../endpoints/product/update_product_availability_business.php',
+                                    type: 'POST',
+                                    data: {
+                                        business_id: businessId,
+                                        updates: JSON.stringify(result.value)
+                                    },
+                                    dataType: 'json',
+                                    success: function (updateData) {
+                                        if (updateData.success) {
+                                            Swal.fire({
+                                                title: 'Updated!',
+                                                text: 'Product availability updated.',
+                                                icon: 'success'
+                                            }).then(() => {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            Swal.fire('Error!', 'Failed to update availability.', 'error');
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error!', 'Failed to fetch products.', 'error');
+                    }
                 }
             });
         }
