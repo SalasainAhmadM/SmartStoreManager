@@ -199,9 +199,15 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
 
                 const products = (productsByBusiness[selectedBusiness] || []).filter(product => product.status !== 'Unavailable');
                 let productOptions = '<option value="">Select a Product</option>';
-                products.forEach((product) => {
-                    productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
-                });
+                        const uniqueProducts = new Set();
+
+                        products.forEach((product) => {
+                            const productKey = `${product.id}-${product.name}-${product.size}-${product.price}`;
+                            if (!uniqueProducts.has(productKey) && product.status !== 'Unavailable') {
+                                uniqueProducts.add(productKey);
+                                productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
+                            }
+                        });
 
                 // Get the current date in Asia/Manila timezone
                 const today = new Date().toLocaleDateString("en-CA", {

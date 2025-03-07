@@ -4,6 +4,8 @@ require 'vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+date_default_timezone_set('Asia/Manila'); // Set timezone to Manila
+
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
@@ -15,7 +17,7 @@ $selectedBranch = $_POST['selectedBranch'] ?? 'No Branch Selected';
 $productId = $_POST['product_id'] ?? 'N/A';
 $selectedProduct = $_POST['selectedProduct'] ?? 'No Product Selected';
 $productPrice = $_POST['productPrice'] ?? 0;
-$dateToday = date('Y-m-d');
+$dateToday = date('Y-m-d'); // Now using Asia/Manila timezone
 
 // Set headers
 $sheet->setCellValue('A1', 'Business Name')->getStyle('A1')->getFont()->setBold(true);

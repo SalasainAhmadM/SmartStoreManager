@@ -160,9 +160,11 @@ WHERE b.owner_id = ? AND s.date = ?
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-chart-line me-2"></i> Track Sales</b></h1>
-
+                    <button id="uploadWholeDataButton" class="btn btn-success mt-2">
+                        <i class="fa-solid fa-upload"></i> Upload Multiple Data
+                    </button>
                     <!-- Search Bar for Sales -->
-                    <div class="mt-5 d-flex justify-content-between align-items-center gap-2">
+                    <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
                         <!-- Search Bar -->
                         <form class="d-flex flex-grow-1" role="search">
                             <input id="saleSearchBar" class="form-control w-50" type="search"
@@ -263,6 +265,70 @@ WHERE b.owner_id = ? AND s.date = ?
     </div>
 
     <script>
+        document.getElementById("uploadWholeDataButton").addEventListener("click", function () {
+            // Fetch businesses owned by the logged-in user
+            fetch('../endpoints/sales/get_businesses.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Generate options for the business dropdown
+                    let businessOptions = '<option value="" disabled selected>Select Business</option>';
+                    data.forEach(business => {
+                        businessOptions += `<option value="${business.id}">${business.name}</option>`;
+                    });
+
+                    // Display the SweetAlert modal with the populated business dropdown
+                    Swal.fire({
+                        title: 'Upload or Download Data',
+                        html: `
+                    <label for="businessSalesSelect">Business</label>
+                    <select id="businessSalesSelect" class="form-control mb-2">${businessOptions}</select>
+                    <div class="mt-3 mb-3 position-relative">
+                        <form id="uploadForm" action="../import_excel_display_whole_sales.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                            <i class="fa-solid fa-upload"></i>
+                            <label for="file" class="mb-2">Upload Data:</label>
+                            <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                            <input type="submit" value="Upload Excel" class="form-control">
+                        </form>
+                        <form id="downloadForm" action="../export_excel_add_whole_sales.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                            <input type="hidden" name="business_id" id="hiddenBusinessId" value="">
+                            <button class="btn btn-success" type="submit" id="downloadButton" disabled>
+                                <i class="fa-solid fa-download"></i> Download Data Template
+                            </button>
+                        </form>
+                    </div>
+                `,
+                        showConfirmButton: false, // Remove default confirmation button
+                        customClass: {
+                            popup: 'swal2-modal-wide' // Optional for larger modals
+                        },
+                        didOpen: () => {
+                            // Add an event listener to the business dropdown to update the hidden input
+                            const businessSalesSelect = document.getElementById('businessSalesSelect');
+                            const hiddenBusinessId = document.getElementById('hiddenBusinessId');
+                            const downloadButton = document.getElementById('downloadButton');
+
+                            businessSalesSelect.addEventListener('change', () => {
+                                hiddenBusinessId.value = businessSalesSelect.value;
+                                downloadButton.disabled = false; // Enable download button once a business is selected
+                            });
+
+                            // Initially disable the download button
+                            downloadButton.disabled = true;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching businesses:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to fetch businesses. Please try again.',
+                    });
+                });
+        });
+
+
+
         document.getElementById("uploadDataButton").addEventListener("click", function () {
             const selectedBusiness = document.getElementById("businessSelect").value;
 
@@ -291,9 +357,16 @@ WHERE b.owner_id = ? AND s.date = ?
 
                         const products = (productsByBusiness[selectedBusiness] || []).filter(product => product.status !== 'Unavailable');
                         let productOptions = '<option value="">Select a Product</option>';
+                        const uniqueProducts = new Set();
+
                         products.forEach((product) => {
-                            productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
+                            const productKey = `${product.id}-${product.name}-${product.size}-${product.price}`;
+                            if (!uniqueProducts.has(productKey) && product.status !== 'Unavailable') {
+                                uniqueProducts.add(productKey);
+                                productOptions += `<option value="${product.id}" data-price="${product.price}">${product.name} - ${product.size} (₱${product.price})</option>`;
+                            }
                         });
+
 
                         Swal.fire({
                             title: "Upload or Download Data",

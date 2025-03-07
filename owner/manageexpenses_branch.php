@@ -48,8 +48,10 @@ $stmt->close();
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-wallet me-2"></i> Manage Expenses</b></h1>
-
-                    <div class="mt-5 position-relative manage-expenses">
+                    <button id="uploadWholeDataButton" class="btn btn-success mt-2">
+                        <i class="fa-solid fa-upload"></i> Upload Multiple Data
+                    </button>
+                    <div class="mt-2 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
 
@@ -110,7 +112,8 @@ $stmt->close();
                                 <h2>Expenses List for <span id="businessName"></span> - Branch: <span
                                         id="branchName"></span>
                                     for the month of <span id="currentMonthYear"></span>
-                                    <i class="fas fa-info-circle" onclick="showInfo('Expenses List', 'This section shows the expenses incurred by the selected business or branch for the specified month.');"></i>
+                                    <i class="fas fa-info-circle"
+                                        onclick="showInfo('Expenses List', 'This section shows the expenses incurred by the selected business or branch for the specified month.');"></i>
                                 </h2>
                             </div>
 
@@ -197,10 +200,32 @@ $stmt->close();
                 const printButton = document.getElementById('expensesListTable');
                 printButton.setAttribute('onclick', `printContent('expensesPanel', 'Expenses List for ${businessName} - Branch: ${branchName} for the month of ${currentMonth} ${currentYear}')`);
             });
-        </script>
 
+            document.getElementById('uploadWholeDataButton').addEventListener('click', function () {
+                Swal.fire({
+                    title: 'Upload or Download Data',
+                    html: `
+                <div class="mt-3 mb-3 position-relative">
+                    <form action="../import_expense_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                        <i class="fa-solid fa-upload"></i>
+                        <label for="file" class="mb-2">Upload Data:</label>
+                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                        <input type="submit" value="Upload Excel" class="form-control">
+                    </form>
+                    <form action="../export_expense_excel.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa-solid fa-download"></i> Download Data Template
+                        </button>
+                    </form>
+                </div>
+                `,
+                    showConfirmButton: false, // Remove default confirmation button
+                    customClass: {
+                        popup: 'swal2-modal-wide' // Optional for larger modals
+                    }
+                });
+            });
 
-        <script>
             function getPrintReportTitle() {
                 const businessSelect = document.getElementById('businessSelect');
                 const branchSelect = document.getElementById('branchSelect');
@@ -212,6 +237,25 @@ $stmt->close();
 
                 return `Expenses List Report for ${businessName} <br> Branch: ${branchName} for the month of ${currentMonth} ${currentYear}`;
             }
+
+            function removeQueryParam() {
+                const newUrl = window.location.pathname; // Get the base URL without parameters
+                window.history.replaceState({}, document.title, newUrl); // Update the URL without refreshing
+            }
+            // Show success alert if "?imported=true" exists in the URL
+            window.onload = function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('imported')) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Data imported successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        removeQueryParam();
+                    });
+                }
+            };
         </script>
 
 
