@@ -684,7 +684,8 @@ while ($row = $resultTrends->fetch_assoc()) {
 
 
 // Add this function to your PHP script
-function fetchFilteredData($owner_id, $selectedMonth) {
+function fetchFilteredData($owner_id, $selectedMonth)
+{
     global $conn;
 
     // Validate input
@@ -829,25 +830,31 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
 
                             <div class="col-md-7">
-                                <h5 class="mt-5"><b>Financial Overview:</b></h5>
+                                <h5 class="mt-5"><b>Financial Overview <i class="fas fa-info-circle"
+                                            onclick="showInfo(' Financial Overview', 'This graph displays all the financial overview of your business/businesses.');"></i></b>
+                                </h5>
 
                                 <!-- Original Chart -->
                                 <div class="chart-container mb-4">
                                     <canvas id="financialChart"></canvas>
                                     <button class="btn btn-dark mt-2 mb-5" id="printChartButton">
-                                    <i class="fas fa-print me-2"></i> Generate Report
-                                </button>
+                                        <i class="fas fa-print me-2"></i> Generate Report
+                                    </button>
                                 </div>
 
                                 <!-- Sales vs Expenses Chart -->
                                 <div class="chart-container mb-4">
-                                    <h6>Sales vs Expenses</h6>
-                                    <canvas id="salesExpensesChart"></canvas>                         
+                                    <h6>Sales vs Expenses <i class="fas fa-info-circle"
+                                            onclick="showInfo(' Sales vs Expenses', 'This graph displays all the sales vs expenses.');"></i>
+                                    </h6>
+                                    <canvas id="salesExpensesChart"></canvas>
                                 </div>
 
-                                <div class="mt-3">    
-                                    <label for="monthFilter"><b>Filter Sales vs Expenses by Month (<?php echo date("Y"); ?>):</b></label>
-                                    <select id="monthFilter" class="form-control" onchange="filterSalesExpensesByMonth(this.value)">
+                                <div class="mt-3">
+                                    <label for="monthFilter"><b>Filter Sales vs Expenses by Month
+                                            (<?php echo date("Y"); ?>):</b></label>
+                                    <select id="monthFilter" class="form-control"
+                                        onchange="filterSalesExpensesByMonth(this.value)">
                                         <option value="0">Select Month</option>
                                         <option value="1">January</option>
                                         <option value="2">February</option>
@@ -863,21 +870,26 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                         <option value="12">December</option>
                                     </select>
                                 </div>
-                                <button class="btn btn-dark mt-2 mb-5" onclick="printFinancialOverviewAndSalesvsExpensesTable()">
+                                <button class="btn btn-dark mt-2 mb-5"
+                                    onclick="printFinancialOverviewAndSalesvsExpensesTable()">
                                     <i class="fas fa-print me-2"></i> Generate Report
                                 </button>
-                            
+
 
 
                                 <!-- Profit Margin Chart -->
                                 <div class="chart-container mb-4">
-                                    <h6>Profit Margin Trends</h6>
+                                    <h6>Profit Margin Trends <i class="fas fa-info-circle"
+                                            onclick="showInfo(' Profit Margin Trends', 'This graph displays all the profit margin trends.');"></i>
+                                    </h6>
                                     <canvas id="profitMarginChart"></canvas>
                                 </div>
 
                                 <!-- Cash Flow Chart -->
                                 <div class="chart-container mb-4">
-                                    <h6>Monthly Cash Flow</h6>
+                                    <h6>Monthly Cash Flow <i class="fas fa-info-circle"
+                                            onclick="showInfo(' Monthly Cash Flow', 'This graph displays all the cash inflow and cash outflow.');"></i>
+                                    </h6>
                                     <canvas id="cashFlowChart"></canvas>
                                 </div>
 
@@ -890,12 +902,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison</i></h1>
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo(' Business Comparison', 'This graph displays all the comparison of all your businesses with sales and expenses.');"></i></i>
+                            </h1>
                             <div class="row">
                                 <!-- Business Performance Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Business Performance Comparison</b></h5>
+                                        <h5 class="mt-5"><b>Business Performance Comparison </b></h5>
                                         <canvas id="businessPerformanceChart"></canvas>
                                     </div>
                                 </div>
@@ -911,7 +926,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-pie"></i> Expense Breakdown</b></h1>
+                            <h1><b><i class="fa-solid fa-chart-pie"></i> Expense Breakdown <i class="fas fa-info-circle"
+                                        onclick="showInfo(' Expense Breakdown', 'This graph displays all the category-wise expenses and recurring vs. one-time expenses.');"></i>
+                                </b></h1>
                             <div class="row">
                                 <!-- Category-Wise Expenses -->
                                 <div class="col-md-6">
@@ -924,7 +941,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <!-- Recurring vs. One-Time Expenses -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Recurring vs. One-Time Expenses</b></h5>
+                                        <h5 class="mt-5"><b>Recurring vs. One-Time Expenses </b>
+                                        </h5>
                                         <canvas id="recurringExpenseChart"></canvas>
                                     </div>
                                 </div>
@@ -932,7 +950,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-boxes-stacked"></i> Inventory Management</b></h1>
+                            <h1><b><i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo('Inventory Product Sold', 'This graph displays all the products sold, stock levels and stock turover over time.');"></i>
+                                </b></h1>
                             <div class="row">
                                 <!-- Stock Levels Chart -->
                                 <div class="col-md-6">
@@ -953,7 +974,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Key Performance Indicators (KPIs)</b></h1>
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Key Performance Indicators (KPIs) <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo(' Key Performance Indicators', 'This chart displays all the gross profit, revenue growth rate and return of investment.');"></i></b>
+                            </h1>
                             <div class="row">
                                 <!-- Gross Profit Percentage -->
                                 <div class="col-md-4">
@@ -986,7 +1010,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Forecasting & Predictions</b></h1>
+                            <h1><b><i class="fa-solid fa-chart-line"></i> Forecasting & Predictions <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo(' Forecasting & Predictions', 'This graph displays all the sales forecast and expense forecast.');"></i></b>
+                            </h1>
                             <div class="row">
                                 <!-- Sales Forecast -->
                                 <div class="col-md-6">
@@ -1007,7 +1034,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-box"></i> Product/Service Analysis</b></h1>
+                            <h1><b><i class="fa-solid fa-box"></i> Product/Service Analysis <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo(' Product/Service Analysis', 'This graph displays all the top-selling products/services and low-performing products/serices.');"></i></b>
+                            </h1>
                             <div class="row">
                                 <!-- Top-Selling Products Chart -->
                                 <div class="col-md-6">
@@ -1028,14 +1058,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <!-- Product Profitability Chart -->
                                 <div class="col-md-12">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5 mb-3"><b>Product/Service Profitability Analysis</b></h5>
+                                        <h5 class="mt-5 mb-3"><b>Product/Service Profitability Analysis<i
+                                                    class="fas fa-info-circle"
+                                                    onclick="showInfo(' Product/Service Profitability Analysis', 'This graph displays all the products/services profitability analysis.');"></i></b>
+                                        </h5>
                                         <canvas id="productProfitabilityChart"></canvas>
                                     </div>
                                 </div>
 
                                 <!-- Customer Demographics -->
                                 <div class="col-md-12 mt-5">
-                                    <h1><b><i class="fa-solid fa-users"></i> Customer Demographics</b></h1>
+                                    <h1><b><i class="fa-solid fa-users"></i> Customer Demographics <i
+                                                class="fas fa-info-circle"
+                                                onclick="showInfo(' Customer Demographics', 'This graph displays all the top products by location.');"></i></b>
+                                    </h1>
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
@@ -1044,7 +1080,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Trend Analysis -->
                                 <div class="col-md-12 mt-5">
-                                    <h1><b><i class="fa-solid fa-chart-line"></i> Trend Analysis</b></h1>
+                                    <h1><b><i class="fa-solid fa-chart-line"></i> Trend Analysis<i
+                                                class="fas fa-info-circle"
+                                                onclick="showInfo(' Trend Analysis', 'This graph displays all the seasonal trends and growth rate analysis.');"></i></b>
+                                    </h1>
                                     <div class="row">
                                         <!-- Seasonal Trends Chart -->
                                         <div class="col-md-6">
@@ -1069,11 +1108,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
-                                <h1><b><i class="fa-solid fa-boxes icon"></i> Popular Products</b></h1>
+                                <h1><b><i class="fa-solid fa-boxes icon"></i> Popular Products<i
+                                            class="fas fa-info-circle"
+                                            onclick="showInfo(' Popular Products', 'This graph displays all the popular products and can be filtered also by months.');"></i></b>
+                                </h1>
                                 <div class="col-md-12 dashboard-content">
                                     <div class="mb-3">
-                                    <label for="monthFilter"><b>Filter by Month (<?php echo date("Y"); ?>):</b></label>
-                                        <select id="monthFilter" class="form-control" onchange="filterProductsByMonth(this.value)">
+                                        <label for="monthFilter"><b>Filter by Month
+                                                (<?php echo date("Y"); ?>):</b></label>
+                                        <select id="monthFilter" class="form-control"
+                                            onchange="filterProductsByMonth(this.value)">
                                             <option value="0">All Time</option>
                                             <option value="1">January</option>
                                             <option value="2">February</option>
@@ -1092,12 +1136,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <table class="table table-hover" id="product-table">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>Product <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Business <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Type <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Price <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Description <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
-                                                <th>Total Sales <button class="btn text-white"><i class="fas fa-sort"></i></button></th>
+                                                <th>Product <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Business <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Type <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Price <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Description <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
+                                                <th>Total Sales <button class="btn text-white"><i
+                                                            class="fas fa-sort"></i></button></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1114,7 +1164,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found</td>
+                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
+                                                    </td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
@@ -1122,7 +1173,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <button class="btn btn-primary mt-2 mb-5" onclick="printPopularProducts()">
                                         <i class="fas fa-print me-2"></i> Generate Report
                                     </button>
-                                </div>                              
+                                </div>
                             </div>
                         </div>
 
@@ -1131,7 +1182,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <!--  -->
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds</b></h1>
+                            <h1><b><i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds <i
+                                        class="fas fa-info-circle"
+                                        onclick="showInfo('Alerts & Thresholds ', 'This graph displays all the expense threshold breach and threshold breaches.');"></i></b>
+                            </h1>
                             <div class="row">
                                 <!-- Expense Threshold Bar Chart -->
                                 <div class="col-md-8">
@@ -1153,7 +1207,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <div id="recentActivitiesSection">
                             <div class="col-md-12 mt-5">
-                                <h1><b><i class="fas fa-bell"></i> Activity Log</b></h1>
+                                <h1><b><i class="fas fa-bell"></i> Activity Log <i class="fas fa-info-circle"
+                                            onclick="showInfo(' Activity Log', 'This table displays all the latest activities.');"></i></b>
+                                </h1>
                                 <div class="col-md-12 dashboard-content">
                                     <table class="table table-hover">
                                         <thead class="table-dark">
@@ -1695,29 +1751,29 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
-        
 
 
 
-    
+
+
     <script>
-    function filterProductsByMonth(selectedMonth) {
-        // Get the owner ID from the session or URL
-        const ownerId = <?php echo json_encode($owner_id); ?>;
+        function filterProductsByMonth(selectedMonth) {
+            // Get the owner ID from the session or URL
+            const ownerId = <?php echo json_encode($owner_id); ?>;
 
-        // Send an AJAX request to fetch filtered products
-        fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
-            .then(response => response.json())
-            .then(data => {
-                // Clear the existing table rows
-                const tableBody = document.querySelector('#product-table tbody');
-                tableBody.innerHTML = '';
+            // Send an AJAX request to fetch filtered products
+            fetch(`../endpoints/filter_products.php?owner_id=${ownerId}&month=${selectedMonth}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear the existing table rows
+                    const tableBody = document.querySelector('#product-table tbody');
+                    tableBody.innerHTML = '';
 
-                // Populate the table with the filtered data
-                if (data.length > 0) {
-                    data.forEach(product => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                    // Populate the table with the filtered data
+                    if (data.length > 0) {
+                        data.forEach(product => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
                             <td>${product.product_name}</td>
                             <td>${product.business_name}</td>
                             <td>${product.type}</td>
@@ -1725,21 +1781,21 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <td>${product.description}</td>
                             <td>₱${parseFloat(product.total_sales).toFixed(2)}</td>
                         `;
-                        tableBody.appendChild(row);
-                    });
-                } else {
-                    // If no products are found, display a message
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        // If no products are found, display a message
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
                         <td colspan="6" style="text-align: center;">No Popular Products Found</td>
                     `;
-                    tableBody.appendChild(row);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching filtered products:', error);
-            });
-    }
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching filtered products:', error);
+                });
+        }
     </script>
 
     <script>

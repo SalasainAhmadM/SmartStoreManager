@@ -205,9 +205,9 @@ WHERE b.owner_id = ? AND s.date = ?
 
 
 
-                    <h2 class="mt-5 mb-3"><b>Sales Log</b> <i class="fas fa-info-circle"
-                            onclick="showInfo('Sales Log', 
-                        'A sales log is a record of all transactions, tracking what was sold, when, and for how much. It helps businesses monitor revenue, analyze trends, and keep finances organized.');">
+                    <h2 class="mt-5 mb-3"><b>Sales Report</b> <i class="fas fa-info-circle"
+                            onclick="showInfo('Sales Report', 
+                        'A sales report is a record of all transactions, tracking what was sold, when, and for how much. It helps businesses monitor revenue, analyze trends, and keep finances organized.');">
                         </i>
                     </h2>
 
@@ -220,7 +220,7 @@ WHERE b.owner_id = ? AND s.date = ?
                                     <input id="saleSearchBar" class="form-control me-2 w-50" type="search"
                                         placeholder="Search branch.." aria-label="Search" style="visibility:hidden;">
                                 </form>
-                                <!-- Date Filter Button for Sales Log -->
+                                <!-- Date Filter Button for Sales Report -->
                                 <div class="position-absolute top-0 end-0 mt-2 me-2">
                                     <button class="btn btn-success" id="filterDateButton">
                                         <i class="fas fa-calendar-alt me-2"></i> Filter by Date
@@ -252,8 +252,8 @@ WHERE b.owner_id = ? AND s.date = ?
                         </table>
 
                         <button class="btn btn-primary mt-2 mb-5" id="salesLogTable"
-                            onclick="printContent('salesLogTableSection', 'Sales Log Report')">
-                            <i class="fas fa-print me-2"></i> Generate Report (Sales Log)
+                            onclick="printContent('salesLogTableSection', 'Sales Report')">
+                            <i class="fas fa-print me-2"></i> Generate Report (Sales Report)
                         </button>
 
                     </div>
