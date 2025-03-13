@@ -110,8 +110,9 @@ function showBusinessData(businessName) {
     }
 }
 
+
 // Sales vs Expenses Chart
-function updateSalesExpensesChart(data) {
+function updateSalesExpensesChart(data, selectedMonth = null) {
     const ctx = document.getElementById('salesExpensesChart').getContext('2d');
     
     // Function to group data by time period
@@ -121,6 +122,11 @@ function updateSalesExpensesChart(data) {
         data.forEach(item => {
             let key;
             const date = new Date(item.date);
+            
+            // Filter by selected month if provided
+            if (selectedMonth !== null && date.getMonth() + 1 !== selectedMonth) {
+                return;
+            }
             
             switch(period) {
                 case 'daily':
@@ -282,6 +288,14 @@ function updateSalesExpensesChart(data) {
     firstButton.classList.add('active');
     firstButton.style.backgroundColor = '#6c757d';
 }
+// Function to filter Sales vs Expenses by month
+function filterSalesExpensesByMonth(selectedMonth) {
+    const month = parseInt(selectedMonth, 10);
+    updateSalesExpensesChart(dailyData, month);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    updateSalesExpensesChart(dailyData);
+});
 
 // Profit Margin Chart
 function updateProfitMarginChart(data) {
@@ -424,7 +438,69 @@ document.getElementById('printChartButton').addEventListener('click', function()
         }, 500); // Adjust the delay if needed
     }, 500); // Adjust the delay if needed
 });
+// Print Financial Overview and Sales vs Expenses Table
+function printFinancialOverviewAndSalesvsExpensesTable() {
+    // Open a new window for printing
+    const printWindow = window.open('', '', 'height=600,width=800');
 
+    // Write the HTML structure for the new window
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Sales vs Expenses Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    canvas { max-width: 100%; height: auto; }
+
+                    /* Define print-specific styles */
+                    @media print {
+                        @page {
+                            size: landscape; /* Set the page orientation to landscape */
+                            margin: 2cm; /* Add margins */
+                        }
+                        body {
+                            margin: 0; /* Remove default body margin */
+                        }
+                        h1 {
+                            text-align: center; /* Center the title */
+                            margin-bottom: 1cm; /* Add space below the title */
+                        }
+                        canvas {
+                            width: 100%; /* Ensure the chart fills the width */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Sales vs Expenses Report</h1>
+                <div>
+                    <canvas id="printChart" width="800" height="400"></canvas>
+                </div>
+            </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    // Wait for the content to load, then render the chart
+    setTimeout(function () {
+        const printCanvas = printWindow.document.getElementById('printChart');
+        const printCtx = printCanvas.getContext('2d');
+
+        // Clone the original chart data and options
+        const originalChart = salesExpensesChart;
+        const clonedChart = new Chart(printCtx, {
+            type: originalChart.config.type,
+            data: JSON.parse(JSON.stringify(originalChart.config.data)),
+            options: JSON.parse(JSON.stringify(originalChart.config.options))
+        });
+
+        setTimeout(() => {
+            printWindow.print();
+        }, 500); // Adjust the delay if needed
+    }, 500); // Adjust the delay if needed
+}
 // Business Performance Comparison Chart
 function updateBusinessPerformanceChart() {
     const ctx = document.getElementById('businessPerformanceChart').getContext('2d');

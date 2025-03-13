@@ -169,7 +169,7 @@ foreach (range('A', 'F') as $col) {
 }
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="expense_template.xlsx"');
+header('Content-Disposition: attachment;filename="Expense_Template.xlsx"');
 header('Cache-Control: max-age=0');
 
 $writer = new Xlsx($spreadsheet);

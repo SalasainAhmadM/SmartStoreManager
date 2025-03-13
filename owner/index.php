@@ -826,7 +826,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                             </div>
 
-                            <script>document.addEventListener('DOMContentLoaded', function () {
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
                                     document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
                                         checkbox.addEventListener('change', function () {
                                             const branchLocation = this.getAttribute('data-branch');
@@ -906,6 +907,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                         <option value="12">December</option>
                                     </select>
                                 </div>
+
                                 <button class="btn btn-dark mt-2 mb-5"
                                     onclick="printFinancialOverviewAndSalesvsExpensesTable()">
                                     <i class="fas fa-print me-2"></i> Generate Report
