@@ -115,9 +115,7 @@ $salesData = fetchSalesData($owner_id);
                         <b><i class="fas fa-chart-bar me-2"></i> View Reports</b>
                     </h1>
 
-                    <h5 class="mt-5"><b>Business Overview:</b> <i class="fas fa-info-circle"
-                            onclick="showInfo('Business Overview', 'This table provides an overview of each business, including total sales and expenses.');"></i>
-                    </h5>
+                    <h5 class="mt-5"><b>Business Overview:</b> <i class="fas fa-info-circle" onclick="showInfo('Business Overview', 'This table provides an overview of each business, including total sales and expenses.');"></i></h5>
 
                     <div class="table-container scrollable-table-two">
                         <table class="table table-striped table-hover mt-4">
@@ -178,92 +176,39 @@ $salesData = fetchSalesData($owner_id);
                 const data = await response.json();
 
                 if (data.error) {
-                    Swal.fire('Error', data.error, 'error');
+                    alert(data.error);
                     return;
                 }
 
                 const { business, branches } = data;
-                let branchCheckboxes = '';
 
-                // Generate checkboxes for branches (if available)
+                // Initialize combined totals
+                let combinedSales = parseFloat(business.total_sales) || 0;
+                let combinedExpenses = parseFloat(business.total_expenses) || 0;
+
+                // Create branch table rows
+                let branchDetails = '';
                 if (branches.length > 0) {
                     branches.forEach(branch => {
-                        branchCheckboxes += `
-                    <div>
-                        <input type="checkbox" class="branch-checkbox" value="${branch.id}" checked>
-                        <label>${branch.location}</label>
-                    </div>`;
+                        branchDetails += `
+                <tr>
+                    <td>${branch.location}</td>
+                    <td>₱${parseFloat(branch.sales).toLocaleString()}</td>
+                    <td>₱${parseFloat(branch.expenses).toLocaleString()}</td>
+                </tr>`;
+                        combinedSales += parseFloat(branch.sales);
+                        combinedExpenses += parseFloat(branch.expenses);
                     });
                 } else {
-                    branchCheckboxes = `<p style="color: gray;">No branches available.</p>`;
+                    // Display "No Branch Found."
+                    branchDetails = `
+            <tr>
+                <td colspan="3" style="text-align: center;">No Branch Found.</td>
+            </tr>`;
                 }
 
-                // Construct the SweetAlert modal
-                Swal.fire({
-                    title: 'Select Business & Branches',
-                    html: `
-                <div>
-                    <input type="checkbox" id="business-checkbox" value="${business.id}" checked>
-                    <label><strong>${business.name}</strong></label>
-                </div>
-                <hr>
-                <h5>Branches</h5>
-                ${branchCheckboxes}
-            `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Proceed',
-                    cancelButtonText: 'Cancel',
-                    preConfirm: () => {
-                        // Get selected checkboxes
-                        const selectedBusiness = document.getElementById('business-checkbox').checked ? business.id : null;
-                        const selectedBranches = [...document.querySelectorAll('.branch-checkbox:checked')].map(cb => cb.value);
-
-                        // Allow proceeding if either the business or at least one branch is selected
-                        if (!selectedBusiness === 0) {
-                            Swal.showValidationMessage('Please select at least one option.');
-                            return false;
-                        }
-
-                        return { selectedBusiness, selectedBranches };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        showBusinessReport(result.value.selectedBusiness, result.value.selectedBranches, business, branches);
-                    }
-                });
-
-            } catch (error) {
-                console.error('Error fetching branch details:', error);
-                Swal.fire('Error', 'Failed to fetch branch details.', 'error');
-            }
-        }
-
-        // Function to show the business report based on selection
-        function showBusinessReport(selectedBusiness, selectedBranches, business, branches) {
-            let filteredBranches = branches.filter(branch => selectedBranches.includes(branch.id.toString()));
-            let combinedSales = parseFloat(business.total_sales) || 0;
-            let combinedExpenses = parseFloat(business.total_expenses) || 0;
-
-            let branchDetails = filteredBranches.map(branch => `
-        <tr>
-            <td>${branch.location}</td>
-            <td>₱${parseFloat(branch.sales).toLocaleString()}</td>
-            <td>₱${parseFloat(branch.expenses).toLocaleString()}</td>
-        </tr>`).join('');
-
-            if (!branchDetails) {
-                branchDetails = `<tr><td colspan="3" style="text-align: center;">No Branch Selected.</td></tr>`;
-            }
-
-            // If branches exist, add their sales & expenses
-            if (filteredBranches.length > 0) {
-                filteredBranches.forEach(branch => {
-                    combinedSales += parseFloat(branch.sales);
-                    combinedExpenses += parseFloat(branch.expenses);
-                });
-            }
-
-            const content = `
+                // Construct UI
+                const content = `
         <div>
             <h3>${business.name}</h3>
             <table class="table table-bordered">
@@ -294,19 +239,25 @@ $salesData = fetchSalesData($owner_id);
                 </tbody>
             </table>
             <hr>
-            <p><b>Total Sales:</b> ₱${combinedSales.toLocaleString()}</p>
-            <p><b>Total Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
-            <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(filteredBranches)}, ${JSON.stringify(business)})'>
+            <p><b>Total Business/Branch Sales:</b> ₱${combinedSales.toLocaleString()}</p>
+            <p><b>Total Business/Branch Expenses:</b> ₱${combinedExpenses.toLocaleString()}</p>
+            <button class="swal2-print-btn" onclick='printBranchReport("${business.name}", ${JSON.stringify(branches)}, ${JSON.stringify(business)})'>
                 <i class="fas fa-print me-2"></i> Generate Report
             </button>
         </div>`;
 
-            Swal.fire({
-                title: 'Business Details',
-                html: content,
-                width: '50%',
-                showConfirmButton: false
-            });
+                // Display content using SweetAlert2
+                Swal.fire({
+                    title: 'Business Details',
+                    html: content,
+                    width: '50%',
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error('Error fetching branch details:', error);
+                alert('Failed to fetch branch details.');
+            }
         }
 
 

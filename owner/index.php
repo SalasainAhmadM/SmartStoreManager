@@ -794,27 +794,25 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                             // Branch-Level Table
                                             echo '<table class="table table-striped table-hover mt-4">';
-                                            echo '<thead class="table-dark"><tr><th>Branches</th><th>Total Sales (₱)</th><th>Total Expenses (₱)</th></tr></thead>';
+                                            echo '<thead class="table-dark"><tr><th>Branches</th><th>Total Sales (₱)</th><th>Total Expenses (₱)</th><th>Include in Chart</th></tr></thead>';
                                             echo '<tbody>';
 
                                             // Loop through each branch of the business and display the expenses
                                             foreach ($branches as $branchLocation) {
                                                 if ($branchLocation === 'No Branch for this Business') {
-                                                    echo '<tr><td colspan="3" class="text-center">No Branch for this Business</td></tr>';
+                                                    echo '<tr><td colspan="4" class="text-center">No Branch for this Business</td></tr>';
                                                 } else {
                                                     $totalSales = $processedData[$businessName][$branchLocation]['sales'] ?? null;
                                                     $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'] ?? null;
                                                     echo '<tr>';
-                                                    echo '<td>';
-                                                    echo '<input type="checkbox" class="branch-checkbox" data-business="' . $businessName . '" data-branch="' . $branchLocation . '" checked onchange="updateCharts()">';
-                                                    echo ' ' . $branchLocation;
-                                                    echo '</td>';
+                                                    echo '<td>' . $branchLocation . '</td>';
                                                     if ($totalSales !== null || $totalExpenses !== null) {
                                                         echo '<td>' . number_format($totalSales, 2) . '</td>';
                                                         echo '<td>' . number_format($totalExpenses, 2) . '</td>';
                                                     } else {
                                                         echo '<td colspan="2" class="text-center">No Data Available</td>';
                                                     }
+                                                    echo '<td><input type="checkbox" class="branch-checkbox" data-branch="' . $branchLocation . '" checked></td>';
                                                     echo '</tr>';
                                                 }
                                             }
@@ -827,6 +825,45 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     ?>
                                 </div>
                             </div>
+
+                            <script>document.addEventListener('DOMContentLoaded', function () {
+                                    document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
+                                        checkbox.addEventListener('change', function () {
+                                            const branchLocation = this.getAttribute('data-branch');
+                                            if (!this.checked) {
+                                                removeBranchFromChart(branchLocation);
+                                            } else {
+                                                addBranchToChart(branchLocation);
+                                            }
+                                        });
+                                    });
+                                });
+
+                                function removeBranchFromChart(branchLocation) {
+                                    if (financialChart) {
+                                        const index = financialChart.data.labels.indexOf(branchLocation);
+                                        if (index !== -1) {
+                                            financialChart.data.labels.splice(index, 1);
+                                            financialChart.data.datasets[0].data.splice(index, 1);
+                                            financialChart.data.datasets[1].data.splice(index, 1);
+                                            financialChart.update();
+                                        }
+                                    }
+                                }
+
+                                function addBranchToChart(branchLocation) {
+                                    if (financialChart && selectedBusinessName) {
+                                        const branchData = chartData[selectedBusinessName][branchLocation];
+                                        if (branchData) {
+                                            financialChart.data.labels.push(branchLocation);
+                                            financialChart.data.datasets[0].data.push(branchData.sales);
+                                            financialChart.data.datasets[1].data.push(branchData.expenses);
+                                            financialChart.update();
+                                        }
+                                    }
+                                }
+                            </script>
+
 
                             <div class="col-md-7">
                                 <h5 class="mt-5"><b>Financial Overview <i class="fas fa-info-circle"
@@ -899,9 +936,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         </div>
 
-                        <script>
 
-                        </script>
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison <i
                                         class="fas fa-info-circle"
