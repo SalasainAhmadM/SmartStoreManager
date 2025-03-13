@@ -82,6 +82,25 @@ document.getElementById('printChartButton').addEventListener('click', function()
                 <style>
                     body { font-family: Arial, sans-serif; }
                     canvas { max-width: 100%; height: auto; }
+
+                    /* Define print-specific styles */
+                    @media print {
+                        @page {
+                            size: landscape; /* Set the page orientation to landscape */
+                            margin: 2cm; /* Add margins */
+                        }
+                        body {
+                            margin: 0; /* Remove default body margin */
+                        }
+                        h1 {
+                            text-align: center; /* Center the title */
+                            margin-bottom: 1cm; /* Add space below the title */
+                        }
+                        canvas {
+                            width: 100%; /* Ensure the chart fills the width */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
                 </style>
             </head>
             <body>
@@ -93,7 +112,6 @@ document.getElementById('printChartButton').addEventListener('click', function()
         </html>
     `);
     
-    // Close the document to finish loading
     printWindow.document.close();
 
     // Wait for the content to load, then render the chart
@@ -109,13 +127,11 @@ document.getElementById('printChartButton').addEventListener('click', function()
             options: JSON.parse(JSON.stringify(originalChart.config.options))
         });
 
-        // Wait for the chart to render, then trigger the print dialog
         setTimeout(() => {
             printWindow.print();
         }, 500); // Adjust the delay if needed
     }, 500); // Adjust the delay if needed
 });
-
 
 
 // Function to update all charts for a selected business

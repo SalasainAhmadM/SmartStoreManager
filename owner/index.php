@@ -765,7 +765,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                             <div class="col-md-5">
                                 <h5 class="mt-5"><b>Select Business:</b></h5>
-
                                 <div class="scroll-container">
                                     <?php
                                     if (empty($businessData)) {
@@ -806,7 +805,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                     $totalSales = $processedData[$businessName][$branchLocation]['sales'] ?? null;
                                                     $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'] ?? null;
                                                     echo '<tr>';
-                                                    echo '<td>' . $branchLocation . '</td>';
+                                                    echo '<td>';
+                                                    echo '<input type="checkbox" class="branch-checkbox" data-business="' . $businessName . '" data-branch="' . $branchLocation . '" checked onchange="updateCharts()">';
+                                                    echo ' ' . $branchLocation;
+                                                    echo '</td>';
                                                     if ($totalSales !== null || $totalExpenses !== null) {
                                                         echo '<td>' . number_format($totalSales, 2) . '</td>';
                                                         echo '<td>' . number_format($totalExpenses, 2) . '</td>';
@@ -825,9 +827,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     ?>
                                 </div>
                             </div>
-
-
-
 
                             <div class="col-md-7">
                                 <h5 class="mt-5"><b>Financial Overview <i class="fas fa-info-circle"
@@ -900,7 +899,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         </div>
 
+                        <script>
 
+                        </script>
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison <i
                                         class="fas fa-info-circle"
