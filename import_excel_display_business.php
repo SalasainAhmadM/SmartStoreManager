@@ -25,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $stmt->close();
 
     // Insert products
-    $stmt = $conn->prepare("INSERT INTO products (name, description, price, type, business_id) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO products (name, description, price, size, type, business_id) VALUES (?, ?, ?, ?, ?, ?)");
     foreach ($products as $product) {
-        $stmt->bind_param("ssssi", $product['name'], $product['description'], $product['price'], $product['type'], $business_id);
+        $stmt->bind_param("sssssi", $product['name'], $product['description'], $product['price'], $product['size'], $product['type'], $business_id);
         $stmt->execute();
     }
     $stmt->close();
@@ -71,7 +71,8 @@ if (isset($_FILES['file']['tmp_name'])) {
                 'name' => $name,
                 'type' => $sheet->getCell("B$row")->getValue(),
                 'price' => $sheet->getCell("C$row")->getValue(),
-                'description' => $sheet->getCell("D$row")->getValue()
+                'size' => $sheet->getCell("D$row")->getValue(),
+                'description' => $sheet->getCell("E$row")->getValue()
             ];
             $row++;
         }
@@ -131,6 +132,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <th>Name</th>
                         <th>Type</th>
                         <th>Price</th>
+                        <th>Size</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -140,6 +142,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                             <td><?php echo htmlspecialchars($product['name']); ?></td>
                             <td><?php echo htmlspecialchars($product['type']); ?></td>
                             <td><?php echo htmlspecialchars($product['price']); ?></td>
+                            <td><?php echo htmlspecialchars($product['size']); ?></td>
                             <td><?php echo htmlspecialchars($product['description']); ?></td>
                         </tr>
                     <?php endforeach; ?>
