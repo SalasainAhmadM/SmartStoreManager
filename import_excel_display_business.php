@@ -77,19 +77,30 @@ if (isset($_FILES['file']['tmp_name'])) {
             $row++;
         }
 
-        // Extract branch information (starting from Row 5 after products)
-        $branches = [];
-        $row2 = 17;
-        while (true) {
-            $location = $sheet->getCell("A$row2")->getValue();
-            if (empty($location))
-                break; // Stop if no more branches
+        // Find the "Locations" header row
+        $locationsHeaderRow = null;
+        for ($i = 1; $i <= $sheet->getHighestRow(); $i++) {
+            if (trim($sheet->getCell("A$i")->getValue()) === "Locations") {
+                $locationsHeaderRow = $i;
+                break;
+            }
+        }
 
-            $branches[] = [
-                'location' => $location,
-                'manager_id' => $sheet->getCell("B$row2")->getValue()
-            ];
-            $row2++;
+        // Extract branch information (starting from the row after the "Locations" header)
+        $branches = [];
+        if ($locationsHeaderRow !== null) {
+            $row = $locationsHeaderRow + 1; // Start from the row after the "Locations" header
+            while (true) {
+                $location = $sheet->getCell("A$row")->getValue();
+                if (empty($location))
+                    break; // Stop if no more branches
+
+                $branches[] = [
+                    'location' => $location,
+                    'manager_id' => $sheet->getCell("B$row")->getValue()
+                ];
+                $row++;
+            }
         }
 
         // Display the data in tables
