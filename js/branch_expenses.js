@@ -89,7 +89,20 @@ function fetchBranchExpenses(branchId, selectedMonth = new Date().getMonth() + 1
     }
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    // Get the business dropdown element
+    const businessSelect = document.getElementById('businessSelect');
 
+    // Check if there are businesses in the dropdown
+    if (businessSelect.options.length > 1) { // First option is "Select Business"
+        // Set the first business as the default selected option
+        businessSelect.selectedIndex = 1; // Index 1 is the first business
+
+        // Trigger the change event to load the expenses for the default business
+        const event = new Event('change');
+        businessSelect.dispatchEvent(event);
+    }
+});
 
 // Add event listeners for edit and delete actions
 document.getElementById('expensesList').addEventListener('click', function (e) {
