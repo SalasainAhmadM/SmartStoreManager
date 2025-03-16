@@ -18,16 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $branches = $data['branches'];
 
     // Insert business information
-    $stmt = $conn->prepare("INSERT INTO business (name, description, asset, employee_count, owner_id) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $businessInfo['name'], $businessInfo['description'], $businessInfo['asset_size'], $businessInfo['employee_count'], $owner_id);
+    $stmt = $conn->prepare("INSERT INTO business (name, description, asset, employee_count, location, owner_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssi", $businessInfo['name'], $businessInfo['description'], $businessInfo['asset_size'], $businessInfo['employee_count'], $businessInfo['location'], $owner_id);
     $stmt->execute();
     $business_id = $stmt->insert_id;
     $stmt->close();
 
     // Insert products
-    $stmt = $conn->prepare("INSERT INTO products (name, description, price, type, business_id) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO products (name, description, price, size, type, business_id) VALUES (?, ?, ?, ?, ?, ?)");
     foreach ($products as $product) {
-        $stmt->bind_param("ssssi", $product['name'], $product['description'], $product['price'], $product['type'], $business_id);
+        $stmt->bind_param("sssssi", $product['name'], $product['description'], $product['price'], $product['size'], $product['type'], $business_id);
         $stmt->execute();
     }
     $stmt->close();
@@ -56,7 +56,8 @@ if (isset($_FILES['file']['tmp_name'])) {
             'name' => $sheet->getCell('A2')->getValue(),
             'description' => $sheet->getCell('B2')->getValue(),
             'asset_size' => $sheet->getCell('C2')->getValue(),
-            'employee_count' => $sheet->getCell('D2')->getValue()
+            'employee_count' => $sheet->getCell('D2')->getValue(),
+            'location' => $sheet->getCell('E2')->getValue()
         ];
 
         // Extract product information (starting from Row 5)
@@ -71,24 +72,36 @@ if (isset($_FILES['file']['tmp_name'])) {
                 'name' => $name,
                 'type' => $sheet->getCell("B$row")->getValue(),
                 'price' => $sheet->getCell("C$row")->getValue(),
-                'description' => $sheet->getCell("D$row")->getValue()
+                'size' => $sheet->getCell("D$row")->getValue(),
+                'description' => $sheet->getCell("E$row")->getValue()
             ];
             $row++;
         }
 
-        // Extract branch information (starting from Row 5 after products)
-        $branches = [];
-        $row2 = 17;
-        while (true) {
-            $location = $sheet->getCell("A$row2")->getValue();
-            if (empty($location))
-                break; // Stop if no more branches
+        // Find the "Locations" header row
+        $locationsHeaderRow = null;
+        for ($i = 1; $i <= $sheet->getHighestRow(); $i++) {
+            if (trim($sheet->getCell("A$i")->getValue()) === "Locations") {
+                $locationsHeaderRow = $i;
+                break;
+            }
+        }
 
-            $branches[] = [
-                'location' => $location,
-                'manager_id' => $sheet->getCell("B$row2")->getValue()
-            ];
-            $row2++;
+        // Extract branch information (starting from the row after the "Locations" header)
+        $branches = [];
+        if ($locationsHeaderRow !== null) {
+            $row = $locationsHeaderRow + 1; // Start from the row after the "Locations" header
+            while (true) {
+                $location = $sheet->getCell("A$row")->getValue();
+                if (empty($location))
+                    break; // Stop if no more branches
+
+                $branches[] = [
+                    'location' => $location,
+                    'manager_id' => $sheet->getCell("B$row")->getValue()
+                ];
+                $row++;
+            }
         }
 
         // Display the data in tables
@@ -112,6 +125,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <th>Description</th>
                         <th>Asset Size</th>
                         <th>Number of Employees</th>
+                        <th>Location</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,6 +134,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <td><?php echo htmlspecialchars($businessInfo['description']); ?></td>
                         <td><?php echo htmlspecialchars($businessInfo['asset_size']); ?></td>
                         <td><?php echo htmlspecialchars($businessInfo['employee_count']); ?></td>
+                        <td><?php echo htmlspecialchars($businessInfo['location']); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -131,6 +146,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <th>Name</th>
                         <th>Type</th>
                         <th>Price</th>
+                        <th>Size</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -140,6 +156,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                             <td><?php echo htmlspecialchars($product['name']); ?></td>
                             <td><?php echo htmlspecialchars($product['type']); ?></td>
                             <td><?php echo htmlspecialchars($product['price']); ?></td>
+                            <td><?php echo htmlspecialchars($product['size']); ?></td>
                             <td><?php echo htmlspecialchars($product['description']); ?></td>
                         </tr>
                     <?php endforeach; ?>

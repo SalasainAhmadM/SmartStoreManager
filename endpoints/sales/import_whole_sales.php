@@ -47,12 +47,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Calculate total_sales as price * amount_sold
         $total_sales = $sale['price'] * $sale['amount_sold'];
 
+        // Convert date to YYYY-MM-DD format if necessary
+        $date = $sale['date'];
+        if (strpos($date, '/') !== false) {
+            // If the date is in d/m/Y format, convert it to YYYY-MM-DD
+            $date = DateTime::createFromFormat('d/m/Y', $date);
+            if ($date) {
+                $date = $date->format('Y-m-d');
+            } else {
+                // Handle invalid date formats
+                $date = '0000-00-00'; // Fallback for invalid dates
+            }
+        }
+
         // Bind the parameters and execute the statement
         $stmt->bind_param(
             'sssiis',
             $sale['amount_sold'],
             $total_sales,
-            $sale['date'],
+            $date,
             $product_id,
             $branch_id,
             $type

@@ -160,9 +160,15 @@ WHERE b.owner_id = ? AND s.date = ?
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-chart-line me-2"></i> Track Sales</b></h1>
-                    <button id="uploadWholeDataButton" class="btn btn-success mt-2">
-                        <i class="fa-solid fa-upload"></i> Upload Multiple Data
-                    </button>
+                    <div class="mt-4">
+                        <button id="uploadWholeDataButton" class="btn btn-success">
+                            <i class="fa-solid fa-upload"></i> Upload Multiple Data
+                        </button>
+
+                        <button style='height: 38px' id="deleteMultipleButton" class="btn btn-danger ms-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                     <!-- Search Bar for Sales -->
                     <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
                         <!-- Search Bar -->
@@ -265,6 +271,7 @@ WHERE b.owner_id = ? AND s.date = ?
     </div>
 
     <script>
+
         document.getElementById("uploadWholeDataButton").addEventListener("click", function () {
             // Fetch businesses owned by the logged-in user
             fetch('../endpoints/sales/get_businesses.php')
@@ -289,12 +296,25 @@ WHERE b.owner_id = ? AND s.date = ?
                             <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
                             <input type="submit" value="Upload Excel" class="form-control">
                         </form>
-                        <form id="downloadForm" action="../export_excel_add_whole_sales.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                       
+
+                        <div class="d-flex justify-content-center mt-2">
+        <button style='height: 38px' class="btn btn-info me-2" id="instructionsButton">
+            <i class="fa-solid fa-info-circle"></i>
+        </button>
+         <form id="downloadForm" action="../export_excel_add_whole_sales.php" method="POST">
                             <input type="hidden" name="business_id" id="hiddenBusinessId" value="">
                             <button class="btn btn-success" type="submit" id="downloadButton" disabled>
                                 <i class="fa-solid fa-download"></i> Download Data Template
                             </button>
                         </form>
+    </div>
+    <div id="instructionsContainer" class="instructions-overlay d-none">
+        <div class="instructions-content text-center">
+            <img src="../assets/instructions/salesmultiple.jpg" alt="Instructions Image" class="img-fluid instructions-img"
+                id="instructionsImage">
+        </div>
+    </div>
                     </div>
                 `,
                         showConfirmButton: false, // Remove default confirmation button
@@ -315,6 +335,13 @@ WHERE b.owner_id = ? AND s.date = ?
                             // Initially disable the download button
                             downloadButton.disabled = true;
                         }
+                    });
+                    document.getElementById('instructionsButton').addEventListener('click', function () {
+                        document.getElementById('instructionsContainer').classList.remove('d-none');
+                    });
+
+                    document.getElementById('instructionsImage').addEventListener('click', function () {
+                        document.getElementById('instructionsContainer').classList.add('d-none');
                     });
                 })
                 .catch(error => {
@@ -392,7 +419,13 @@ WHERE b.owner_id = ? AND s.date = ?
                                 <input type="submit" value="Upload Excel" class="form-control">
                             </form>
 
-                            <form id="exportExcelForm" action="../export_excel_add_sales.php" method="POST" class="top-0 end-0 mt-2 me-2">
+                          
+
+                              <div style='height: 38px' class="d-flex justify-content-center mt-2">
+        <button class="btn btn-info me-2" id="instructionsButton">
+            <i class="fa-solid fa-info-circle"></i>
+        </button>
+         <form id="exportExcelForm" action="../export_excel_add_sales.php" method="POST" >
                                 <input type="hidden" name="selectedBusiness" id="hiddenBusinessExport">
                                 <input type="hidden" name="selectedBranch" id="hiddenBranchExport">
                                 <input type="hidden" name="branch_id" id="hiddenBranchIdExport">
@@ -404,12 +437,25 @@ WHERE b.owner_id = ? AND s.date = ?
                                     <i class="fa-solid fa-download"></i> Download Data Template
                                 </button>
                             </form>
+    </div>
+    <div id="instructionsContainer" class="instructions-overlay d-none">
+        <div class="instructions-content text-center">
+            <img src="../assets/instructions/sales.jpg" alt="Instructions Image" class="img-fluid instructions-img"
+                id="instructionsImage">
+        </div>
+    </div>
                         </div>
                     `,
                             showConfirmButton: false,
                             customClass: { popup: "swal2-modal-wide" }
                         });
+                        document.getElementById('instructionsButton').addEventListener('click', function () {
+                            document.getElementById('instructionsContainer').classList.remove('d-none');
+                        });
 
+                        document.getElementById('instructionsImage').addEventListener('click', function () {
+                            document.getElementById('instructionsContainer').classList.add('d-none');
+                        });
                         // Listen for changes and set hidden input values before submitting form
                         document.getElementById("branchSelect").addEventListener("change", function () {
                             const selectedBranch = this.value;
@@ -488,7 +534,138 @@ WHERE b.owner_id = ? AND s.date = ?
         };
 
 
+        document.getElementById('deleteMultipleButton').addEventListener('click', function () {
+            fetchData('sales');
+        });
 
+        function fetchData(type) {
+            Swal.fire({
+                title: "Fetching Data...",
+                text: "Please wait...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("../endpoints/sales/fetch_data.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `type=${type}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.length > 0) {
+                        let table = `<table border='1' width='100%' style="border-collapse: collapse;">
+                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                    <th style="width: 10%;">Select</th>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 10%;">Quantity</th>
+                    <th style="width: 10%;">Total Sales</th>
+                    <th style="width: 15%;">Date</th>
+                    <th style="width: 15%;">Product</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 20%;">Business/Branch</th>
+                </tr>`;
+
+                        data.forEach(row => {
+                            let formattedTotalSales = new Intl.NumberFormat('en-PH', {
+                                style: 'currency',
+                                currency: 'PHP'
+                            }).format(row.total_sales);
+
+                            table += `<tr>
+                    <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+                    <td>${row.id}</td>
+                    <td>${row.quantity}</td>
+                    <td>${formattedTotalSales}</td>
+                    <td>${row.date}</td>
+                    <td>${row.product_name}</td>
+                    <td>${row.type}</td>
+                    <td>${row.type === 'business' ? row.business_name : row.branch_location}</td>
+                </tr>`;
+                        });
+
+                        table += "</table>";
+
+                        Swal.fire({
+                            title: `${type.charAt(0).toUpperCase() + type.slice(1)} Data`,
+                            html: table,
+                            width: '80%',
+                            showCancelButton: true,
+                            confirmButtonText: "Delete Selected",
+                            cancelButtonText: "Cancel",
+                            preConfirm: () => {
+                                const selectedItems = [];
+                                document.querySelectorAll('input[name="selectedItems"]:checked').forEach(checkbox => {
+                                    selectedItems.push(checkbox.value);
+                                });
+                                if (selectedItems.length === 0) {
+                                    Swal.showValidationMessage("Please select at least one item to delete.");
+                                    return false;
+                                }
+                                return selectedItems;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: "Are you sure?",
+                                    text: "This action cannot be undone!",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonText: "Yes, delete it!",
+                                    cancelButtonText: "Cancel"
+                                }).then((confirmResult) => {
+                                    if (confirmResult.isConfirmed) {
+                                        deleteData(type, result.value);
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        Swal.fire("No Data Found", "There is no data available for the selected type.", "info");
+                    }
+                })
+                .catch(error => {
+                    Swal.fire("Error", "Failed to fetch data. Please try again.", "error");
+                });
+        }
+
+
+        function deleteData(type, selectedItems) {
+            Swal.fire({
+                title: "Deleting Data...",
+                text: "Please wait...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("../endpoints/sales/delete_data.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `type=${type}&ids=${selectedItems.join(',')}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        Swal.fire("Success", "Selected items have been deleted.", "success");
+                    } else {
+                        Swal.fire("Error", "Failed to delete items. Please try again.", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.fire("Error", "Failed to delete items. Please try again.", "error");
+                });
+        }
     </script>
     <script src="../js/print_report.js"></script>
 

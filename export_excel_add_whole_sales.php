@@ -94,6 +94,7 @@ foreach ($products as $product) {
     $sheet->setCellValue('C' . $row, 0);
     $sheet->setCellValue('D' . $row, "=B$row * C$row");
     $sheet->setCellValue('E' . $row, $today);
+    $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
     $sheet->setCellValue('F' . $row, '');
 
     // Add Data Validation for Column F (Branch Selection)
@@ -120,7 +121,10 @@ $sheet->getColumnDimension('E')->setWidth(15);
 $sheet->getColumnDimension('F')->setWidth(30);
 
 // Output File
-$filename = 'Whole_Sales_Report_Template_' . $today . '.xlsx';
+$clean_business_name = str_replace(' ', '', $business['name']);
+$filename = "{$clean_business_name}_Sales_Report_Template_{$today}.xlsx";
+
+
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Cache-Control: max-age=0');

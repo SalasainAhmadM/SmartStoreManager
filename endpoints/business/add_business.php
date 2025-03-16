@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($_POST['description']);
     $asset = trim($_POST['asset']);
     $employeeCount = trim($_POST['employeeCount']);
+    $location = trim($_POST['location']);
     $owner_id = $_SESSION['user_id'];
 
     // Check for empty fields
@@ -22,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Insert into database
-    $query = "INSERT INTO business (name, description, asset, employee_count, owner_id) VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO business (name, description, asset, employee_count, location, owner_id) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ssssi", $name, $description, $asset, $employeeCount, $owner_id);
+    $stmt->bind_param("sssssi", $name, $description, $asset, $employeeCount, $location, $owner_id);
 
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'message' => 'Business added successfully']);

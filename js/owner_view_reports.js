@@ -1,42 +1,4 @@
-// function showBranchDetails(businessName, branches) {
-//     const totalSales = branches.reduce((sum, branch) => sum + branch.sales, 0);
-//     const totalExpenses = branches.reduce((sum, branch) => sum + branch.expenses, 0);
 
-//     let branchDetails = branches.map(branch => `
-//         <tr>
-//             <td>${branch.branch}</td>
-//             <td>₱${branch.sales.toLocaleString()}</td>
-//             <td>₱${branch.expenses.toLocaleString()}</td>
-//         </tr>
-//     `).join('');
-
-//     Swal.fire({
-//         title: businessName,
-//         html: `
-//             <table class="table table-bordered">
-//                 <thead>
-//                     <tr>
-//                         <th>Branch</th>
-//                         <th>Sales (₱)</th>
-//                         <th>Expenses (₱)</th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     ${branchDetails}
-//                 </tbody>
-//             </table>
-//             <hr>
-//             <p><b>Total Sales:</b> ₱${totalSales.toLocaleString()}</p>
-//             <p><b>Total Expenses:</b> ₱${totalExpenses.toLocaleString()}</p>
-//             <button class="swal2-print-btn" onclick='printBranchReport("${businessName}", ${JSON.stringify(branches)})'>
-//                 <i class="fas fa-print me-2"></i> Print Report
-//             </button>
-//         `,
-//         width: '600px',
-//         showConfirmButton: false,
-//         allowOutsideClick: true
-//     });
-// }
 function printBranchReport(businessName, branches, business) { 
     const totalBranchSales = branches.reduce((sum, branch) => sum + parseFloat(branch.sales || 0), 0);
     const totalBranchExpenses = branches.reduce((sum, branch) => sum + parseFloat(branch.expenses || 0), 0);

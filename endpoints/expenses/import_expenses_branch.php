@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
     if (json_last_error() === JSON_ERROR_NONE && is_array($expenseData)) {
         foreach ($expenseData as $expense) {
-            $expenseType = $expense['expense_type'];
+            $expenseType = extractNameFromExpenseType($expense['expense_type']);
             $amount = $expense['amount'];
             $category = $expense['category'];
             $business = $expense['business'];
@@ -74,6 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 } else {
     header("Location: ../../owner/manageexpenses_branch.php?imported=false&error=Invalid request");
     exit();
+}
+function extractNameFromExpenseType($expenseType)
+{
+    // Assuming the format is "ID - Name"
+    $parts = explode(' - ', $expenseType, 2);
+    return isset($parts[1]) ? trim($parts[1]) : trim($expenseType);
 }
 
 function extractIdFromName($name)

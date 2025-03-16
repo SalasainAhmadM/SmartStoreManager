@@ -5,6 +5,7 @@ require_once './conn/conn.php';
 require_once './conn/auth.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 validateSession('owner');
 
@@ -61,6 +62,22 @@ if (isset($_FILES['file']['tmp_name'])) {
 
             if (empty($product) && empty($price) && empty($amountSold) && empty($totalSales) && empty($date) && empty($businessBranch))
                 break; // Stop when no more data
+
+            // Format date based on the specified format
+            if (!empty($date)) {
+                if (is_numeric($date)) {
+                    // If the date is a numeric Excel timestamp
+                    $date = Date::excelToDateTimeObject($date)->format('d/m/Y');
+                } else {
+                    // If the date is already in a string format
+                    $date = DateTime::createFromFormat('Y-m-d', $date);
+                    if ($date) {
+                        $date = $date->format('d/m/Y');
+                    } else {
+                        $date = ''; // Handle invalid date formats
+                    }
+                }
+            }
 
             // Skip rows where Amount Sold & Total Sales are zero
             if ($amountSold > 0 || $totalSales > 0) {

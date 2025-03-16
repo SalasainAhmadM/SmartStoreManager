@@ -59,6 +59,7 @@ if ($result->num_rows > 0) {
     $assigned_name = null;
     $business_id = null;
 }
+
 $sales_query = "";
 
 if ($assigned_type === 'Branch') {
@@ -96,6 +97,22 @@ if ($assigned_type === 'Branch') {
 
 $stmt->execute();
 $sales_result = $stmt->get_result();
+
+// Prepare data for the chart
+$product_sales = [];
+if ($sales_result->num_rows > 0) {
+    while ($row = $sales_result->fetch_assoc()) {
+        $product_name = $row['product'];
+        if (isset($product_sales[$product_name])) {
+            $product_sales[$product_name] += $row['quantity'];
+        } else {
+            $product_sales[$product_name] = $row['quantity'];
+        }
+    }
+}
+
+// Reset the result pointer to reuse the sales data for the table
+$sales_result->data_seek(0);
 ?>
 
 <!DOCTYPE html>
@@ -148,16 +165,17 @@ $sales_result = $stmt->get_result();
                             <h4 class="mt-4" id="salesTitle"></h4>
 
 
-                            <!-- Search Bar -->
-                            <div class="mt-3 position-relative">
-                                <form class="d-flex" role="search">
-                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
+                            <!-- Search Bar and Buttons -->
+                            <div class="mt-3 d-flex align-items-center">
+                                <!-- Search Bar -->
+                                <form class="d-flex me-2" role="search" style="flex: 1;">
+                                    <input class="form-control" type="search" placeholder="Search product.."
                                         aria-label="Search" id="searchInput">
                                 </form>
-                                <!-- Add Business Button -->
+
+                                <!-- Add Business/Branch Button -->
                                 <?php if ($assigned_type === 'Branch'): ?>
-                                    <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                        id="addBranchSaleBtn" data-type="Branch"
+                                    <button class="btn btn-success me-2" id="addBranchSaleBtn" data-type="Branch"
                                         data-id="<?php echo htmlspecialchars($assigned['id']); ?>"
                                         data-name="<?php echo htmlspecialchars($assigned_name); ?>"
                                         data-business-id="<?php echo htmlspecialchars($assigned['business_id']); ?>"
@@ -165,67 +183,75 @@ $sales_result = $stmt->get_result();
                                         <i class="fas fa-plus me-2"></i> Add Branch Sales
                                     </button>
                                 <?php elseif ($assigned_type === 'Business'): ?>
-                                    <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                        id="addBusinessSaleBtn" data-type="Business"
+                                    <button class="btn btn-success me-2" id="addBusinessSaleBtn" data-type="Business"
                                         data-id="<?php echo htmlspecialchars($assigned['id']); ?>"
                                         data-name="<?php echo htmlspecialchars($assigned_name); ?>">
                                         <i class="fas fa-plus me-2"></i> Add Business Sales
                                     </button>
                                 <?php endif; ?>
 
+                                <!-- Upload Data Button -->
+                                <!-- <button id="uploadDataButton" class="btn btn-success">
+                                    <i class="fa-solid fa-upload"></i> Upload Data
+                                </button> -->
                             </div>
 
-
-
-
-                            <div class="scrollable-table">
-                                <div class="scrollable-table">
-                                    <table class="table table-striped table-hover mt-4 mb-5">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Product</th>
-                                                <th>Price</th>
-                                                <th>Quantity Sold</th>
-                                                <th>Revenue</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="salesTableBody">
-                                            <?php if ($sales_result->num_rows > 0): ?>
-                                                <?php while ($row = $sales_result->fetch_assoc()): ?>
-                                                    <tr class="product-row">
-                                                        <td class="product-name">
-                                                            <?php echo htmlspecialchars($row['product']); ?>
-                                                        </td>
-                                                        <td>$<?php echo number_format($row['price'], 2); ?>
-                                                        </td>
-                                                        <td><?php echo htmlspecialchars($row['quantity']); ?></td>
-                                                        <td>$<?php echo number_format($row['revenue'], 2); ?></td>
-                                                        <td><?php echo htmlspecialchars($row['date']); ?></td>
-                                                        <td class="text-center">
-                                                            <a href="#" class="text-primary me-3"
-                                                                onclick="editSale(<?php echo $row['id']; ?>)">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <a href="#" class="text-danger"
-                                                                onclick="deleteSale(<?php echo $row['id']; ?>)">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                <?php endwhile; ?>
-                                            <?php else: ?>
+                            <div class="row mt-4">
+                                <!-- Sales Table -->
+                                <div class="col-md-8">
+                                    <div class="scrollable-table">
+                                        <table class="table table-striped table-hover" id="salesTable">
+                                            <thead class="table-dark">
                                                 <tr>
-                                                    <td colspan="6" class="text-center">No sales records found.</td>
+                                                    <th>Product</th>
+                                                    <th>Price</th>
+                                                    <th>Quantity Sold</th>
+                                                    <th>Revenue</th>
+                                                    <th>Updated At</th>
+                                                    <th>Action</th>
                                                 </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-
-                                    </table>
+                                            </thead>
+                                            <tbody id="salesTableBody">
+                                                <?php if ($sales_result->num_rows > 0): ?>
+                                                    <?php while ($row = $sales_result->fetch_assoc()): ?>
+                                                        <tr class="product-row">
+                                                            <td class="product-name">
+                                                                <?php echo htmlspecialchars($row['product']); ?>
+                                                            </td>
+                                                            <td>$<?php echo number_format($row['price'], 2); ?></td>
+                                                            <td><?php echo htmlspecialchars($row['quantity']); ?></td>
+                                                            <td>$<?php echo number_format($row['revenue'], 2); ?></td>
+                                                            <td><?php echo htmlspecialchars($row['date']); ?></td>
+                                                            <td class="text-center">
+                                                                <a href="#" class="text-primary me-3"
+                                                                    onclick="editSale(<?php echo $row['id']; ?>)">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="#" class="text-danger"
+                                                                    onclick="deleteSale(<?php echo $row['id']; ?>)">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endwhile; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No sales records found.</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
 
+                                <!-- Chart -->
+                                <div class="col-md-4">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
                             </div>
+                            <button class="btn btn-primary mt-2 mb-5" id="printReportBtn" onclick="printSalesReport()">
+                                <i class="fas fa-print me-2"></i> Print Sales Report
+                            </button>
 
                         </div>
                     </div>
@@ -237,6 +263,31 @@ $sales_result = $stmt->get_result();
     <script src="../js/sidebar_manager.js"></script>
     <script src="../js/sort_items.js"></script>
     <script>
+        const productSalesData = <?php echo json_encode($product_sales); ?>;
+        const productNames = Object.keys(productSalesData);
+        const productQuantities = Object.values(productSalesData);
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Quantity Sold',
+                    data: productQuantities,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
         // Edit Sale
         function editSale(salesId) {
             console.log('Edit Sale Triggered for ID:', salesId); // Debugging
@@ -364,12 +415,28 @@ $sales_result = $stmt->get_result();
                 }
             });
         });
+        // Function to get the current date in Asia/Manila timezone
+        function getManilaDate() {
+            const options = {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            };
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(new Date());
+            const year = parts.find(part => part.type === 'year').value;
+            const month = parts.find(part => part.type === 'month').value;
+            const day = parts.find(part => part.type === 'day').value;
+            return `${year}-${month}-${day}`;
+        }
+
         // Event Listener for Branch Sales Button
         document.getElementById('addBranchSaleBtn')?.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             const branchId = button.getAttribute('data-id');
             const businessId = button.getAttribute('data-business-id');
-            const today = new Date().toISOString().split('T')[0];
+            const today = getManilaDate(); // Use the Manila date
 
             try {
                 const response = await fetch(`fetch_products.php?business_id=${businessId}`);
@@ -456,7 +523,7 @@ $sales_result = $stmt->get_result();
         document.getElementById('addBusinessSaleBtn')?.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             const businessId = button.getAttribute('data-id');
-            const today = new Date().toISOString().split('T')[0];
+            const today = getManilaDate(); // Use the Manila date
 
             try {
                 const response = await fetch(`fetch_products.php?business_id=${businessId}`);
@@ -540,7 +607,122 @@ $sales_result = $stmt->get_result();
             }
         });
 
+        document.getElementById("printReportBtn").addEventListener("click", function () {
+            printSalesReport();
+        });
 
+        function printSalesReport() {
+            const table = document.getElementById('salesTable').cloneNode(true); // Clone the table to avoid modifying the original
+
+            // Remove the "Action" header
+            const headerRow = table.querySelector('thead tr');
+            if (headerRow && headerRow.children.length > 0) {
+                headerRow.deleteCell(-1); // Remove the last <th> (Action)
+            }
+
+            // Remove the "Action" column from each row in the table body
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.children.length > 0) {
+                    row.deleteCell(-1); // Remove the last <td> (Action)
+                }
+            });
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.open();
+            printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Sales Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    h1 {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    table, th, td {
+                        border: 1px solid black;
+                    }
+                    th, td {
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    thead {
+                        background-color: #333;
+                        color: #fff;
+                    }
+                    tfoot {
+                        background-color: #f1f1f1;
+                        font-weight: bold;
+                    }
+                    button, .btn, .fas.fa-sort {
+                        display: none; /* Hide sort icons and buttons in print */
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Sales Report</h1>
+                ${table.outerHTML}
+            </body>
+            </html>
+        `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        document.getElementById('uploadDataButton').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Upload or Download Data',
+                html: `
+        <div class="mt-3 mb-3 position-relative">
+            <form action="../import_sales_manager.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                <i class="fa-solid fa-upload"></i>
+                <label for="file" class="mb-2">Upload Data:</label>
+                <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                <input type="submit" value="Upload Excel" class="form-control">
+            </form>
+            <div class="d-flex justify-content-center mt-2">
+                <button class="btn btn-info me-2" id="instructionsButton">
+                    <i class="fa-solid fa-info-circle"></i> 
+                </button>
+                <form action="../export_excel_sales_manager.php" method="POST">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa-solid fa-download"></i> Download Data Template
+                    </button>
+                </form>
+            </div>
+            <div id="instructionsContainer" class="instructions-overlay d-none">
+                <div class="instructions-content text-center">
+                    <img src="../assets/instructions/sales_manager.jpg" alt="Instructions Image" class="img-fluid instructions-img" id="instructionsImage">
+                </div>
+            </div>
+        </div>
+        `,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'swal2-modal-wide'
+                }
+            });
+
+            document.getElementById('instructionsButton').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.remove('d-none');
+            });
+
+            document.getElementById('instructionsImage').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.add('d-none');
+            });
+        });
 
     </script>
 

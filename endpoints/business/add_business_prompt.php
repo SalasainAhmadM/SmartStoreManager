@@ -8,6 +8,7 @@ try {
     $description = trim($_POST['description']);
     $asset = trim($_POST['asset']);
     $employeeCount = trim($_POST['employeeCount']);
+    $location = trim($_POST['location']);
     $owner_id = intval($_POST['owner_id']);
 
     // Validate required fields
@@ -18,11 +19,11 @@ try {
 
     // Insert business into the database
     $query = "
-        INSERT INTO business (name, asset, employee_count, description, created_at, owner_id)
-        VALUES (?, ?, ?, ?, NOW(), ?)
+        INSERT INTO business (name, asset, employee_count, description, location, created_at, owner_id)
+        VALUES (?, ?, ?, ?, ?, NOW(), ?)
     ";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('ssssi', $name, $asset, $employeeCount, $description, $owner_id);
+    $stmt->bind_param('sssssi', $name, $asset, $employeeCount, $description, $location, $owner_id);
 
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'message' => 'Error adding business.']);

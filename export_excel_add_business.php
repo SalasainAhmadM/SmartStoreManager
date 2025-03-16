@@ -13,6 +13,7 @@ $sheet->setCellValue('A1', 'Business Name');
 $sheet->setCellValue('B1', 'Business Description');
 $sheet->setCellValue('C1', 'Asset Size');
 $sheet->setCellValue('D1', 'Number of Employees');
+$sheet->setCellValue('E1', 'Location');
 
 // Leave row 2 empty for business information input
 $sheet->setCellValue('A2', '');
@@ -29,7 +30,8 @@ $sheet->getStyle('A3')->getAlignment()->setHorizontal('center');
 $sheet->setCellValue('A4', 'Name');
 $sheet->setCellValue('B4', 'Type');
 $sheet->setCellValue('C4', 'Price');
-$sheet->setCellValue('D4', 'Description');
+$sheet->setCellValue('D4', 'Size');
+$sheet->setCellValue('E4', 'Description');
 
 // Branches Section
 $sheet->mergeCells('A15:D15');
@@ -45,14 +47,14 @@ $headerStyle = [
     'font' => ['bold' => true],
     'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT]
 ];
-$sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+$sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 $sheet->getStyle('A3:D3')->applyFromArray($headerStyle);
-$sheet->getStyle('A4:D4')->applyFromArray($headerStyle);
+$sheet->getStyle('A4:E4')->applyFromArray($headerStyle);
 $sheet->getStyle('A15')->applyFromArray($headerStyle);
 $sheet->getStyle('A16')->applyFromArray($headerStyle);
 
 // Auto-size columns
-foreach (range('A', 'D') as $col) {
+foreach (range('A', 'E') as $col) {
     $sheet->getColumnDimension($col)->setAutoSize(true);
 }
 
