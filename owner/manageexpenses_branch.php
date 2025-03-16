@@ -48,9 +48,15 @@ $stmt->close();
             <div class="col-md-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-wallet me-2"></i> Manage Expenses</b></h1>
-                    <button id="uploadWholeDataButton" class="btn btn-success mt-2">
-                        <i class="fa-solid fa-upload"></i> Upload Multiple Data
-                    </button>
+                    <div class="mt-4">
+                        <button id="uploadWholeDataButton" class="btn btn-success">
+                            <i class="fa-solid fa-upload"></i> Upload Multiple Data
+                        </button>
+
+                        <button id="deleteMultipleButton" class="btn btn-danger ms-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                     <div class="mt-2 position-relative manage-expenses">
                         <h5>
                             <div class="position-relative">
@@ -205,24 +211,45 @@ $stmt->close();
                 Swal.fire({
                     title: 'Upload or Download Data',
                     html: `
-                <div class="mt-3 mb-3 position-relative">
-                    <form action="../import_expense_excel.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
-                        <i class="fa-solid fa-upload"></i>
-                        <label for="file" class="mb-2">Upload Data:</label>
-                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
-                        <input type="submit" value="Upload Excel" class="form-control">
-                    </form>
-                    <form action="../export_expense_excel.php" method="POST" class="top-0 end-0 mt-2 me-2">
-                        <button class="btn btn-success" type="submit">
-                            <i class="fa-solid fa-download"></i> Download Data Template
-                        </button>
-                    </form>
-                </div>
+              <div class="mt-3 mb-3 position-relative">
+    <form action="../import_expense_excel_branch.php" method="POST" enctype="multipart/form-data"
+        class="btn btn-success p-3">
+        <i class="fa-solid fa-upload"></i>
+        <label for="file" class="mb-2">Upload Data:</label>
+        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+        <input type="submit" value="Upload Excel" class="form-control">
+    </form>
+    <div class="d-flex justify-content-center mt-2">
+        <button class="btn btn-info me-2" id="instructionsButton">
+            <i class="fa-solid fa-info-circle"></i>
+        </button>
+        <form action="../export_expense_excel.php" method="POST">
+            <button class="btn btn-success" type="submit">
+                <i class="fa-solid fa-download"></i> Download Data Template
+            </button>
+        </form>
+    </div>
+    <div id="instructionsContainer" class="instructions-overlay d-none">
+        <div class="instructions-content text-center">
+            <img src="../assets/instructions/expenses.jpg" alt="Instructions Image" class="img-fluid instructions-img"
+                id="instructionsImage">
+        </div>
+    </div>
+
+</div>
                 `,
                     showConfirmButton: false, // Remove default confirmation button
                     customClass: {
                         popup: 'swal2-modal-wide' // Optional for larger modals
                     }
+                });
+
+                document.getElementById('instructionsButton').addEventListener('click', function () {
+                    document.getElementById('instructionsContainer').classList.remove('d-none');
+                });
+
+                document.getElementById('instructionsImage').addEventListener('click', function () {
+                    document.getElementById('instructionsContainer').classList.add('d-none');
                 });
             });
 
@@ -256,6 +283,133 @@ $stmt->close();
                     });
                 }
             };
+
+            document.getElementById('deleteMultipleButton').addEventListener('click', function () {
+                fetchData('expenses');
+            });
+
+            function fetchData(type) {
+                Swal.fire({
+                    title: "Fetching Data...",
+                    text: "Please wait...",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch("../endpoints/expenses/fetch_data.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `type=${type}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.length > 0) {
+                            let table = `<table border='1' width='100%' style="border-collapse: collapse;">
+                            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                <th style="width: 10%;">Select</th>
+                                <th style="width: 5%;">ID</th>
+                                <th style="width: 15%;">Expense Type</th>
+                                <th style="width: 10%;">Amount</th>
+                                <th style="width: auto;">Description</th>
+                                <th style="width: 15%;">Created At</th>
+                                <th style="width: 15%;">Category</th>
+                                <th style="width: 15%;">Business/Branch</th>
+                            </tr>`;
+
+                            data.forEach(row => {
+                                table += `<tr>
+                            <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+                            <td>${row.id}</td>
+                            <td>${row.expense_type}</td>
+                            <td>${row.amount}</td>
+                            <td>${row.description}</td>
+                            <td>${row.created_at}</td>
+                            <td>${row.category}</td>
+                            <td>${row.category === 'business' ? row.business_name : row.branch_location}</td>
+                          </tr>`;
+                            });
+
+                            table += "</table>";
+
+                            Swal.fire({
+                                title: `${type.charAt(0).toUpperCase() + type.slice(1)} Data`,
+                                html: table,
+                                width: '80%',
+                                showCancelButton: true,
+                                confirmButtonText: "Delete Selected",
+                                cancelButtonText: "Cancel",
+                                preConfirm: () => {
+                                    const selectedItems = [];
+                                    document.querySelectorAll('input[name="selectedItems"]:checked').forEach(checkbox => {
+                                        selectedItems.push(checkbox.value);
+                                    });
+                                    if (selectedItems.length === 0) {
+                                        Swal.showValidationMessage("Please select at least one item to delete.");
+                                        return false;
+                                    }
+                                    return selectedItems;
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.fire({
+                                        title: "Are you sure?",
+                                        text: "This action cannot be undone!",
+                                        icon: "warning",
+                                        showCancelButton: true,
+                                        confirmButtonText: "Yes, delete it!",
+                                        cancelButtonText: "Cancel"
+                                    }).then((confirmResult) => {
+                                        if (confirmResult.isConfirmed) {
+                                            deleteData(type, result.value);
+                                        }
+                                    });
+                                }
+                            });
+
+                        } else {
+                            Swal.fire("No Data Found", "There is no data available for the selected type.", "info");
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire("Error", "Failed to fetch data. Please try again.", "error");
+                    });
+            }
+
+            function deleteData(type, selectedItems) {
+                Swal.fire({
+                    title: "Deleting Data...",
+                    text: "Please wait...",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch("../endpoints/expenses/delete_data.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `type=${type}&ids=${selectedItems.join(',')}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.success) {
+                            Swal.fire("Success", "Selected items have been deleted.", "success");
+                        } else {
+                            Swal.fire("Error", "Failed to delete items. Please try again.", "error");
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire("Error", "Failed to delete items. Please try again.", "error");
+                    });
+            }
         </script>
 
 

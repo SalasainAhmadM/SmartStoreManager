@@ -390,10 +390,17 @@ while ($row = $resultProducts->fetch_assoc()) {
 // 6
 // Fetch Category-Wise Expenses
 $categoryQuery = "
-SELECT category, SUM(amount) AS total_amount
-FROM expenses
-WHERE owner_id = $owner_id
-GROUP BY category
+SELECT 
+    CASE 
+        WHEN e.category = 'business' THEN b.name
+        WHEN e.category = 'branch' THEN br.location
+    END AS category,
+    SUM(e.amount) AS total_amount
+FROM expenses e
+LEFT JOIN business b ON e.category_id = b.id AND e.category = 'business'
+LEFT JOIN branch br ON e.category_id = br.id AND e.category = 'branch'
+WHERE e.owner_id = $owner_id
+GROUP BY e.category, e.category_id
 ";
 $categoryResult = $conn->query($categoryQuery);
 
@@ -403,31 +410,42 @@ while ($row = $categoryResult->fetch_assoc()) {
 }
 
 // Fetch Recurring vs One-Time Expenses by Month
+
 $recurringQuery = "
-SELECT
-month,
-SUM(amount) AS recurring,
-SUM(DISTINCT amount) AS oneTime
-FROM expenses
-WHERE owner_id = $owner_id
-GROUP BY month
+SELECT 
+    e.month,
+    e.expense_type,
+    SUM(e.amount) AS total_amount
+FROM expenses e
+WHERE e.owner_id = $owner_id
+GROUP BY e.month, e.expense_type
 ";
 $recurringResult = $conn->query($recurringQuery);
 
 $recurringData = [];
 while ($row = $recurringResult->fetch_assoc()) {
-    $recurringData[$row['month']] = [
-        'recurring' => '₱' . number_format($row['recurring'], 2),
-        'oneTime' => '₱' . number_format($row['oneTime'], 2)
-    ];
+    $month = $row['month'];
+    $expenseType = $row['expense_type'];
+    $totalAmount = '₱' . number_format($row['total_amount'], 2);
+
+    if (!isset($recurringData[$month])) {
+        $recurringData[$month] = [
+            'recurring' => [],
+            'oneTime' => []
+        ];
+    }
+
+    if ($expenseType === 'recurring') {
+        $recurringData[$month]['recurring'][] = $totalAmount;
+    } else {
+        $recurringData[$month]['oneTime'][] = $totalAmount;
+    }
 }
 
-// Structure Data for Charts
 $expenseDataBreakdown = [
     'categories' => $categoryData,
     'recurringByMonth' => $recurringData
 ];
-
 // 7
 // Get the business ID of the logged-in owner
 $businessQuery = "SELECT id FROM business WHERE owner_id = $owner_id";
@@ -437,45 +455,24 @@ $business_id = $business['id'] ?? null; // Avoid errors if no business is found
 
 // Initialize arrays
 $products = [];
-$stockLevels = [];
-$salesTurnover = [];
-$salesByMonth = [];
+$stockLevelsSold = [];
 
 if ($business_id) {
-    // Fetch Products & Their Stock Levels
+    // Fetch Top Products Sold Across All Businesses
     $productQuery = "
-    SELECT p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0) AS total_sold
+    SELECT p.id, p.name, COALESCE(SUM(s.quantity), 0) AS total_sold
     FROM products p
     LEFT JOIN sales s ON p.id = s.product_id
-    WHERE p.business_id = $business_id
-    GROUP BY p.id, p.name, p.price
+    GROUP BY p.id, p.name
     ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products
+    LIMIT 10"; // Show top 10 products sold across all businesses
 
     $productResult = $conn->query($productQuery);
 
     if ($productResult->num_rows > 0) {
         while ($row = $productResult->fetch_assoc()) {
             $products[] = $row['name'];
-            $stockLevels[] = rand(10, 100); // Placeholder stock levels (Replace with actual stock table if available)
-            $salesTurnover[$row['name']] = $row['total_sold'];
-        }
-    }
-
-    // Fetch Sales Data for Turnover Chart
-    $salesQuery = "
-    SELECT DATE_FORMAT(s.date, '%Y-%m') AS sale_month, p.name, SUM(s.quantity) AS total_sold
-    FROM sales s
-    JOIN products p ON s.product_id = p.id
-    WHERE p.business_id = $business_id
-    GROUP BY sale_month, p.name
-    ORDER BY sale_month ASC";
-
-    $salesResult = $conn->query($salesQuery);
-
-    if ($salesResult->num_rows > 0) {
-        while ($row = $salesResult->fetch_assoc()) {
-            $salesByMonth[$row['sale_month']][$row['name']] = $row['total_sold'];
+            $stockLevelsSold[] = $row['total_sold']; // Use actual sold quantity as stock level sold
         }
     }
 }
@@ -483,9 +480,7 @@ if ($business_id) {
 // Prepare Data for JSON Output
 $inventoryData = [
     'products' => $products,
-    'stockLevels' => $stockLevels,
-    'salesTurnover' => $salesTurnover,
-    'salesByMonth' => $salesByMonth
+    'stockLevelsSold' => $stockLevelsSold
 ];
 
 // 8
@@ -582,12 +577,13 @@ $expensesJson = json_encode($expenseData);
 // 10
 // Fetch total monthly expenses for the owner
 $expenseQuery = "
-SELECT month, SUM(amount) AS total_expenses
-FROM expenses
-WHERE owner_id = ?
-GROUP BY month
-ORDER BY month ASC
-";
+    SELECT month, SUM(amount) AS total_expenses
+    FROM expenses
+    WHERE owner_id = ?
+    GROUP BY month
+    ORDER BY month DESC
+    LIMIT 1";
+
 $stmt = $conn->prepare($expenseQuery);
 $stmt->bind_param("i", $owner_id);
 $stmt->execute();
@@ -596,8 +592,9 @@ $result = $stmt->get_result();
 $expenseData = [];
 $thresholds = [];
 $breachMonths = [];
+$positiveMonths = [];
 
-while ($row = $result->fetch_assoc()) {
+if ($row = $result->fetch_assoc()) {
     $totalExpense = $row['total_expenses'];
     $month = $row['month'];
 
@@ -607,21 +604,22 @@ while ($row = $result->fetch_assoc()) {
 
     $expenseData[$month] = $totalExpense;
 
-    // Check if the expense exceeds the threshold
     if ($totalExpense > $threshold) {
         $breachMonths[] = $month;
+    } else {
+        $positiveMonths[] = $month;
     }
 }
 
-// Convert data to JSON for JavaScript
 $expensesJson = json_encode($expenseData);
 $thresholdsJson = json_encode($thresholds);
 $breachMonthsJson = json_encode($breachMonths);
-
+$positiveMonthsJson = json_encode($positiveMonths);
 
 
 
 // Get customer demographics data
+
 $sqlDemographics = "SELECT
 br.location,
 p.name as product_name,
@@ -683,7 +681,6 @@ while ($row = $resultTrends->fetch_assoc()) {
 
 
 
-// Add this function to your PHP script
 function fetchFilteredData($owner_id, $selectedMonth)
 {
     global $conn;
@@ -979,8 +976,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <!-- Recurring vs. One-Time Expenses -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Recurring vs. One-Time Expenses </b>
-                                        </h5>
+                                        <h5 class="mt-5"><b>Recurring vs. One-Time Expenses</b></h5>
                                         <canvas id="recurringExpenseChart"></canvas>
                                     </div>
                                 </div>
@@ -988,29 +984,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold <i
-                                        class="fas fa-info-circle"
-                                        onclick="showInfo('Inventory Product Sold', 'This graph displays all the products sold, stock levels and stock turover over time.');"></i>
-                                </b></h1>
+                            <h1>
+                                <b>
+                                    <i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold
+                                    <i class="fas fa-info-circle"
+                                        onclick="showInfo('Inventory Product Sold', 'This graph displays the stock levels sold of top products across all businesses.');"></i>
+                                </b>
+                            </h1>
                             <div class="row">
-                                <!-- Stock Levels Chart -->
-                                <div class="col-md-6">
+                                <!-- Stock Levels Sold Chart -->
+                                <div class="col-md-12">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Levels of Top Products</b></h5>
-                                        <canvas id="stockLevelChart"></canvas>
-                                    </div>
-                                </div>
-
-                                <!-- Stock Turnover Chart -->
-                                <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Turnover Over Time</b></h5>
-                                        <canvas id="stockTurnoverChart"></canvas>
+                                        <h5 class="mt-5"><b>Stock Levels Sold of Top Products Across All Businesses</b>
+                                        </h5>
+                                        <canvas id="stockLevelSoldChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-chart-line"></i> Key Performance Indicators (KPIs) <i
                                         class="fas fa-info-circle"
@@ -1110,6 +1101,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                 class="fas fa-info-circle"
                                                 onclick="showInfo(' Customer Demographics', 'This graph displays all the top products by location.');"></i></b>
                                     </h1>
+                                    <button id="selectBusinessBtn" class="btn btn-primary mb-1 mt-2">
+                                        <i class="fa-solid fa-filter"></i> Select Business and Branches
+                                    </button>
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
@@ -1220,9 +1214,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <!--  -->
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds <i
-                                        class="fas fa-info-circle"
-                                        onclick="showInfo('Alerts & Thresholds ', 'This graph displays all the expense threshold breach and threshold breaches.');"></i></b>
+                            <h1>
+                                <b>
+                                    <i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds
+                                    <i class="fas fa-info-circle"
+                                        onclick="showInfo('Alerts & Thresholds', 'This graph displays expense threshold breaches and positive responses based on past month\'s expenses.');"></i>
+                                </b>
                             </h1>
                             <div class="row">
                                 <!-- Expense Threshold Bar Chart -->
@@ -1236,7 +1233,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <!-- Breach Notifications -->
                                 <div class="col-md-4">
                                     <div class="alert-container">
-                                        <h5><b>⚠️ Threshold Breaches</b></h5>
+                                        <h5><b>⚠️ Threshold Alerts</b></h5>
                                         <ul id="breachList" class="list-group"></ul>
                                     </div>
                                 </div>
@@ -1367,6 +1364,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
             <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
             <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+            <input type="text" id="business-location" class="form-control mb-2" placeholder="location">
         </div>
         `,
                 confirmButtonText: 'Add Business',
@@ -1378,6 +1376,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     const businessDescription = document.getElementById('business-description').value.trim();
                     const businessAsset = document.getElementById('business-asset').value.trim();
                     const employeeCount = document.getElementById('employee-count').value.trim();
+                    const location = document.getElementById('business-location').value.trim();
 
                     if (!businessName || !businessAsset || !employeeCount) {
                         Swal.fire('Error', 'Please fill in all required fields.', 'error');
@@ -1389,6 +1388,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     formData.append('description', businessDescription);
                     formData.append('asset', businessAsset);
                     formData.append('employeeCount', employeeCount);
+                    formData.append('location', location);
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
@@ -1538,8 +1538,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
         // Stacked Bar Chart for Recurring vs. One-Time Expenses per Month
         var months = Object.keys(expenseData.recurringByMonth);
-        var recurringValues = months.map(m => parseFloat(expenseData.recurringByMonth[m].recurring.replace('₱', '').replace(',', '')));
-        var oneTimeValues = months.map(m => parseFloat(expenseData.recurringByMonth[m].oneTime.replace('₱', '').replace(',', '')));
+        var recurringValues = months.map(m => expenseData.recurringByMonth[m].recurring.reduce((sum, val) => sum + parseFloat(val.replace('₱', '').replace(',', '')), 0));
+        var oneTimeValues = months.map(m => expenseData.recurringByMonth[m].oneTime.reduce((sum, val) => sum + parseFloat(val.replace('₱', '').replace(',', '')), 0));
 
         var ctx2 = document.getElementById('recurringExpenseChart').getContext('2d');
         new Chart(ctx2, {
@@ -1591,15 +1591,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         // 7
         var inventoryData = <?php echo json_encode($inventoryData); ?>;
 
-        // Bar Chart: Stock Levels
-        var ctx1 = document.getElementById('stockLevelChart').getContext('2d');
+        // Bar Chart: Stock Levels Sold
+        var ctx1 = document.getElementById('stockLevelSoldChart').getContext('2d');
         new Chart(ctx1, {
             type: 'bar',
             data: {
                 labels: inventoryData.products,
                 datasets: [{
-                    label: 'Stock Levels',
-                    data: inventoryData.stockLevels,
+                    label: 'Stock Levels Sold',
+                    data: inventoryData.stockLevelsSold,
                     backgroundColor: 'rgba(153, 102, 255, 0.5)',
                     borderColor: 'rgb(153, 102, 255)',
                     borderWidth: 1
@@ -1610,37 +1610,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                 scales: {
                     y: {
                         beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Line Chart: Stock Turnover Over Time
-        var months = Object.keys(inventoryData.salesByMonth);
-        var productNames = inventoryData.products;
-        var datasets = productNames.map(product => ({
-            label: product,
-            data: months.map(month => inventoryData.salesByMonth[month]?.[product] || 0),
-            borderWidth: 2,
-            fill: false
-        }));
-
-        var ctx2 = document.getElementById('stockTurnoverChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                return tooltipItem.dataset.label + ': ' + tooltipItem.raw + ' units sold';
-                            }
-                        }
                     }
                 }
             }
@@ -1714,6 +1683,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
             const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
             const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?>');
+            const positiveMonths = JSON.parse('<?php echo $positiveMonthsJson; ?>');
 
             // Convert month numbers to month names
             const monthNames = [
@@ -1745,8 +1715,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         borderColor: "orange",
                         borderWidth: 2,
                         fill: false
-                    }
-                    ]
+                    }]
                 },
                 options: {
                     responsive: true,
@@ -1758,7 +1727,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                 }
             });
 
-            // Show threshold breach alerts
+            // Show threshold breach alerts or positive response
             const breachList = document.getElementById("breachList");
             if (breachMonths.length > 0) {
                 breachMonths.forEach(month => {
@@ -1767,10 +1736,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
                     breachList.appendChild(listItem);
                 });
+            } else if (positiveMonths.length > 0) {
+                positiveMonths.forEach(month => {
+                    let listItem = document.createElement("li");
+                    listItem.className = "list-group-item list-group-item-success";
+                    listItem.textContent = `✅ Expenses within limit in ${monthNames[month - 1]}`;
+                    breachList.appendChild(listItem);
+                });
             } else {
                 let listItem = document.createElement("li");
-                listItem.className = "list-group-item list-group-item-success";
-                listItem.textContent = "✅ No threshold breaches!";
+                listItem.className = "list-group-item list-group-item-warning";
+                listItem.textContent = "⚠️ No data available for the past month.";
                 breachList.appendChild(listItem);
             }
         });

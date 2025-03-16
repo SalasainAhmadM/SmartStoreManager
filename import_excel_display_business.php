@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $branches = $data['branches'];
 
     // Insert business information
-    $stmt = $conn->prepare("INSERT INTO business (name, description, asset, employee_count, owner_id) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $businessInfo['name'], $businessInfo['description'], $businessInfo['asset_size'], $businessInfo['employee_count'], $owner_id);
+    $stmt = $conn->prepare("INSERT INTO business (name, description, asset, employee_count, location, owner_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssi", $businessInfo['name'], $businessInfo['description'], $businessInfo['asset_size'], $businessInfo['employee_count'], $businessInfo['location'], $owner_id);
     $stmt->execute();
     $business_id = $stmt->insert_id;
     $stmt->close();
@@ -56,7 +56,8 @@ if (isset($_FILES['file']['tmp_name'])) {
             'name' => $sheet->getCell('A2')->getValue(),
             'description' => $sheet->getCell('B2')->getValue(),
             'asset_size' => $sheet->getCell('C2')->getValue(),
-            'employee_count' => $sheet->getCell('D2')->getValue()
+            'employee_count' => $sheet->getCell('D2')->getValue(),
+            'location' => $sheet->getCell('E2')->getValue()
         ];
 
         // Extract product information (starting from Row 5)
@@ -124,6 +125,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <th>Description</th>
                         <th>Asset Size</th>
                         <th>Number of Employees</th>
+                        <th>Location</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,6 +134,7 @@ if (isset($_FILES['file']['tmp_name'])) {
                         <td><?php echo htmlspecialchars($businessInfo['description']); ?></td>
                         <td><?php echo htmlspecialchars($businessInfo['asset_size']); ?></td>
                         <td><?php echo htmlspecialchars($businessInfo['employee_count']); ?></td>
+                        <td><?php echo htmlspecialchars($businessInfo['location']); ?></td>
                     </tr>
                 </tbody>
             </table>

@@ -59,6 +59,7 @@ if ($result->num_rows > 0) {
     $assigned_name = null;
     $business_id = null;
 }
+
 $sales_query = "";
 
 if ($assigned_type === 'Branch') {
@@ -96,6 +97,22 @@ if ($assigned_type === 'Branch') {
 
 $stmt->execute();
 $sales_result = $stmt->get_result();
+
+// Prepare data for the chart
+$product_sales = [];
+if ($sales_result->num_rows > 0) {
+    while ($row = $sales_result->fetch_assoc()) {
+        $product_name = $row['product'];
+        if (isset($product_sales[$product_name])) {
+            $product_sales[$product_name] += $row['quantity'];
+        } else {
+            $product_sales[$product_name] = $row['quantity'];
+        }
+    }
+}
+
+// Reset the result pointer to reuse the sales data for the table
+$sales_result->data_seek(0);
 ?>
 
 <!DOCTYPE html>
@@ -178,53 +195,58 @@ $sales_result = $stmt->get_result();
 
 
 
-                            <div class="scrollable-table">
-                                <div class="scrollable-table">
-                                    <table class="table table-striped table-hover mt-4 mb-5">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Product</th>
-                                                <th>Price</th>
-                                                <th>Quantity Sold</th>
-                                                <th>Revenue</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="salesTableBody">
-                                            <?php if ($sales_result->num_rows > 0): ?>
-                                                <?php while ($row = $sales_result->fetch_assoc()): ?>
-                                                    <tr class="product-row">
-                                                        <td class="product-name">
-                                                            <?php echo htmlspecialchars($row['product']); ?>
-                                                        </td>
-                                                        <td>$<?php echo number_format($row['price'], 2); ?>
-                                                        </td>
-                                                        <td><?php echo htmlspecialchars($row['quantity']); ?></td>
-                                                        <td>$<?php echo number_format($row['revenue'], 2); ?></td>
-                                                        <td><?php echo htmlspecialchars($row['date']); ?></td>
-                                                        <td class="text-center">
-                                                            <a href="#" class="text-primary me-3"
-                                                                onclick="editSale(<?php echo $row['id']; ?>)">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <a href="#" class="text-danger"
-                                                                onclick="deleteSale(<?php echo $row['id']; ?>)">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                <?php endwhile; ?>
-                                            <?php else: ?>
+                            <div class="row mt-4">
+                                <!-- Sales Table -->
+                                <div class="col-md-8">
+                                    <div class="scrollable-table">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-dark">
                                                 <tr>
-                                                    <td colspan="6" class="text-center">No sales records found.</td>
+                                                    <th>Product</th>
+                                                    <th>Price</th>
+                                                    <th>Quantity Sold</th>
+                                                    <th>Revenue</th>
+                                                    <th>Updated At</th>
+                                                    <th>Action</th>
                                                 </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-
-                                    </table>
+                                            </thead>
+                                            <tbody id="salesTableBody">
+                                                <?php if ($sales_result->num_rows > 0): ?>
+                                                    <?php while ($row = $sales_result->fetch_assoc()): ?>
+                                                        <tr class="product-row">
+                                                            <td class="product-name">
+                                                                <?php echo htmlspecialchars($row['product']); ?>
+                                                            </td>
+                                                            <td>$<?php echo number_format($row['price'], 2); ?></td>
+                                                            <td><?php echo htmlspecialchars($row['quantity']); ?></td>
+                                                            <td>$<?php echo number_format($row['revenue'], 2); ?></td>
+                                                            <td><?php echo htmlspecialchars($row['date']); ?></td>
+                                                            <td class="text-center">
+                                                                <a href="#" class="text-primary me-3"
+                                                                    onclick="editSale(<?php echo $row['id']; ?>)">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="#" class="text-danger"
+                                                                    onclick="deleteSale(<?php echo $row['id']; ?>)">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endwhile; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No sales records found.</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
 
+                                <!-- Chart -->
+                                <div class="col-md-4">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
                             </div>
 
                         </div>
@@ -237,6 +259,31 @@ $sales_result = $stmt->get_result();
     <script src="../js/sidebar_manager.js"></script>
     <script src="../js/sort_items.js"></script>
     <script>
+        const productSalesData = <?php echo json_encode($product_sales); ?>;
+        const productNames = Object.keys(productSalesData);
+        const productQuantities = Object.values(productSalesData);
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Quantity Sold',
+                    data: productQuantities,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
         // Edit Sale
         function editSale(salesId) {
             console.log('Edit Sale Triggered for ID:', salesId); // Debugging
@@ -364,12 +411,28 @@ $sales_result = $stmt->get_result();
                 }
             });
         });
+        // Function to get the current date in Asia/Manila timezone
+        function getManilaDate() {
+            const options = {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            };
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(new Date());
+            const year = parts.find(part => part.type === 'year').value;
+            const month = parts.find(part => part.type === 'month').value;
+            const day = parts.find(part => part.type === 'day').value;
+            return `${year}-${month}-${day}`;
+        }
+
         // Event Listener for Branch Sales Button
         document.getElementById('addBranchSaleBtn')?.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             const branchId = button.getAttribute('data-id');
             const businessId = button.getAttribute('data-business-id');
-            const today = new Date().toISOString().split('T')[0];
+            const today = getManilaDate(); // Use the Manila date
 
             try {
                 const response = await fetch(`fetch_products.php?business_id=${businessId}`);
@@ -456,7 +519,7 @@ $sales_result = $stmt->get_result();
         document.getElementById('addBusinessSaleBtn')?.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             const businessId = button.getAttribute('data-id');
-            const today = new Date().toISOString().split('T')[0];
+            const today = getManilaDate(); // Use the Manila date
 
             try {
                 const response = await fetch(`fetch_products.php?business_id=${businessId}`);

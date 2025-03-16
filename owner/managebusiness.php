@@ -99,8 +99,15 @@ $size_options = [
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-cogs me-2"></i> Manage Business </b></h1>
 
-                    <button id="uploadDataButton" class="btn btn-success mt-4"><i class="fa-solid fa-upload"></i> Upload
-                        Data</button>
+                    <div class="mt-4">
+                        <button id="uploadDataButton" class="btn btn-success">
+                            <i class="fa-solid fa-upload"></i> Upload Multiple Data
+                        </button>
+
+                        <button id="deleteMultipleButton" class="btn btn-danger ms-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
 
                     <ul class="nav nav-pills nav-fill mt-4">
                         <li class="nav-item">
@@ -181,6 +188,8 @@ $size_options = [
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Employee Count <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Location <button class="btn text-white"><i
+                                                    class="fas fa-sort"></i></button></th>
                                         <th scope="col">Created At <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Updated At <button class="btn text-white"><i
@@ -197,6 +206,7 @@ $size_options = [
                                                 <td><?php echo htmlspecialchars($business['description']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['asset']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['location']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['created_at']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
                                                 <td class="text-center">
@@ -472,26 +482,47 @@ $size_options = [
             Swal.fire({
                 title: 'Upload or Download Data',
                 html: `
-                <div class="mt-3 mb-3 position-relative">
-                    <form action="../import_excel_display_business.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
-                        <i class="fa-solid fa-upload"></i>
-                        <label for="file" class="mb-2">Upload Data:</label>
-                        <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
-                        <input type="submit" value="Upload Excel" class="form-control">
-                    </form>
-                    <form action="../export_excel_add_business.php" method="POST" class="top-0 end-0 mt-2 me-2">
-                        <button class="btn btn-success" type="submit">
-                            <i class="fa-solid fa-download"></i> Download Data Template
-                        </button>
-                    </form>
+        <div class="mt-3 mb-3 position-relative">
+            <form action="../import_excel_display_business.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                <i class="fa-solid fa-upload"></i>
+                <label for="file" class="mb-2">Upload Data:</label>
+                <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                <input type="submit" value="Upload Excel" class="form-control">
+            </form>
+            <div class="d-flex justify-content-center mt-2">
+                <button class="btn btn-info me-2" id="instructionsButton">
+                    <i class="fa-solid fa-info-circle"></i> 
+                </button>
+                <form action="../export_excel_add_business.php" method="POST">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa-solid fa-download"></i> Download Data Template
+                    </button>
+                </form>
+            </div>
+            <div id="instructionsContainer" class="instructions-overlay d-none">
+                <div class="instructions-content text-center">
+                    <img src="../assets/instructions/business.jpg" alt="Instructions Image" class="img-fluid instructions-img" id="instructionsImage">
                 </div>
-                `,
-                showConfirmButton: false, // Remove default confirmation button
+            </div>
+        </div>
+        `,
+                showConfirmButton: false,
                 customClass: {
-                    popup: 'swal2-modal-wide' // Optional for larger modals
+                    popup: 'swal2-modal-wide'
                 }
             });
+
+            document.getElementById('instructionsButton').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.remove('d-none');
+            });
+
+            document.getElementById('instructionsImage').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.add('d-none');
+            });
         });
+
+
+
 
         const ownerId = <?php echo json_encode($owner_id); ?>;
 
@@ -506,6 +537,7 @@ $size_options = [
                 <textarea type="text" id="business-description" class="form-control mb-2" placeholder="Business Description"></textarea>
                 <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
                 <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
+                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location">
             </div>
         `,
                 confirmButtonText: 'Add Business',
@@ -516,6 +548,7 @@ $size_options = [
                         description: $('#business-description').val(),
                         asset: parseInt($('#business-asset').val(), 10),
                         employeeCount: parseInt($('#employee-count').val(), 10),
+                        location: $('#business-location').val(),
                         owner_id: ownerId,
                     };
 
@@ -560,6 +593,7 @@ $size_options = [
                 const description = row.find('td:eq(1)').text();
                 const asset = row.find('td:eq(2)').text();
                 const employees = row.find('td:eq(3)').text();
+                const location = row.find('td:eq(4)').text();
 
                 Swal.fire({
                     title: 'Edit Business',
@@ -568,6 +602,7 @@ $size_options = [
                 <textarea type="text" id="edit-description" class="form-control mb-2" placeholder="Description">${description}</textarea>
                 <input type="number" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
                 <input type="number" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
+                <input type="text" id="edit-location" class="form-control mb-2" placeholder="Location" value="${location}">
             `,
                     confirmButtonText: 'Save Changes',
                     showCancelButton: true,
@@ -578,6 +613,7 @@ $size_options = [
                             description: $('#edit-description').val(),
                             asset: parseInt($('#edit-asset').val(), 10),
                             employeeCount: parseInt($('#edit-employees').val(), 10),
+                            location: $('#edit-location').val(),
                         };
 
                         if (Object.values(updatedData).some(value => !value)) {
@@ -811,20 +847,20 @@ $size_options = [
             Swal.fire({
                 title: 'Add Product',
                 html: `
-                    <input id="product-name" class="form-control mb-2" placeholder="Product Name">
-                    <select id="product-type" class="form-control mb-2">
-                        <option value="">Select Type</option>
-                        ${typeOptions}
-                    </select>
-                    <input id="product-type-custom" class="form-control mb-2" placeholder="Or specify a new type (optional)">
-                    <select id="product-size" class="form-control mb-2">
-                        <option value="">Select Size</option>
-                        ${sizeDropdown}
-                    </select>
-                    <input id="product-size-custom" class="form-control mb-2" placeholder="Or specify a new size (optional)">
-                    <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
-                    <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
-                `,
+                                <input id="product-name" class="form-control mb-2" placeholder="Product Name">
+                                    <select id="product-type" class="form-control mb-2">
+                                        <option value="">Select Type</option>
+                                        ${typeOptions}
+                                    </select>
+                                    <input id="product-type-custom" class="form-control mb-2" placeholder="Or specify a new type (optional)">
+                                        <select id="product-size" class="form-control mb-2">
+                                            <option value="">Select Size</option>
+                                            ${sizeDropdown}
+                                        </select>
+                                        <input id="product-size-custom" class="form-control mb-2" placeholder="Or specify a new size (optional)">
+                                            <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
+                                                <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
+                                                `,
                 showCancelButton: true,
                 confirmButtonText: 'Add Product',
                 preConfirm: () => {
@@ -1323,6 +1359,176 @@ $size_options = [
                 });
             }
         };
+
+        document.getElementById("deleteMultipleButton").addEventListener("click", function () {
+            Swal.fire({
+                title: "Delete Multiple Data's?",
+                text: "Select the type of data you want to delete:",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Confirm",
+                cancelButtonText: "Cancel",
+                input: "radio",
+                inputOptions: {
+                    business: "Business",
+                    branch: "Branch",
+                    products: "Products"
+                },
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "Please select an option!";
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetchData(result.value);
+                }
+            });
+        });
+
+        function fetchData(type) {
+            Swal.fire({
+                title: "Fetching Data...",
+                text: "Please wait...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("../endpoints/business/fetch_data.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `type=${type}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.length > 0) {
+                        let table = `<table border='1' width='100%' style="border-collapse: collapse;">
+                                <tr style="background-color: #f8f9fa; font-weight: bold;">`;
+
+                        // Add a checkbox column header
+                        table += `<th style="width: 10%;">Select</th>`;
+
+                        if (type === "business") {
+                            table += `<th style="width: 5%;">ID</th>
+                              <th style="width: 15%;">Name</th>
+                              <th style="width: auto;">Description</th>
+                              <th style="width: 15%;">Asset</th>
+                              <th style="width: 10%;">Employee Count</th>`;
+                            data.forEach(row => {
+                                table += `<tr>
+                                    <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+                                    <td>${row.id}</td>
+                                    <td>${row.name}</td>
+                                    <td>${row.description}</td>
+                                    <td>${row.asset}</td>
+                                    <td>${row.employee_count}</td>
+                                  </tr>`;
+                            });
+                        } else if (type === "branch") {
+                            table += `<th style="width: 5%;">ID</th>
+                              <th style="width: 25%;">Location</th>
+                              <th style="width: 10%;">Business ID</th>`;
+                            data.forEach(row => {
+                                table += `<tr>
+                                    <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+                                    <td>${row.id}</td>
+                                    <td>${row.location}</td>
+                                    <td>${row.business_id}</td>
+                                  </tr>`;
+                            });
+                        } else if (type === "products") {
+                            table += `<th style="width: 5%;">ID</th>
+                              <th style="width: 15%;">Name</th>
+                              <th style="width: auto;">Description</th>
+                              <th style="width: 10%;">Price</th>
+                              <th style="width: 10%;">Size</th>
+                              <th style="width: 15%;">Type</th>`;
+                            data.forEach(row => {
+                                table += `<tr>
+                                    <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+                                    <td>${row.id}</td>
+                                    <td>${row.name}</td>
+                                    <td>${row.description}</td>
+                                    <td>${row.price}</td>
+                                    <td>${row.size}</td>
+                                    <td>${row.type}</td>
+                                  </tr>`;
+                            });
+                        }
+
+                        table += "</tr></table>";
+
+                        Swal.fire({
+                            title: `${type.charAt(0).toUpperCase() + type.slice(1)} Data`,
+                            html: table,
+                            width: '80%',
+                            showCancelButton: true,
+                            confirmButtonText: "Delete Selected",
+                            cancelButtonText: "Cancel",
+                            preConfirm: () => {
+                                const selectedItems = [];
+                                document.querySelectorAll('input[name="selectedItems"]:checked').forEach(checkbox => {
+                                    selectedItems.push(checkbox.value);
+                                });
+                                if (selectedItems.length === 0) {
+                                    Swal.showValidationMessage("Please select at least one item to delete.");
+                                    return false;
+                                }
+                                return selectedItems;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: "Are you sure?",
+                                    text: "This action cannot be undone!",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonText: "Yes, delete it!",
+                                    cancelButtonText: "Cancel"
+                                }).then((confirmResult) => {
+                                    if (confirmResult.isConfirmed) {
+                                        deleteData(type, result.value);
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        Swal.fire("No Data Found", "There is no data available for the selected type.", "info");
+                    }
+                })
+                .catch(error => {
+                    Swal.fire("Error", "Failed to fetch data. Please try again.", "error");
+                });
+        }
+
+        function deleteData(type, selectedItems) {
+            fetch("../endpoints/business/delete_data.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `type=${type}&ids=${selectedItems.join(',')}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        Swal.fire("Success", "Selected data has been deleted.", "success");
+                    } else {
+                        Swal.fire("Error", "Failed to delete data. Please try again.", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.fire("Error", "Failed to delete data. Please try again.", "error");
+                });
+        }
+
     </script>
 
 

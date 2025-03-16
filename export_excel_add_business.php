@@ -13,6 +13,7 @@ $sheet->setCellValue('A1', 'Business Name');
 $sheet->setCellValue('B1', 'Business Description');
 $sheet->setCellValue('C1', 'Asset Size');
 $sheet->setCellValue('D1', 'Number of Employees');
+$sheet->setCellValue('E1', 'Location');
 
 // Leave row 2 empty for business information input
 $sheet->setCellValue('A2', '');
@@ -46,7 +47,7 @@ $headerStyle = [
     'font' => ['bold' => true],
     'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT]
 ];
-$sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+$sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 $sheet->getStyle('A3:D3')->applyFromArray($headerStyle);
 $sheet->getStyle('A4:E4')->applyFromArray($headerStyle);
 $sheet->getStyle('A15')->applyFromArray($headerStyle);
