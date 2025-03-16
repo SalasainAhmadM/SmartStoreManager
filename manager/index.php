@@ -165,16 +165,17 @@ $sales_result->data_seek(0);
                             <h4 class="mt-4" id="salesTitle"></h4>
 
 
-                            <!-- Search Bar -->
-                            <div class="mt-3 position-relative">
-                                <form class="d-flex" role="search">
-                                    <input class="form-control me-2 w-50" type="search" placeholder="Search product.."
+                            <!-- Search Bar and Buttons -->
+                            <div class="mt-3 d-flex align-items-center">
+                                <!-- Search Bar -->
+                                <form class="d-flex me-2" role="search" style="flex: 1;">
+                                    <input class="form-control" type="search" placeholder="Search product.."
                                         aria-label="Search" id="searchInput">
                                 </form>
-                                <!-- Add Business Button -->
+
+                                <!-- Add Business/Branch Button -->
                                 <?php if ($assigned_type === 'Branch'): ?>
-                                    <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                        id="addBranchSaleBtn" data-type="Branch"
+                                    <button class="btn btn-success me-2" id="addBranchSaleBtn" data-type="Branch"
                                         data-id="<?php echo htmlspecialchars($assigned['id']); ?>"
                                         data-name="<?php echo htmlspecialchars($assigned_name); ?>"
                                         data-business-id="<?php echo htmlspecialchars($assigned['business_id']); ?>"
@@ -182,24 +183,24 @@ $sales_result->data_seek(0);
                                         <i class="fas fa-plus me-2"></i> Add Branch Sales
                                     </button>
                                 <?php elseif ($assigned_type === 'Business'): ?>
-                                    <button class="btn btn-success position-absolute top-0 end-0 mt-2 me-2"
-                                        id="addBusinessSaleBtn" data-type="Business"
+                                    <button class="btn btn-success me-2" id="addBusinessSaleBtn" data-type="Business"
                                         data-id="<?php echo htmlspecialchars($assigned['id']); ?>"
                                         data-name="<?php echo htmlspecialchars($assigned_name); ?>">
                                         <i class="fas fa-plus me-2"></i> Add Business Sales
                                     </button>
                                 <?php endif; ?>
 
+                                <!-- Upload Data Button -->
+                                <!-- <button id="uploadDataButton" class="btn btn-success">
+                                    <i class="fa-solid fa-upload"></i> Upload Data
+                                </button> -->
                             </div>
-
-
-
 
                             <div class="row mt-4">
                                 <!-- Sales Table -->
                                 <div class="col-md-8">
                                     <div class="scrollable-table">
-                                        <table class="table table-striped table-hover">
+                                        <table class="table table-striped table-hover" id="salesTable">
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th>Product</th>
@@ -248,6 +249,9 @@ $sales_result->data_seek(0);
                                     <canvas id="salesChart"></canvas>
                                 </div>
                             </div>
+                            <button class="btn btn-primary mt-2 mb-5" id="printReportBtn" onclick="printSalesReport()">
+                                <i class="fas fa-print me-2"></i> Print Sales Report
+                            </button>
 
                         </div>
                     </div>
@@ -603,7 +607,122 @@ $sales_result->data_seek(0);
             }
         });
 
+        document.getElementById("printReportBtn").addEventListener("click", function () {
+            printSalesReport();
+        });
 
+        function printSalesReport() {
+            const table = document.getElementById('salesTable').cloneNode(true); // Clone the table to avoid modifying the original
+
+            // Remove the "Action" header
+            const headerRow = table.querySelector('thead tr');
+            if (headerRow && headerRow.children.length > 0) {
+                headerRow.deleteCell(-1); // Remove the last <th> (Action)
+            }
+
+            // Remove the "Action" column from each row in the table body
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.children.length > 0) {
+                    row.deleteCell(-1); // Remove the last <td> (Action)
+                }
+            });
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.open();
+            printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Sales Report</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    h1 {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    table, th, td {
+                        border: 1px solid black;
+                    }
+                    th, td {
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    thead {
+                        background-color: #333;
+                        color: #fff;
+                    }
+                    tfoot {
+                        background-color: #f1f1f1;
+                        font-weight: bold;
+                    }
+                    button, .btn, .fas.fa-sort {
+                        display: none; /* Hide sort icons and buttons in print */
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Sales Report</h1>
+                ${table.outerHTML}
+            </body>
+            </html>
+        `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        document.getElementById('uploadDataButton').addEventListener('click', function () {
+            Swal.fire({
+                title: 'Upload or Download Data',
+                html: `
+        <div class="mt-3 mb-3 position-relative">
+            <form action="../import_sales_manager.php" method="POST" enctype="multipart/form-data" class="btn btn-success p-3">
+                <i class="fa-solid fa-upload"></i>
+                <label for="file" class="mb-2">Upload Data:</label>
+                <input type="file" name="file" id="file" accept=".xlsx, .xls" class="form-control mb-2">
+                <input type="submit" value="Upload Excel" class="form-control">
+            </form>
+            <div class="d-flex justify-content-center mt-2">
+                <button class="btn btn-info me-2" id="instructionsButton">
+                    <i class="fa-solid fa-info-circle"></i> 
+                </button>
+                <form action="../export_excel_sales_manager.php" method="POST">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa-solid fa-download"></i> Download Data Template
+                    </button>
+                </form>
+            </div>
+            <div id="instructionsContainer" class="instructions-overlay d-none">
+                <div class="instructions-content text-center">
+                    <img src="../assets/instructions/sales_manager.jpg" alt="Instructions Image" class="img-fluid instructions-img" id="instructionsImage">
+                </div>
+            </div>
+        </div>
+        `,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'swal2-modal-wide'
+                }
+            });
+
+            document.getElementById('instructionsButton').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.remove('d-none');
+            });
+
+            document.getElementById('instructionsImage').addEventListener('click', function () {
+                document.getElementById('instructionsContainer').classList.add('d-none');
+            });
+        });
 
     </script>
 
