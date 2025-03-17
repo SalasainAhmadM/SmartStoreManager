@@ -577,12 +577,13 @@ $expensesJson = json_encode($expenseData);
 // 10
 // Fetch total monthly expenses for the owner
 $expenseQuery = "
-    SELECT month, SUM(amount) AS total_expenses
+    SELECT 
+        month, 
+        COALESCE(SUM(amount), 0) AS total_expenses
     FROM expenses
     WHERE owner_id = ?
     GROUP BY month
-    ORDER BY month DESC
-    LIMIT 1";
+    ORDER BY month ASC";
 
 $stmt = $conn->prepare($expenseQuery);
 $stmt->bind_param("i", $owner_id);
@@ -594,9 +595,15 @@ $thresholds = [];
 $breachMonths = [];
 $positiveMonths = [];
 
-if ($row = $result->fetch_assoc()) {
-    $totalExpense = $row['total_expenses'];
+// Initialize expense data for all months (1-12) with 0
+for ($month = 1; $month <= 12; $month++) {
+    $expenseData[$month] = 0;
+}
+
+// Fetch and process the result
+while ($row = $result->fetch_assoc()) {
     $month = $row['month'];
+    $totalExpense = $row['total_expenses'];
 
     // Set dynamic threshold (e.g., 80% of the total monthly expenses)
     $threshold = $totalExpense * 0.8;
@@ -611,12 +618,11 @@ if ($row = $result->fetch_assoc()) {
     }
 }
 
+// Convert data to JSON
 $expensesJson = json_encode($expenseData);
 $thresholdsJson = json_encode($thresholds);
 $breachMonthsJson = json_encode($breachMonths);
 $positiveMonthsJson = json_encode($positiveMonths);
-
-
 
 // Get customer demographics data
 
