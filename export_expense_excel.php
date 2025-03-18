@@ -11,6 +11,7 @@ date_default_timezone_set('Asia/Manila');
 
 $owner_id = $_SESSION['user_id'];
 
+// Fetch Business Data
 $businesses = [];
 $sql = "SELECT id, name FROM business WHERE owner_id = ?";
 $stmt = $conn->prepare($sql);
@@ -34,6 +35,7 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+// Fetch Expense Types Data
 $expense_types = [];
 $sql = "SELECT id, type_name FROM expense_type WHERE is_custom = 0 OR (is_custom = 1 AND owner_id = ?)";
 $stmt = $conn->prepare($sql);
@@ -54,97 +56,90 @@ $boldStyle = [
     'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
 ];
 
+// Add Business Data
 $sheet->setCellValue('A1', 'Business')->getStyle('A1')->applyFromArray($boldStyle);
-$sheet->setCellValue('B1', 'Branch/Branches')->getStyle('B1')->applyFromArray($boldStyle);
-$sheet->setCellValue('C1', 'Expense Types')->getStyle('C1')->applyFromArray($boldStyle);
-
 $rowNum = 2;
 foreach ($businesses as $business) {
     $sheet->setCellValue("A$rowNum", "{$business['id']} - {$business['name']}");
     $rowNum++;
 }
 
+// Add Branch Data
+$sheet->setCellValue('B1', 'Branch/Branches')->getStyle('B1')->applyFromArray($boldStyle);
 $rowNum = 2;
 foreach ($branches as $branch) {
     $sheet->setCellValue("B$rowNum", "{$branch['id']} - {$branch['location']}");
     $rowNum++;
 }
 
+// Add Expense Types Data
+$sheet->setCellValue('C1', 'Expense Types')->getStyle('C1')->applyFromArray($boldStyle);
 $rowNum = 2;
 foreach ($expense_types as $expense) {
     $sheet->setCellValue("C$rowNum", "{$expense['id']} - {$expense['type_name']}");
     $rowNum++;
 }
 
-$sheet->setCellValue('A14', 'Expenses Report')->getStyle('A14')->applyFromArray($boldStyle);
+// Calculate the maximum number of rows used by Business, Branch, and Expense Types
+$maxRows = max(count($businesses), count($branches), count($expense_types)) + 2; // +2 for headers and 1-based indexing
 
+// Add the "Expenses Report" header
+$sheet->setCellValue("A$maxRows", 'Expenses Report')->getStyle("A$maxRows")->applyFromArray($boldStyle);
+
+// Add the headers for the expenses table
 $headers = ['Expense Type', 'Amount', 'Category', 'Business', 'Branch', 'Description', 'Date'];
 $colIndex = 'A';
+$headerRow = $maxRows + 1; // Place headers in the row after the "Expenses Report" header
 foreach ($headers as $header) {
-    $cell = $colIndex . "15";
+    $cell = $colIndex . $headerRow;
     $sheet->setCellValue($cell, $header);
     $sheet->getStyle($cell)->applyFromArray($boldStyle);
     $colIndex++;
 }
 
-$validation = $sheet->getCell('D16')->getDataValidation();
+// Add data validation for Business, Branch, and Expense Types
+$validation = $sheet->getCell('D' . ($headerRow + 1))->getDataValidation();
 $validation->setType(DataValidation::TYPE_LIST);
 $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
 $validation->setAllowBlank(false);
 $validation->setShowInputMessage(true);
 $validation->setShowErrorMessage(true);
 $validation->setShowDropDown(true);
-$validation->setFormula1('$A$2:$A$13');
+$validation->setFormula1('$A$2:$A$' . ($maxRows - 1)); // Business data range
 
-for ($i = 16; $i <= 24; $i++) {
+for ($i = $headerRow + 1; $i <= $headerRow + 10; $i++) {
     $sheet->getCell("D$i")->setDataValidation(clone $validation);
 }
 
-$validation = $sheet->getCell('E16')->getDataValidation();
+$validation = $sheet->getCell('E' . ($headerRow + 1))->getDataValidation();
 $validation->setType(DataValidation::TYPE_LIST);
 $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
 $validation->setAllowBlank(false);
 $validation->setShowInputMessage(true);
 $validation->setShowErrorMessage(true);
 $validation->setShowDropDown(true);
-$validation->setFormula1('$B$2:$B$13');
+$validation->setFormula1('$B$2:$B$' . ($maxRows - 1)); // Branch data range
 
-for ($i = 16; $i <= 24; $i++) {
+for ($i = $headerRow + 1; $i <= $headerRow + 10; $i++) {
     $sheet->getCell("E$i")->setDataValidation(clone $validation);
 }
 
-$validation = $sheet->getCell('A16')->getDataValidation();
+$validation = $sheet->getCell('A' . ($headerRow + 1))->getDataValidation();
 $validation->setType(DataValidation::TYPE_LIST);
 $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
 $validation->setAllowBlank(false);
 $validation->setShowInputMessage(true);
 $validation->setShowErrorMessage(true);
 $validation->setShowDropDown(true);
-$validation->setFormula1('$C$2:$C$13');
+$validation->setFormula1('$C$2:$C$' . ($maxRows - 1)); // Expense Types data range
 
-for ($i = 16; $i <= 24; $i++) {
+for ($i = $headerRow + 1; $i <= $headerRow + 10; $i++) {
     $sheet->getCell("A$i")->setDataValidation(clone $validation);
 }
 
-$branchList = implode(',', array_map(function ($branch) {
-    return "{$branch['id']} - {$branch['location']}";
-}, $branches));
-
-$validation = $sheet->getCell('E16')->getDataValidation();
-$validation->setType(DataValidation::TYPE_LIST);
-$validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
-$validation->setAllowBlank(false);
-$validation->setShowInputMessage(true);
-$validation->setShowErrorMessage(true);
-$validation->setShowDropDown(true);
-$validation->setFormula1('"' . $branchList . '"');
-
-for ($i = 16; $i <= 24; $i++) {
-    $sheet->getCell("E$i")->setDataValidation(clone $validation);
-}
-
+// Add data validation for Category
 $categoryList = 'Business,Branch';
-$validation = $sheet->getCell('C16')->getDataValidation();
+$validation = $sheet->getCell('C' . ($headerRow + 1))->getDataValidation();
 $validation->setType(DataValidation::TYPE_LIST);
 $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
 $validation->setAllowBlank(false);
@@ -153,21 +148,24 @@ $validation->setShowErrorMessage(true);
 $validation->setShowDropDown(true);
 $validation->setFormula1('"' . $categoryList . '"');
 
-for ($i = 16; $i <= 24; $i++) {
+for ($i = $headerRow + 1; $i <= $headerRow + 10; $i++) {
     $sheet->getCell("C$i")->setDataValidation(clone $validation);
 }
 
-for ($i = 16; $i <= 24; $i++) {
+// Add default values for Amount, Description, and Date
+for ($i = $headerRow + 1; $i <= $headerRow + 10; $i++) {
     $sheet->setCellValue("B$i", "0");
     $sheet->setCellValue("F$i", "");
     $sheet->setCellValue("G$i", date('m/d/Y'));
 }
 
+// Set fixed column width
 $fixedWidth = 20;
-foreach (range('A', 'F') as $col) {
+foreach (range('A', 'G') as $col) {
     $sheet->getColumnDimension($col)->setWidth($fixedWidth);
 }
 
+// Output the file
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="Expense_Template.xlsx"');
 header('Cache-Control: max-age=0');

@@ -28,32 +28,43 @@ if (isset($_FILES['file']['tmp_name'])) {
             $expenseTypes[] = $sheet->getCell("C$row")->getValue();
         }
 
-        // Extract expense details
-        $expenseData = [];
-        $row = 16;
-        while (true) {
-            $expenseType = $sheet->getCell("A$row")->getValue();
-            $amount = $sheet->getCell("B$row")->getValue();
-            $category = $sheet->getCell("C$row")->getValue();
-            $business = $sheet->getCell("D$row")->getValue();
-            $branch = $sheet->getCell("E$row")->getValue();
-            $description = $sheet->getCell("F$row")->getValue();
-            $date = $sheet->getCell("G$row")->getValue();
-
-            if (empty($expenseType)) {
+        // Find the row with the "Expenses Report" header
+        $expensesReportHeaderRow = null;
+        $highestRow = $sheet->getHighestRow();
+        for ($i = 1; $i <= $highestRow; $i++) {
+            if ($sheet->getCell("A$i")->getValue() == 'Expenses Report') {
+                $expensesReportHeaderRow = $i;
                 break;
             }
+        }
 
-            $expenseData[] = [
-                'expense_type' => $expenseType,
-                'amount' => $amount,
-                'category' => $category,
-                'business' => $business,
-                'branch' => $branch,
-                'description' => $description,
-                'date' => $date
-            ];
-            $row++;
+        // Extract expense details starting from the row after the headers
+        $expenseData = [];
+        if ($expensesReportHeaderRow !== null) {
+            $startRow = $expensesReportHeaderRow + 2; // +2 to skip the "Expenses Report" header and the column headers
+            for ($row = $startRow; $row <= $highestRow; $row++) {
+                $expenseType = $sheet->getCell("A$row")->getValue();
+                $amount = $sheet->getCell("B$row")->getValue();
+                $category = $sheet->getCell("C$row")->getValue();
+                $business = $sheet->getCell("D$row")->getValue();
+                $branch = $sheet->getCell("E$row")->getValue();
+                $description = $sheet->getCell("F$row")->getValue();
+                $date = $sheet->getCell("G$row")->getValue();
+
+                if (empty($expenseType)) {
+                    break; // Stop when no more expense data
+                }
+
+                $expenseData[] = [
+                    'expense_type' => $expenseType,
+                    'amount' => $amount,
+                    'category' => $category,
+                    'business' => $business,
+                    'branch' => $branch,
+                    'description' => $description,
+                    'date' => $date
+                ];
+            }
         }
         ?>
 
@@ -63,13 +74,14 @@ if (isset($_FILES['file']['tmp_name'])) {
         <head>
             <title>Expenses Report</title>
             <link rel="icon" href="./assets/logo.png">
+            <link href="./css/excel.css" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         </head>
 
-        <body class="container mt-5">
-
-
+        <body class="container mt-5 mb-5">
+            <!-- Scroll Button -->
+            <button id="scrollButton" class="animated">↓</button>
             <div class="mb-4">
                 <h2>Business, Branches & Expense Types</h2>
                 <table class="table table-bordered">

@@ -178,7 +178,7 @@ $stmt->close();
                 title: 'Upload or Download Data',
                 html: `
               <div class="mt-3 mb-3 position-relative">
-    <form action="../import_expense_excel_branch.php" method="POST" enctype="multipart/form-data"
+    <form action="../import_expenses.php" method="POST" enctype="multipart/form-data"
         class="btn btn-success p-3">
         <i class="fa-solid fa-upload"></i>
         <label for="file" class="mb-2">Upload Data:</label>
@@ -258,7 +258,7 @@ $stmt->close();
             fetchData('expenses');
         });
 
-        function fetchData(type) {
+        function fetchData(type, year = null, month = null) {
             Swal.fire({
                 title: "Fetching Data...",
                 text: "Please wait...",
@@ -268,84 +268,22 @@ $stmt->close();
                 }
             });
 
+            let body = `type=${type}`;
+            if (year) body += `&year=${year}`;
+            if (month) body += `&month=${month}`;
+
             fetch("../endpoints/expenses/fetch_data.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
-                body: `type=${type}`
+                body: body
             })
                 .then(response => response.json())
                 .then(data => {
                     Swal.close();
                     if (data.length > 0) {
-                        let table = `<table border='1' width='100%' style="border-collapse: collapse;">
-                <tr style="background-color: #f8f9fa; font-weight: bold;">
-                    <th style="width: 10%;">Select</th>
-                    <th style="width: 5%;">ID</th>
-                    <th style="width: 15%;">Expense Type</th>
-                    <th style="width: 10%;">Amount</th>
-                    <th style="width: auto;">Description</th>
-                    <th style="width: 15%;">Created At</th>
-                    <th style="width: 15%;">Category</th>
-                    <th style="width: 15%;">Business/Branch</th>
-                </tr>`;
-
-                        data.forEach(row => {
-                            let formattedAmount = new Intl.NumberFormat('en-PH', {
-                                style: 'currency',
-                                currency: 'PHP'
-                            }).format(row.amount);
-
-                            table += `<tr>
-                    <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
-                    <td>${row.id}</td>
-                    <td>${row.expense_type}</td>
-                    <td>${formattedAmount}</td>
-                    <td>${row.description}</td>
-                    <td>${row.created_at}</td>
-                    <td>${row.category}</td>
-                    <td>${row.category === 'business' ? row.business_name : row.branch_location}</td>
-                </tr>`;
-                        });
-
-                        table += "</table>";
-
-                        Swal.fire({
-                            title: `${type.charAt(0).toUpperCase() + type.slice(1)} Data`,
-                            html: table,
-                            width: '80%',
-                            showCancelButton: true,
-                            confirmButtonText: "Delete Selected",
-                            cancelButtonText: "Cancel",
-                            preConfirm: () => {
-                                const selectedItems = [];
-                                document.querySelectorAll('input[name="selectedItems"]:checked').forEach(checkbox => {
-                                    selectedItems.push(checkbox.value);
-                                });
-                                if (selectedItems.length === 0) {
-                                    Swal.showValidationMessage("Please select at least one item to delete.");
-                                    return false;
-                                }
-                                return selectedItems;
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                Swal.fire({
-                                    title: "Are you sure?",
-                                    text: "This action cannot be undone!",
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonText: "Yes, delete it!",
-                                    cancelButtonText: "Cancel"
-                                }).then((confirmResult) => {
-                                    if (confirmResult.isConfirmed) {
-                                        deleteData(type, result.value);
-                                    }
-                                });
-                            }
-                        });
-
+                        displayTable(type, data);
                     } else {
                         Swal.fire("No Data Found", "There is no data available for the selected type.", "info");
                     }
@@ -355,6 +293,104 @@ $stmt->close();
                 });
         }
 
+        function displayTable(type, data) {
+            let table = `<table border='1' width='100%' style="border-collapse: collapse;">
+        <tr style="background-color: #f8f9fa; font-weight: bold;">
+            <th style="width: 10%;"><input type="checkbox" id="selectAll"> Select All</th>
+            <th style="width: 5%;">ID</th>
+            <th style="width: 15%;">Expense Type</th>
+            <th style="width: 10%;">Amount</th>
+            <th style="width: auto;">Description</th>
+            <th style="width: 15%;">Created At</th>
+            <th style="width: 15%;">Category</th>
+            <th style="width: 15%;">Business/Branch</th>
+        </tr>`;
+
+            data.forEach(row => {
+                let formattedAmount = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP'
+                }).format(row.amount);
+
+                table += `<tr>
+            <td><input type="checkbox" name="selectedItems" value="${row.id}"></td>
+            <td>${row.id}</td>
+            <td>${row.expense_type}</td>
+            <td>${formattedAmount}</td>
+            <td>${row.description}</td>
+            <td>${row.created_at}</td>
+            <td>${row.category}</td>
+            <td>${row.category === 'business' ? row.business_name : row.branch_location}</td>
+        </tr>`;
+            });
+
+            table += "</table>";
+
+            // Add filter options
+            let filterOptions = `<div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+        <select id="filterYear" style="margin-right: 10px;">
+            <option value="">Select Year</option>
+            ${getYearOptions()}
+        </select>
+        <select id="filterMonth" style="margin-right: 10px;">
+            <option value="">Select Month</option>
+            ${getMonthOptions()}
+        </select>
+        <button id="applyFilter">Apply Filter</button>
+    </div>`;
+
+            Swal.fire({
+                title: `${type.charAt(0).toUpperCase() + type.slice(1)} Data`,
+                html: filterOptions + table,
+                width: '80%',
+                showCancelButton: true,
+                confirmButtonText: "Delete Selected",
+                cancelButtonText: "Cancel",
+                didOpen: () => {
+                    // Add event listener for "Select All" checkbox
+                    document.getElementById('selectAll').addEventListener('change', function () {
+                        let checkboxes = document.querySelectorAll('input[name="selectedItems"]');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = this.checked;
+                        });
+                        this.nextSibling.textContent = this.checked ? "Unselect All" : "Select All";
+                    });
+
+                    // Add event listener for filter button
+                    document.getElementById('applyFilter').addEventListener('click', function () {
+                        let year = document.getElementById('filterYear').value;
+                        let month = document.getElementById('filterMonth').value;
+                        fetchData(type, year, month);
+                    });
+                },
+                preConfirm: () => {
+                    const selectedItems = [];
+                    document.querySelectorAll('input[name="selectedItems"]:checked').forEach(checkbox => {
+                        selectedItems.push(checkbox.value);
+                    });
+                    if (selectedItems.length === 0) {
+                        Swal.showValidationMessage("Please select at least one item to delete.");
+                        return false;
+                    }
+                    return selectedItems;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "This action cannot be undone!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, delete it!",
+                        cancelButtonText: "Cancel"
+                    }).then((confirmResult) => {
+                        if (confirmResult.isConfirmed) {
+                            deleteData(type, result.value);
+                        }
+                    });
+                }
+            });
+        }
 
         function deleteData(type, selectedItems) {
             Swal.fire({
@@ -385,6 +421,24 @@ $stmt->close();
                 .catch(error => {
                     Swal.fire("Error", "Failed to delete items. Please try again.", "error");
                 });
+        }
+
+        function getYearOptions() {
+            let currentYear = new Date().getFullYear();
+            let options = '';
+            for (let i = currentYear; i >= currentYear - 10; i--) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            return options;
+        }
+
+        function getMonthOptions() {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            let options = '';
+            months.forEach((month, index) => {
+                options += `<option value="${index + 1}">${month}</option>`;
+            });
+            return options;
         }
     </script>
 

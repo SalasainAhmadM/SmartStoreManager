@@ -1,110 +1,118 @@
 <?php
 require 'vendor/autoload.php';
-
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
-date_default_timezone_set('Asia/Manila'); // Set timezone to Manila
+session_start();
+require './conn/conn.php';
 
-require_once './conn/conn.php';
-// Fetch the assigned manager's details
 $manager_id = $_SESSION['user_id'];
 
-$sql = "
-    SELECT 'branch' AS type, b.id, b.location AS name, b.business_id, bs.name AS business_name
-    FROM branch b
-    LEFT JOIN business bs ON b.business_id = bs.id
-    WHERE b.manager_id = ?
-    UNION
-    SELECT 'business' AS type, id, name, NULL AS business_id, NULL AS business_name
-    FROM business
-    WHERE manager_id = ?
-    LIMIT 1
-";
+$business = null;
+$branch = null;
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('ii', $manager_id, $manager_id);
+$sqlBusiness = "SELECT * FROM business WHERE manager_id = ?";
+$stmt = $conn->prepare($sqlBusiness);
+$stmt->bind_param("i", $manager_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
 if ($result->num_rows > 0) {
-    $assigned = $result->fetch_assoc();
-
-    // Determine the type and details of the assignment
-    if ($assigned['type'] === 'branch') {
-        $assigned_type = 'Branch';
-        $assigned_name = $assigned['name'];
-        $business_id = $assigned['business_id'];
-        $business_name = $assigned['business_name'];
-    } else {
-        $assigned_type = 'Business';
-        $assigned_name = $assigned['name'];
-        $business_id = null;
-        $business_name = null;
-    }
+    $business = $result->fetch_assoc();
 } else {
-    // No assignment found
-    $assigned_type = null;
-    $assigned_name = null;
-    $business_id = null;
-    $business_name = null;
+    $sqlBranch = "SELECT * FROM branch WHERE manager_id = ?";
+    $stmt = $conn->prepare($sqlBranch);
+    $stmt->bind_param("i", $manager_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $branch = $result->fetch_assoc();
+        $sqlBusinessFromBranch = "SELECT * FROM business WHERE id = ?";
+        $stmt = $conn->prepare($sqlBusinessFromBranch);
+        $stmt->bind_param("i", $branch['business_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $business = $result->fetch_assoc();
+        }
+    }
 }
 
-// Get selected values from request
-$productId = $_POST['product_id'] ?? 'N/A';
-$selectedProduct = $_POST['selectedProduct'] ?? 'No Product Selected';
-$productPrice = $_POST['productPrice'] ?? 0;
-$dateToday = date('Y-m-d'); // Now using Asia/Manila timezone
+if (!$business && !$branch) {
+    die("No business or branch assigned to this manager.");
+}
 
-// Initialize Spreadsheet
+$business_id = $business['id'];
+$sqlProducts = "SELECT * FROM products WHERE business_id = ?";
+$stmt = $conn->prepare($sqlProducts);
+$stmt->bind_param("i", $business_id);
+$stmt->execute();
+$products = $stmt->get_result();
+
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// Set headers based on assigned type
-if ($assigned_type === 'Branch') {
-    $sheet->setCellValue('A1', 'Business Name')->getStyle('A1')->getFont()->setBold(true);
-    $sheet->setCellValue('B1', "ID:$business_id - $business_name");
-    $sheet->setCellValue('A2', 'Branch')->getStyle('A2')->getFont()->setBold(true);
-    $sheet->setCellValue('B2', "ID:{$assigned['id']} - $assigned_name");
-} elseif ($assigned_type === 'Business') {
-    $sheet->setCellValue('A1', 'Business Name')->getStyle('A1')->getFont()->setBold(true);
-    $sheet->setCellValue('B1', "ID:{$assigned['id']} - $assigned_name");
-    $sheet->setCellValue('A2', 'Branch')->getStyle('A2')->getFont()->setBold(true);
-    $sheet->setCellValue('B2', "Main Branch");
-}
+$sheet->setCellValue('A1', 'Business Name')->getStyle('A1')->getFont()->setBold(true);
+$sheet->setCellValue('B1', $business ? "ID:{$business['id']} - {$business['name']}" : 'N/A');
 
-// Product and Price
+$sheet->setCellValue('A2', 'Branch')->getStyle('A2')->getFont()->setBold(true);
+$sheet->setCellValue('B2', $branch ? "ID:{$branch['id']} - {$branch['location']}" : 'N/A');
+
 $sheet->setCellValue('A3', 'Product')->getStyle('A3')->getFont()->setBold(true);
-$sheet->setCellValue('B3', "ID:$productId - $selectedProduct");
-$sheet->setCellValue('A4', 'Price')->getStyle('A4')->getFont()->setBold(true);
-$sheet->setCellValue('B4', $productPrice);
+$sheet->setCellValue('B3', 'Price')->getStyle('B3')->getFont()->setBold(true);
+$sheet->setCellValue('C3', 'Size')->getStyle('C3')->getFont()->setBold(true);
 
-// Sales Header
-$sheet->setCellValue('B6', 'Sales Report')->getStyle('B6')->getFont()->setBold(true);
-
-// Table Headers
-$sheet->setCellValue('A7', 'Amount Sold')->getStyle('A7')->getFont()->setBold(true);
-$sheet->setCellValue('B7', 'Total Sales')->getStyle('B7')->getFont()->setBold(true);
-$sheet->setCellValue('C7', 'Date')->getStyle('C7')->getFont()->setBold(true);
-
-// Default Data: Amount Sold = 0, Auto-calculated Total Sales
-for ($row = 8; $row <= 15; $row++) {
-    $sheet->setCellValue('A' . $row, 0); // Default Amount Sold to 0
-    $sheet->setCellValue('B' . $row, "=A$row * B4"); // Auto-calculate Total Sales
-    $sheet->setCellValue('C' . $row, $dateToday); // Set current date
+$row = 4;
+$productNames = [];
+while ($product = $products->fetch_assoc()) {
+    $sheet->setCellValue("A$row", "ID:{$product['id']} - {$product['name']}");
+    $sheet->setCellValue("B$row", $product['price']);
+    $sheet->setCellValue("C$row", $product['size'] ?? 'N/A');
+    $productNames[] = "ID:{$product['id']} - {$product['name']}";
+    $sheet->setCellValue("E$row", $product['price']);
+    $row++;
 }
 
-// Set column width for better readability
-foreach (range('A', 'C') as $col) {
-    $spreadsheet->getActiveSheet()->getColumnDimension($col)->setAutoSize(true);
+$productListStartRow = 4;
+$productListEndRow = $row - 1;
+$productDropdownRange = "A$productListStartRow:A$productListEndRow";
+
+$salesHeaderRow = $row + 2;
+$sheet->setCellValue("B$salesHeaderRow", 'Sales Report')->getStyle("B$salesHeaderRow")->getFont()->setBold(true);
+
+$salesTableRow = $salesHeaderRow + 1;
+$sheet->setCellValue("A$salesTableRow", 'Select Product')->getStyle("A$salesTableRow")->getFont()->setBold(true);
+$sheet->setCellValue("B$salesTableRow", 'Amount Sold')->getStyle("B$salesTableRow")->getFont()->setBold(true);
+$sheet->setCellValue("C$salesTableRow", 'Total Sales')->getStyle("C$salesTableRow")->getFont()->setBold(true);
+$sheet->setCellValue("D$salesTableRow", 'Date')->getStyle("D$salesTableRow")->getFont()->setBold(true);
+
+$dateToday = date('Y-m-d');
+for ($i = $salesTableRow + 1; $i <= $salesTableRow + 8; $i++) {
+    $sheet->setCellValue("A$i", "");
+    $sheet->setCellValue("B$i", 0);
+    $sheet->setCellValue("C$i", "=IF(A$i<>\"\",VLOOKUP(A$i,A$productListStartRow:E$productListEndRow,5,FALSE)*B$i,\"\")");
+    $sheet->setCellValue("D$i", $dateToday);
+
+    $validation = $sheet->getCell("A$i")->getDataValidation();
+    $validation->setType(DataValidation::TYPE_LIST);
+    $validation->setErrorStyle(DataValidation::STYLE_STOP);
+    $validation->setAllowBlank(false);
+    $validation->setShowDropDown(true);
+    $validation->setFormula1("=$productDropdownRange");
 }
 
-// Output file
-$filename = 'Sales_Report_' . $dateToday . '.xlsx';
+$sheet->getColumnDimension('A')->setWidth(30);
+$sheet->getColumnDimension('B')->setWidth(15);
+$sheet->getColumnDimension('C')->setWidth(15);
+$sheet->getColumnDimension('D')->setWidth(15);
+$sheet->getColumnDimension('E')->setVisible(false);
+
+$filename = "Sales_Report_{$dateToday}.xlsx";
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment; filename="' . $filename . '"');
+header("Content-Disposition: attachment; filename=\"$filename\"");
 header('Cache-Control: max-age=0');
 
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
+?>

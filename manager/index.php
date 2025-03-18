@@ -191,9 +191,9 @@ $sales_result->data_seek(0);
                                 <?php endif; ?>
 
                                 <!-- Upload Data Button -->
-                                <!-- <button id="uploadDataButton" class="btn btn-success">
+                                <button id="uploadDataButton" class="btn btn-success">
                                     <i class="fa-solid fa-upload"></i> Upload Data
-                                </button> -->
+                                </button>
                             </div>
 
                             <div class="row mt-4">
@@ -724,6 +724,24 @@ $sales_result->data_seek(0);
             });
         });
 
+        function removeQueryParam() {
+            const newUrl = window.location.pathname; // Get the base URL without parameters
+            window.history.replaceState({}, document.title, newUrl); // Update the URL without refreshing
+        }
+        // Show success alert if "?imported=true" exists in the URL
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('imported')) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Data imported successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    removeQueryParam();
+                });
+            }
+        };
     </script>
 
 </body>

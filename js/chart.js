@@ -24,6 +24,47 @@ for (var businessName in chartData) {
     }
 }
 
+
+// Function to update all charts for a selected business
+function showBusinessData(businessName) {
+    selectedBusinessName = businessName; // Store the selected business name
+    const branches = chartData[businessName];
+
+    // Update financial chart
+    if (financialChart) {
+        financialChart.data.labels = [];
+        financialChart.data.datasets[0].data = [];
+        financialChart.data.datasets[1].data = [];
+
+        for (var branchLocation in branches) {
+            if (branches.hasOwnProperty(branchLocation)) {
+                financialChart.data.labels.push(branchLocation);
+                financialChart.data.datasets[0].data.push(branches[branchLocation].sales);
+                financialChart.data.datasets[1].data.push(branches[branchLocation].expenses);
+            }
+        }
+        financialChart.update();
+    }
+
+    // Filter data for selected business
+    const filteredDailyData = dailyData.filter(item => item.business_name === businessName);
+    const filteredMonthlyData = monthlyData.filter(item => item.business_name === businessName);
+
+    // Update other charts
+    updateSalesExpensesChart(filteredDailyData);
+    updateProfitMarginChart(filteredDailyData);
+    updateCashFlowChart(filteredMonthlyData);
+
+    // Update UI
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('active');
+    });
+    const activeCard = document.querySelector(`div[data-business-name="${businessName}"]`);
+    if (activeCard) {
+        activeCard.classList.add('active');
+    }
+}
+
 // Initialize the financial chart
 function initFinancialChart() {
     const ctx = document.getElementById('financialChart').getContext('2d');
@@ -70,65 +111,25 @@ function initFinancialChart() {
 }
 
 
-// Function to update all charts for a selected business
-function showBusinessData(businessName) {
-    selectedBusinessName = businessName; // Store the selected business name
-    const branches = chartData[businessName];
-
-    // Update financial chart
-    if (financialChart) {
-        financialChart.data.labels = [];
-        financialChart.data.datasets[0].data = [];
-        financialChart.data.datasets[1].data = [];
-
-        for (var branchLocation in branches) {
-            if (branches.hasOwnProperty(branchLocation)) {
-                financialChart.data.labels.push(branchLocation);
-                financialChart.data.datasets[0].data.push(branches[branchLocation].sales);
-                financialChart.data.datasets[1].data.push(branches[branchLocation].expenses);
-            }
-        }
-        financialChart.update();
-    }
-
-    // Filter data for selected business
-    const filteredDailyData = dailyData.filter(item => item.business_name === businessName);
-    const filteredMonthlyData = monthlyData.filter(item => item.business_name === businessName);
-
-    // Update other charts
-    updateSalesExpensesChart(filteredDailyData);
-    updateProfitMarginChart(filteredDailyData);
-    updateCashFlowChart(filteredMonthlyData);
-
-    // Update UI
-    document.querySelectorAll('.card').forEach(card => {
-        card.classList.remove('active');
-    });
-    const activeCard = document.querySelector(`div[data-business-name="${businessName}"]`);
-    if (activeCard) {
-        activeCard.classList.add('active');
-    }
-}
-
 
 // Sales vs Expenses Chart
 function updateSalesExpensesChart(data, selectedMonth = null) {
     const ctx = document.getElementById('salesExpensesChart').getContext('2d');
-    
+
     // Function to group data by time period
-    function groupDataBy(data, period) {
+    function groupDataBy(data, period, selectedMonth = null) {
         const grouped = {};
-        
+
         data.forEach(item => {
             let key;
             const date = new Date(item.date);
-            
+
             // Filter by selected month if provided
             if (selectedMonth !== null && date.getMonth() + 1 !== selectedMonth) {
                 return;
             }
-            
-            switch(period) {
+
+            switch (period) {
                 case 'daily':
                     key = item.date;
                     break;
@@ -147,7 +148,7 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
                     key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
                     break;
             }
-            
+
             if (!grouped[key]) {
                 grouped[key] = { sales: 0, expenses: 0 };
             }
@@ -167,23 +168,20 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
             }
         });
 
-        // Create a new sorted object
         const sortedGrouped = {};
         sortedKeys.forEach(key => {
             sortedGrouped[key] = grouped[key];
         });
-        
+
         return sortedGrouped;
     }
 
-    // Function to update chart with period data
     function updateChartWithPeriod(period) {
-        // Make sure we're using the correct data for the selected business
-        const currentData = selectedBusinessName ? 
-            dailyData.filter(item => item.business_name === selectedBusinessName) : 
+        const currentData = selectedBusinessName ?
+            dailyData.filter(item => item.business_name === selectedBusinessName) :
             data;
 
-        const groupedData = groupDataBy(currentData, period);
+        const groupedData = groupDataBy(currentData, period, selectedMonth);
         const labels = Object.keys(groupedData);
         const sales = labels.map(key => groupedData[key].sales);
         const expenses = labels.map(key => groupedData[key].expenses);
@@ -225,16 +223,14 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
         });
     }
 
-    // Create or update period selection buttons
     const container = document.getElementById('salesExpensesChart').parentElement;
     let buttonGroup = container.querySelector('.btn-group');
-    
-    // Create button group if it doesn't exist
+
     if (!buttonGroup) {
         buttonGroup = document.createElement('div');
         buttonGroup.className = 'btn-group mb-3';
         buttonGroup.style.marginBottom = '1rem';
-        
+
         ['Daily', 'Weekly', 'Monthly'].forEach(period => {
             const button = document.createElement('button');
             // Update button classes for dark theme
@@ -250,7 +246,6 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
             `;
             button.textContent = period;
 
-            // Add hover effect
             button.onmouseover = () => {
                 if (!button.classList.contains('active')) {
                     button.style.backgroundColor = '#495057';
@@ -263,13 +258,11 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
             };
 
             button.onclick = () => {
-                // Remove active class and reset styles for all buttons
                 buttonGroup.querySelectorAll('button').forEach(btn => {
                     btn.classList.remove('active');
                     btn.style.backgroundColor = '#343a40';
                     btn.style.color = '#fff';
                 });
-                // Add active class and update styles for clicked button
                 button.classList.add('active');
                 button.style.backgroundColor = '#6c757d';
                 button.style.color = '#fff';
@@ -278,25 +271,35 @@ function updateSalesExpensesChart(data, selectedMonth = null) {
             buttonGroup.appendChild(button);
         });
 
-        // Insert button group before chart
         container.insertBefore(buttonGroup, container.firstChild);
     }
 
-    // Initialize with daily view and set active state
     updateChartWithPeriod('daily');
     const firstButton = buttonGroup.querySelector('button');
     firstButton.classList.add('active');
     firstButton.style.backgroundColor = '#6c757d';
 }
-// Function to filter Sales vs Expenses by month
+
 function filterSalesExpensesByMonth(selectedMonth) {
     const month = parseInt(selectedMonth, 10);
     updateSalesExpensesChart(dailyData, month);
 }
-document.addEventListener('DOMContentLoaded', function() {
-    updateSalesExpensesChart(dailyData);
-});
 
+document.addEventListener('DOMContentLoaded', function () {
+    updateSalesExpensesChart(dailyData);
+
+    // Add event listeners to checkboxes
+    document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const branchLocation = this.getAttribute('data-branch');
+            if (!this.checked) {
+                removeBranchFromChart(branchLocation);
+            } else {
+                addBranchToChart(branchLocation);
+            }
+        });
+    });
+});
 // Profit Margin Chart
 function updateProfitMarginChart(data) {
     const ctx = document.getElementById('profitMarginChart').getContext('2d');
@@ -678,6 +681,27 @@ function updateRevenueContributionChart() {
 
 // Product Analysis Charts
 function updateProductCharts() {
+    // Generate a color palette for businesses
+    const businessColors = {};
+    const uniqueBusinesses = [...new Set(productData.map(p => p.business_name))];
+    const colorPalette = [
+        'rgba(75, 192, 192, 0.6)', // Teal
+        'rgba(255, 99, 132, 0.6)', // Red
+        'rgba(54, 162, 235, 0.6)', // Blue
+        'rgba(255, 206, 86, 0.6)', // Yellow
+        'rgba(153, 102, 255, 0.6)', // Purple
+        'rgba(255, 159, 64, 0.6)', // Orange
+        'rgba(199, 199, 199, 0.6)', // Gray
+        'rgba(83, 102, 255, 0.6)', // Indigo
+        'rgba(40, 167, 69, 0.6)', // Green
+        'rgba(220, 53, 69, 0.6)' // Dark Red
+    ];
+
+    // Assign a color to each business
+    uniqueBusinesses.forEach((business, index) => {
+        businessColors[business] = colorPalette[index % colorPalette.length];
+    });
+
     // Sort products by revenue
     const sortedProducts = [...productData].sort((a, b) => b.revenue - a.revenue);
     const topProducts = sortedProducts.slice(0, 10);
@@ -692,8 +716,8 @@ function updateProductCharts() {
             datasets: [{
                 label: 'Revenue',
                 data: topProducts.map(p => p.revenue),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: topProducts.map(p => businessColors[p.business_name]),
+                borderColor: topProducts.map(p => businessColors[p.business_name].replace('0.6', '1')),
                 borderWidth: 1
             }]
         },
@@ -741,8 +765,8 @@ function updateProductCharts() {
             datasets: [{
                 label: 'Revenue',
                 data: lowProducts.map(p => p.revenue),
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: lowProducts.map(p => businessColors[p.business_name]),
+                borderColor: lowProducts.map(p => businessColors[p.business_name].replace('0.6', '1')),
                 borderWidth: 1
             }]
         },
@@ -786,20 +810,23 @@ function updateProductCharts() {
     new Chart(profitCtx, {
         type: 'scatter',
         data: {
-            datasets: [{
-                label: 'Products',
-                data: productData.map(p => ({
-                    x: p.revenue,
-                    y: p.profit,
-                    product: p.product_name,
-                    business: p.business_name
-                })),
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                pointRadius: 8,
-                pointHoverRadius: 10
-            }]
+            datasets: uniqueBusinesses.map(business => {
+                const businessProducts = productData.filter(p => p.business_name === business);
+                return {
+                    label: business,
+                    data: businessProducts.map(p => ({
+                        x: p.revenue,
+                        y: p.profit,
+                        product: p.product_name,
+                        business: p.business_name
+                    })),
+                    backgroundColor: businessColors[business],
+                    borderColor: businessColors[business].replace('0.6', '1'),
+                    borderWidth: 1,
+                    pointRadius: 8,
+                    pointHoverRadius: 10
+                };
+            })
         },
         options: {
             responsive: true,
@@ -841,6 +868,10 @@ function updateProductCharts() {
                             ];
                         }
                     }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom'
                 }
             }
         }

@@ -243,48 +243,59 @@ WHERE br.location = ? AND b.name = ? AND b.owner_id = ?";
 
 // Get daily sales and expenses for the past 30 days for the owner
 $sqlDaily = "SELECT
-dates.date,
-b.name as business_name,
-COALESCE(s.daily_sales, 0) as daily_sales,
-COALESCE(e.daily_expenses, 0) as daily_expenses
+    dates.date,
+    b.name as business_name,
+    COALESCE(s.daily_sales, 0) as daily_sales,
+    COALESCE(e.daily_expenses, 0) as daily_expenses
 FROM (
-SELECT DATE(created_at) as date
-FROM sales
-WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-UNION
-SELECT DATE(created_at) as date
-FROM expenses
-WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    SELECT DATE(created_at) as date
+    FROM sales
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    UNION
+    SELECT DATE(created_at) as date
+    FROM expenses
+    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
 ) dates
 LEFT JOIN (
-SELECT
-DATE(s.created_at) as date,
-b.name as business_name,
-SUM(s.total_sales) as daily_sales
-FROM sales s
-JOIN products p ON s.product_id = p.id
-JOIN business b ON p.business_id = b.id
-WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-AND b.owner_id = ?
-GROUP BY DATE(s.created_at), b.name
+    SELECT
+        DATE(s.created_at) as date,
+        b.name as business_name,
+        SUM(s.total_sales) as daily_sales
+    FROM sales s
+    JOIN products p ON s.product_id = p.id
+    JOIN business b ON p.business_id = b.id
+    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND b.owner_id = ?
+    GROUP BY DATE(s.created_at), b.name
 ) s ON dates.date = s.date
 LEFT JOIN (
-SELECT
-DATE(e.created_at) as date,
-b.name as business_name,
-SUM(e.amount) as daily_expenses
-FROM expenses e
-JOIN business b ON e.category = 'business' AND e.category_id = b.id
-WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-AND b.owner_id = ?
-GROUP BY DATE(e.created_at), b.name
+    SELECT
+        DATE(e.created_at) as date,
+        b.name as business_name,
+        SUM(e.amount) as daily_expenses
+    FROM expenses e
+    JOIN business b ON e.category = 'business' AND e.category_id = b.id
+    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND b.owner_id = ?
+    GROUP BY DATE(e.created_at), b.name
+    UNION
+    SELECT
+        DATE(e.created_at) as date,
+        b.name as business_name,
+        SUM(e.amount) as daily_expenses
+    FROM expenses e
+    JOIN branch br ON e.category = 'branch' AND e.category_id = br.id
+    JOIN business b ON br.business_id = b.id
+    WHERE e.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND b.owner_id = ?
+    GROUP BY DATE(e.created_at), b.name
 ) e ON dates.date = e.date AND s.business_name = e.business_name
 JOIN business b ON COALESCE(s.business_name, e.business_name) = b.name
 WHERE b.owner_id = ?
 ORDER BY dates.date";
 
 $stmtDaily = $conn->prepare($sqlDaily);
-$stmtDaily->bind_param("iii", $owner_id, $owner_id, $owner_id);
+$stmtDaily->bind_param("iiii", $owner_id, $owner_id, $owner_id, $owner_id);
 $stmtDaily->execute();
 $resultDaily = $stmtDaily->get_result();
 
@@ -458,14 +469,16 @@ $products = [];
 $stockLevelsSold = [];
 
 if ($business_id) {
-    // Fetch Top Products Sold Across All Businesses
+    // Fetch Top Products Sold for the Selected Business and Branches
     $productQuery = "
     SELECT p.id, p.name, COALESCE(SUM(s.quantity), 0) AS total_sold
     FROM products p
     LEFT JOIN sales s ON p.id = s.product_id
+    LEFT JOIN branch br ON s.branch_id = br.id
+    WHERE p.business_id = $business_id
     GROUP BY p.id, p.name
     ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products sold across all businesses
+    LIMIT 10"; // Show top 10 products sold for the selected business
 
     $productResult = $conn->query($productQuery);
 
@@ -617,7 +630,31 @@ while ($row = $result->fetch_assoc()) {
         $positiveMonths[] = $month;
     }
 }
+// Fetch and process the result
+$previousMonthExpense = null;
+while ($row = $result->fetch_assoc()) {
+    $month = $row['month'];
+    $totalExpense = $row['total_expenses'];
 
+    // Set dynamic threshold (e.g., 80% of the total monthly expenses)
+    $threshold = $totalExpense * 0.8;
+    $thresholds[$month] = $threshold;
+
+    $expenseData[$month] = $totalExpense;
+
+    if ($totalExpense > $threshold) {
+        $breachMonths[] = $month;
+    } else {
+        $positiveMonths[] = $month;
+    }
+
+    // Check if expenses are lower than the previous month
+    if ($previousMonthExpense !== null && $totalExpense < $previousMonthExpense) {
+        $positiveMonths[] = $month; // Add to positive months if lower than previous month
+    }
+
+    $previousMonthExpense = $totalExpense; // Update previous month's expense
+}
 // Convert data to JSON
 $expensesJson = json_encode($expenseData);
 $thresholdsJson = json_encode($thresholds);
@@ -749,6 +786,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* Optional Custom Styling */
+    </style>
 </head>
 
 <body class="d-flex">
@@ -759,7 +803,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
     <div class="container-fluid page-body">
         <div class="row">
-            <div class="col-md-12 dashboard-body">
+            <div class="col-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</b></h1>
 
@@ -830,6 +874,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             </div>
 
                             <script>
+                                // Event listener for branch checkboxes
                                 document.addEventListener('DOMContentLoaded', function () {
                                     document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
                                         checkbox.addEventListener('change', function () {
@@ -843,29 +888,44 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     });
                                 });
 
+                                // Function to remove a branch from the chart
                                 function removeBranchFromChart(branchLocation) {
                                     if (financialChart) {
                                         const index = financialChart.data.labels.indexOf(branchLocation);
                                         if (index !== -1) {
                                             financialChart.data.labels.splice(index, 1);
-                                            financialChart.data.datasets[0].data.splice(index, 1);
-                                            financialChart.data.datasets[1].data.splice(index, 1);
+                                            financialChart.data.datasets[0].data.splice(index, 1); // Remove sales data
+                                            financialChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
                                             financialChart.update();
+                                        }
+                                    }
+                                    if (salesExpensesChart) {
+                                        const index = salesExpensesChart.data.labels.indexOf(branchLocation);
+                                        if (index !== -1) {
+                                            salesExpensesChart.data.labels.splice(index, 1);
+                                            salesExpensesChart.data.datasets[0].data.splice(index, 1); // Remove sales data
+                                            salesExpensesChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
+                                            salesExpensesChart.update();
                                         }
                                     }
                                 }
 
+                                // Function to add a branch to the chart
                                 function addBranchToChart(branchLocation) {
                                     if (financialChart && selectedBusinessName) {
                                         const branchData = chartData[selectedBusinessName][branchLocation];
                                         if (branchData) {
-                                            financialChart.data.labels.push(branchLocation);
-                                            financialChart.data.datasets[0].data.push(branchData.sales);
-                                            financialChart.data.datasets[1].data.push(branchData.expenses);
                                             financialChart.update();
                                         }
                                     }
+                                    if (salesExpensesChart && selectedBusinessName) {
+                                        const branchData = chartData[selectedBusinessName][branchLocation];
+                                        if (branchData) {
+                                            salesExpensesChart.update();
+                                        }
+                                    }
                                 }
+
                             </script>
 
 
@@ -1107,9 +1167,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                 class="fas fa-info-circle"
                                                 onclick="showInfo(' Customer Demographics', 'This graph displays all the top products by location.');"></i></b>
                                     </h1>
-                                    <button id="selectBusinessBtn" class="btn btn-primary mb-1 mt-2">
-                                        <i class="fa-solid fa-filter"></i> Select Business and Branches
-                                    </button>
+
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
@@ -1742,7 +1800,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
                     breachList.appendChild(listItem);
                 });
-            } else if (positiveMonths.length > 0) {
+            }
+
+            if (positiveMonths.length > 0) {
                 positiveMonths.forEach(month => {
                     let listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-success";
