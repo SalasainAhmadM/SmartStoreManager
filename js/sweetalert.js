@@ -39,8 +39,23 @@ function showLoginModal() {
                 .then(data => {
                     if (data.status === 'success') {
                         // Redirect based on role
-                        const baseURL = data.role === 'owner' ? '../owner/index.php' : '../manager/index.php';
-                        window.location.href = `${baseURL}?id=${data.id}&status=success`;
+                        let redirectUrl;
+                        switch(data.role) {
+                            case 'admin':
+                                redirectUrl = '../admin/index.php';
+                                break;
+                            case 'owner':
+                                redirectUrl = '../owner/index.php';
+                                break;
+                            case 'manager':
+                                redirectUrl = '../manager/index.php';
+                                break;
+                            default:
+                                redirectUrl = '../index.php';
+                        }
+                        window.location.href = `${redirectUrl}?id=${data.id}&status=success`;
+                    } else if (data.status === 'unapproved') {
+                        Swal.fire('Pending Approval', 'Wait for the admin to approve your account', 'info');
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }
@@ -51,12 +66,15 @@ function showLoginModal() {
         }
     });
 
-    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        showForgotPasswordModal();
-    });
+    // Add event listener for forgot password link
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    if (forgotLink) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showForgotPasswordModal();
+        });
+    }
 }
-
 
 
 function showForgotPasswordModal() {

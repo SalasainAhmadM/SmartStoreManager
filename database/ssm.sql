@@ -295,7 +295,6 @@ CREATE TABLE `owner` (
   `gender` varchar(255) NOT NULL,
   `age` varchar(255) NOT NULL,
   `birthday` date DEFAULT NULL,
-  `address` varchar(255) NOT NULL,
   `contact_number` varchar(15) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `image` varchar(255) NOT NULL,

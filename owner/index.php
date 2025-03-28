@@ -464,28 +464,38 @@ $businessResult = $conn->query($businessQuery);
 $business = $businessResult->fetch_assoc();
 $business_id = $business['id'] ?? null; // Avoid errors if no business is found
 
+$businesses = [];
+$businessQuery = "SELECT id, name FROM business WHERE owner_id = $owner_id";
+$businessResult = $conn->query($businessQuery);
+while ($row = $businessResult->fetch_assoc()) {
+    $businesses[] = $row;
+}
+
+// Get selected business ID (default to the first business)
+$selected_business_id = $_GET['business_id'] ?? ($businesses[0]['id'] ?? null);
+
 // Initialize arrays
 $products = [];
 $stockLevelsSold = [];
 
-if ($business_id) {
-    // Fetch Top Products Sold for the Selected Business and Branches
+if ($selected_business_id) {
+    // Fetch Top Products Sold for the Selected Business
     $productQuery = "
     SELECT p.id, p.name, COALESCE(SUM(s.quantity), 0) AS total_sold
     FROM products p
     LEFT JOIN sales s ON p.id = s.product_id
     LEFT JOIN branch br ON s.branch_id = br.id
-    WHERE p.business_id = $business_id
+    WHERE p.business_id = $selected_business_id
     GROUP BY p.id, p.name
     ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products sold for the selected business
+    LIMIT 10";
 
     $productResult = $conn->query($productQuery);
 
     if ($productResult->num_rows > 0) {
         while ($row = $productResult->fetch_assoc()) {
             $products[] = $row['name'];
-            $stockLevelsSold[] = $row['total_sold']; // Use actual sold quantity as stock level sold
+            $stockLevelsSold[] = $row['total_sold'];
         }
     }
 }
@@ -588,6 +598,18 @@ $salesJson = json_encode($salesData);
 $expensesJson = json_encode($expenseData);
 
 // 10
+// Fetch total assets of the business
+$assetQuery = "
+    SELECT 
+        SUM(CAST(asset AS DECIMAL(10, 2))) AS total_assets
+    FROM business
+    WHERE owner_id = ?";
+
+$stmt = $conn->prepare($assetQuery);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$assetResult = $stmt->get_result();
+$totalAssets = $assetResult->fetch_assoc()['total_assets'] ?? 0; // Default to 0 if no assets found
 // Fetch total monthly expenses for the owner
 $expenseQuery = "
     SELECT 
@@ -632,6 +654,9 @@ while ($row = $result->fetch_assoc()) {
 }
 // Fetch and process the result
 $previousMonthExpense = null;
+$positiveMonths = [];
+$breachMonths = [];
+
 while ($row = $result->fetch_assoc()) {
     $month = $row['month'];
     $totalExpense = $row['total_expenses'];
@@ -642,10 +667,11 @@ while ($row = $result->fetch_assoc()) {
 
     $expenseData[$month] = $totalExpense;
 
-    if ($totalExpense > $threshold) {
-        $breachMonths[] = $month;
+    // Check if expenses exceed the total assets
+    if ($totalExpense > $totalAssets) {
+        $breachMonths[] = $month; // Add to breach months if expenses exceed assets
     } else {
-        $positiveMonths[] = $month;
+        $positiveMonths[] = $month; // Add to positive months if expenses are within assets
     }
 
     // Check if expenses are lower than the previous month
@@ -787,12 +813,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <?php include '../components/head_cdn.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        /* Optional Custom Styling */
-    </style>
 </head>
 
 <body class="d-flex">
@@ -800,7 +820,140 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <div id="particles-js"></div>
 
     <?php include '../components/owner_sidebar.php'; ?>
+    <style>
+        @media (max-width: 768px) {
 
+            .container-fluid,
+            .row,
+            .col-12,
+            .col-md-5,
+            .col-md-7,
+            .col-md-6,
+            .col-md-4,
+            .col-md-8,
+            .col-md-12 {
+                width: 100%;
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            h1,
+            h5,
+            h6,
+            th,
+            td,
+            label,
+            .btn {
+                font-size: 1rem;
+                /* Base font size */
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h5 {
+                font-size: 1.2rem;
+            }
+
+            h6 {
+                font-size: 1rem;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                display: block;
+                width: 100%;
+            }
+
+            .card,
+            .table {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
+            .card h5 {
+                font-size: 1.1rem;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            .col-md-5,
+            .col-md-7,
+            .col-md-6,
+            .col-md-4,
+            .col-md-8,
+            .col-md-12 {
+                width: 100%;
+                padding: 0;
+            }
+
+            .dashboard-content {
+                padding: 10px;
+            }
+
+            .chart-container {
+                height: auto !important;
+                margin-bottom: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            th,
+            td {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            .table thead th:nth-child(4),
+            .table tbody td:nth-child(4),
+            .table thead th:nth-child(5),
+            .table tbody td:nth-child(5) {
+                display: none;
+            }
+
+            .table-hover th,
+            .table-hover td {
+                font-size: 0.9rem;
+            }
+
+            .fa-user-plus,
+            .fa-cart-plus,
+            .fa-dollar-sign {
+                margin-right: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            h5 {
+                font-size: 1rem;
+            }
+
+            h6 {
+                font-size: 0.9rem;
+            }
+
+            .table thead th:nth-child(3),
+            .table tbody td:nth-child(3) {
+                display: none;
+            }
+
+            .table-hover th,
+            .table-hover td {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
     <div class="container-fluid page-body">
         <div class="row">
             <div class="col-12 dashboard-body">
@@ -1048,21 +1201,31 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-md-12 mt-5">
+                        <!-- // 7 -->
+                        <!-- Inventory Chart Section -->
+                        <div class="col-md-12 mt-5" id="inventoryChart">
                             <h1>
                                 <b>
                                     <i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold
                                     <i class="fas fa-info-circle"
-                                        onclick="showInfo('Inventory Product Sold', 'This graph displays the stock levels sold of top products across all businesses.');"></i>
+                                        onclick="showInfo('Inventory Product Sold', 'This graph displays the stock levels sold of top products.');"></i>
                                 </b>
                             </h1>
+
+                            <div class="col-md-12 mt-3">
+                                <label for="businessSelect"><b>Select Business:</b></label>
+                                <select id="businessSelect" class="form-control" onchange="changeBusiness()">
+                                    <?php foreach ($businesses as $business): ?>
+                                        <option value="<?= $business['id'] ?>" <?= $business['id'] == $selected_business_id ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($business['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <div class="row">
-                                <!-- Stock Levels Sold Chart -->
                                 <div class="col-md-12">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Levels Sold of Top Products Across All Businesses</b>
-                                        </h5>
+                                        <h5 class="mt-5"><b>Stock Levels Sold of Top Products</b></h5>
                                         <canvas id="stockLevelSoldChart"></canvas>
                                     </div>
                                 </div>
@@ -1255,12 +1418,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                         <td><?php echo htmlspecialchars($product['type']); ?></td>
                                                         <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
                                                         <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
+                                                    <td colspan="6" style="text-align: center;">No Popular Products
+                                                        Found
                                                     </td>
                                                 </tr>
                                             <?php endif; ?>
@@ -1423,36 +1588,52 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             Swal.fire({
                 title: 'Add New Business',
                 html: `
-        <div>
-            <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-            <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
-            <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-            <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-            <input type="text" id="business-location" class="form-control mb-2" placeholder="location">
-        </div>
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
+                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location" required>
+                <div class="mt-3">
+                    <label for="business-permit" class="form-label">Business Permit (Image/PDF)</label>
+                    <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
+                    <small class="text-muted">Upload a clear image or PDF of your business permit</small>
+                </div>
+            </div>
         `,
                 confirmButtonText: 'Add Business',
                 showCancelButton: true,
-                cancelButtonText: 'Skip'
-            }).then((result) => {
-                if (result.isConfirmed) {
+                cancelButtonText: 'Skip',
+                preConfirm: () => {
                     const businessName = document.getElementById('business-name').value.trim();
-                    const businessDescription = document.getElementById('business-description').value.trim();
                     const businessAsset = document.getElementById('business-asset').value.trim();
                     const employeeCount = document.getElementById('employee-count').value.trim();
                     const location = document.getElementById('business-location').value.trim();
+                    const permitFile = document.getElementById('business-permit').files[0];
 
-                    if (!businessName || !businessAsset || !employeeCount) {
-                        Swal.fire('Error', 'Please fill in all required fields.', 'error');
-                        return;
+                    if (!businessName || !businessAsset || !employeeCount || !location || !permitFile) {
+                        Swal.showValidationMessage('Please fill in all required fields and upload business permit');
+                        return false;
                     }
 
+                    return {
+                        businessName,
+                        businessDescription: document.getElementById('business-description').value.trim(),
+                        businessAsset,
+                        employeeCount,
+                        location,
+                        permitFile
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
                     const formData = new FormData();
-                    formData.append('name', businessName);
-                    formData.append('description', businessDescription);
-                    formData.append('asset', businessAsset);
-                    formData.append('employeeCount', employeeCount);
-                    formData.append('location', location);
+                    formData.append('name', result.value.businessName);
+                    formData.append('description', result.value.businessDescription);
+                    formData.append('asset', result.value.businessAsset);
+                    formData.append('employeeCount', result.value.employeeCount);
+                    formData.append('location', result.value.location);
+                    formData.append('permit', result.value.permitFile);
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
@@ -1477,7 +1658,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             console.error(err);
                         });
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    // Trigger update to set is_new_owner = 0
+                    // Skip business creation
                     fetch('../endpoints/business/skip_business_prompt.php', {
                         method: 'POST',
                         headers: {
@@ -1653,11 +1834,21 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         });
 
         // 7
+        function changeBusiness() {
+            var selectedBusiness = document.getElementById("businessSelect").value;
+            window.location.href = "?business_id=" + selectedBusiness + "#inventoryChart"; // Redirect with fragment
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.location.hash === "#inventoryChart") {
+                document.getElementById("inventoryChart").scrollIntoView({ behavior: "smooth" });
+            }
+        });
+
         var inventoryData = <?php echo json_encode($inventoryData); ?>;
 
         // Bar Chart: Stock Levels Sold
         var ctx1 = document.getElementById('stockLevelSoldChart').getContext('2d');
-        new Chart(ctx1, {
+        var stockChart = new Chart(ctx1, {
             type: 'bar',
             data: {
                 labels: inventoryData.products,
@@ -1672,9 +1863,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });
@@ -1748,6 +1937,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
             const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?>');
             const positiveMonths = JSON.parse('<?php echo $positiveMonthsJson; ?>');
+            const totalAssets = <?php echo $totalAssets; ?>; // Fetch total assets from PHP
 
             // Convert month numbers to month names
             const monthNames = [
@@ -1769,14 +1959,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         label: "Monthly Expenses",
                         data: expenses,
                         backgroundColor: expenses.map((value, index) =>
-                            value > thresholdValues[index] ? "red" : "blue"
+                            value > totalAssets ? "red" : "blue" // Red if expenses exceed assets, blue otherwise
                         )
                     },
                     {
-                        label: "Dynamic Threshold (80%)",
-                        data: thresholdValues,
+                        label: "Total Assets",
+                        data: Array(labels.length).fill(totalAssets), // Draw a horizontal line for total assets
                         type: "line",
-                        borderColor: "orange",
+                        borderColor: "green",
                         borderWidth: 2,
                         fill: false
                     }]
@@ -1791,30 +1981,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                 }
             });
 
-            // Show threshold breach alerts or positive response
+            // Generate Alerts
             const breachList = document.getElementById("breachList");
-            if (breachMonths.length > 0) {
-                breachMonths.forEach(month => {
-                    let listItem = document.createElement("li");
-                    listItem.className = "list-group-item list-group-item-danger";
-                    listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
-                    breachList.appendChild(listItem);
-                });
-            }
+            breachList.innerHTML = ""; // Clear any existing content
 
-            if (positiveMonths.length > 0) {
-                positiveMonths.forEach(month => {
-                    let listItem = document.createElement("li");
+            Object.keys(expenseData).forEach(month => {
+                const monthName = monthNames[month - 1];
+                const totalExpense = expenseData[month];
+
+                // Skip months with no expense data (0 or null)
+                if (!totalExpense || totalExpense === 0) {
+                    return; // Skip this month
+                }
+
+                if (totalExpense < totalAssets) {
+                    // Low Expenses Alert
+                    const listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-success";
-                    listItem.textContent = `✅ Expenses within limit in ${monthNames[month - 1]}`;
+                    listItem.textContent = `✅ Low Expenses in ${monthName}`;
                     breachList.appendChild(listItem);
-                });
-            } else {
-                let listItem = document.createElement("li");
-                listItem.className = "list-group-item list-group-item-warning";
-                listItem.textContent = "⚠️ No data available for the past month.";
-                breachList.appendChild(listItem);
-            }
+                } else if (totalExpense > totalAssets) {
+                    // High Expenses Alert
+                    const listItem = document.createElement("li");
+                    listItem.className = "list-group-item list-group-item-danger";
+                    listItem.textContent = `⚠️ High Expenses in ${monthName}`;
+                    breachList.appendChild(listItem);
+                }
+            });
         });
     </script>
     <script>

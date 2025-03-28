@@ -7,8 +7,8 @@ validateSession('owner');
 
 $owner_id = $_SESSION['user_id'];
 
-// Fetch business data for the logged-in owner
-$query = "SELECT * FROM business WHERE owner_id = ?";
+// Fetch only approved business data for the logged-in owner
+$query = "SELECT * FROM business WHERE owner_id = ? AND is_approved = 1";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $owner_id);
 $stmt->execute();
@@ -20,9 +20,10 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+
 // Fetch branches for each business
 $branches_by_business = [];
-$branch_query = "SELECT * FROM branch WHERE business_id = ?";
+$branch_query = "SELECT * FROM branch WHERE business_id = ? AND is_approved = 1";
 $branch_stmt = $conn->prepare($branch_query);
 
 foreach ($businesses as $business) {
@@ -92,7 +93,303 @@ $size_options = [
     <div id="particles-js"></div>
 
     <?php include '../components/owner_sidebar.php'; ?>
+    <style>
+        .permit-modal-container .swal2-popup {
+            max-height: 80vh;
+            overflow: hidden;
+        }
 
+        @media (max-width: 767.98px) {
+            .container-fluid {
+                padding: 0 15px;
+            }
+
+            .container-fluid {
+                padding: 0 15px;
+            }
+
+            .dashboard-body {
+                padding: 15px;
+            }
+
+            .dashboard-content h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .nav-pills {
+                flex-wrap: wrap;
+            }
+
+            .nav-pills .nav-item {
+                flex: 1 1 auto;
+                margin-bottom: 10px;
+            }
+
+            .nav-pills .nav-link {
+                text-align: center;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .nav-pills .nav-link h5 {
+                margin: 0;
+                font-size: 16px;
+            }
+
+            .tab-content {
+                margin-top: 20px;
+            }
+
+            .scrollable-table {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .table {
+                width: 100%;
+                margin-bottom: 1rem;
+                color: #212529;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.75rem;
+                vertical-align: top;
+                border-top: 1px solid #dee2e6;
+            }
+
+            .table thead th {
+                vertical-align: bottom;
+                border-bottom: 2px solid #dee2e6;
+            }
+
+            .table-striped tbody tr:nth-of-type(odd) {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+
+            .table-hover tbody tr:hover {
+                background-color: rgba(0, 0, 0, 0.075);
+            }
+
+            .btn {
+                display: inline-block;
+                font-weight: 400;
+                color: #212529;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+                background-color: transparent;
+                border: 1px solid transparent;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+                transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            }
+
+            .btn-success {
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+
+            .btn-danger {
+                color: #fff;
+                background-color: #dc3545;
+                border-color: #dc3545;
+            }
+
+            .btn-primary {
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .btn-secondary {
+                color: #fff;
+                background-color: #6c757d;
+                border-color: #6c757d;
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border: 1px solid #ced4da;
+                border-radius: 0.25rem;
+            }
+
+            .position-relative {
+                position: relative;
+            }
+
+            .position-absolute {
+                position: absolute;
+            }
+
+            .top-0 {
+                top: 0;
+            }
+
+            .end-0 {
+                right: 0;
+            }
+
+            .mt-2 {
+                margin-top: 0.5rem;
+            }
+
+            .me-2 {
+                margin-right: 0.5rem;
+            }
+
+            .mb-5 {
+                margin-bottom: 3rem;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
+            .text-primary {
+                color: #007bff !important;
+            }
+
+            .text-danger {
+                color: #dc3545 !important;
+            }
+
+            .text-success {
+                color: #28a745 !important;
+            }
+
+            .dashboard-content h1 {
+                font-size: 20px;
+            }
+
+            .nav-pills .nav-link h5 {
+                font-size: 14px;
+            }
+
+            .nav-pills .nav-link {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .form-control {
+                font-size: 14px;
+            }
+
+            .position-absolute {
+                position: static;
+                margin-top: 10px;
+            }
+
+            .w-50 {
+                width: 100% !important;
+            }
+
+            .d-flex {
+                /* flex-direction: column; */
+                align-items: flex-start;
+            }
+
+            .ms-auto {
+                margin-left: 0 !important;
+                margin-top: 10px;
+            }
+
+            .scrollable-table {
+                overflow-x: auto;
+            }
+
+            .table thead th {
+                font-size: 14px;
+            }
+
+            .table tbody td {
+                font-size: 14px;
+            }
+
+            .btn-success,
+            .btn-danger,
+            .btn-primary,
+            .btn-secondary {
+                font-size: 14px;
+            }
+
+            .page-body {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .dashboard-body {
+                order: 2;
+            }
+
+            .sidebar {
+                order: 1;
+                width: 100%;
+                position: static;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-content h1 {
+                font-size: 18px;
+            }
+
+            .nav-pills .nav-link h5 {
+                font-size: 12px;
+            }
+
+            .nav-pills .nav-link {
+                font-size: 10px;
+                padding: 6px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.375rem;
+            }
+
+            .btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            .form-control {
+                font-size: 12px;
+            }
+
+            .table thead th {
+                font-size: 12px;
+            }
+
+            .table tbody td {
+                font-size: 12px;
+            }
+
+            .btn-success,
+            .btn-danger,
+            .btn-primary,
+            .btn-secondary {
+                font-size: 12px;
+            }
+        }
+    </style>
     <div class="container-fluid page-body">
         <div class="row">
             <div class="col-md-12 dashboard-body">
@@ -190,6 +487,8 @@ $size_options = [
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Location <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
+                                        <th scope="col">Permit <button class="btn text-white"><i
+                                                    class="fas fa-sort"></i></button></th>
                                         <th scope="col">Created At <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Updated At <button class="btn text-white"><i
@@ -207,6 +506,17 @@ $size_options = [
                                                 <td><?php echo htmlspecialchars($business['asset']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['location']); ?></td>
+                                                <td>
+                                                    <?php if (!empty($business['business_permit'])): ?>
+                                                        <a href="#" class="view-permit"
+                                                            data-permit="<?php echo htmlspecialchars($business['business_permit']); ?>"
+                                                            data-type="<?php echo pathinfo($business['business_permit'], PATHINFO_EXTENSION) === 'pdf' ? 'pdf' : 'image'; ?>">
+                                                            View Permit
+                                                        </a>
+                                                    <?php else: ?>
+                                                        No Permit
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td><?php echo htmlspecialchars($business['created_at']); ?></td>
                                                 <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
                                                 <td class="text-center">
@@ -229,11 +539,10 @@ $size_options = [
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="7" style="text-align: center;">No Business Found</td>
+                                            <td colspan="9" style="text-align: center;">No Business Found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
-
                             </table>
 
                             <button class="btn btn-primary mt-2 mb-5"
@@ -288,6 +597,8 @@ $size_options = [
                                                     <tr>
                                                         <th>Location <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
+                                                        <th>Permit <button class="btn text-white"><i
+                                                                    class="fas fa-sort"></i></button></th>
                                                         <th>Created At <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Updated At <button class="btn text-white"><i
@@ -300,6 +611,17 @@ $size_options = [
                                                         <?php foreach ($branches_by_business[$business['id']] as $branch): ?>
                                                             <tr data-id="<?php echo $branch['id']; ?>" data-type="branch">
                                                                 <td><?php echo htmlspecialchars($branch['location']); ?></td>
+                                                                <td>
+                                                                    <?php if (!empty($branch['business_permit'])): ?>
+                                                                        <a href="#" class="view-permit-branch"
+                                                                            data-permit="<?php echo htmlspecialchars($branch['business_permit']); ?>"
+                                                                            data-type="<?php echo pathinfo($branch['business_permit'], PATHINFO_EXTENSION) === 'pdf' ? 'pdf' : 'image'; ?>">
+                                                                            View Permit
+                                                                        </a>
+                                                                    <?php else: ?>
+                                                                        No Permit
+                                                                    <?php endif; ?>
+                                                                </td>
                                                                 <td><?php echo $branch['created_at']; ?></td>
                                                                 <td><?php echo $branch['updated_at']; ?></td>
                                                                 <td class="text-center">
@@ -325,7 +647,7 @@ $size_options = [
                                                         <?php endforeach; ?>
                                                     <?php else: ?>
                                                         <tr>
-                                                            <td class="text-center" colspan="4">No branches available</td>
+                                                            <td class="text-center" colspan="5">No branches available</td>
                                                         </tr>
                                                     <?php endif; ?>
                                                 </tbody>
@@ -478,6 +800,139 @@ $size_options = [
 
 
     <script>
+        // business permits
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle click on permit links
+            document.querySelectorAll('.view-permit').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const permitFile = this.getAttribute('data-permit');
+                    const permitType = this.getAttribute('data-type');
+                    const permitPath = '../assets/permits/' + permitFile;
+
+                    if (permitType === 'pdf') {
+                        // Show PDF download modal
+                        Swal.fire({
+                            title: 'Business Permit (PDF)',
+                            html: `
+                        <div class="text-center">
+                            <p>This business permit is a PDF file.</p>
+                            <a href="${permitPath}" class="btn btn-primary" download>
+                                <i class="fas fa-download"></i> Download PDF
+                            </a>
+                        </div>
+                    `,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            width: '500px'
+                        });
+                    } else {
+                        // Show image modal
+                        Swal.fire({
+                            title: 'Business Permit',
+                            html: `
+                        <div style="max-height: 70vh; overflow: auto;">
+                            <img src="${permitPath}" 
+                                 style="max-width: 100%; max-height: 60vh; display: block; margin: 0 auto;" 
+                                 alt="Business Permit">
+                        </div>
+                    `,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            width: '700px',
+                            customClass: {
+                                container: 'permit-modal-container'
+                            },
+                            didOpen: () => {
+                                // Make image zoomable
+                                const img = Swal.getHtmlContainer().querySelector('img');
+                                img.style.cursor = 'zoom-in';
+                                img.addEventListener('click', () => {
+                                    if (img.style.cursor === 'zoom-in') {
+                                        img.style.maxWidth = 'none';
+                                        img.style.maxHeight = 'none';
+                                        img.style.width = 'auto';
+                                        img.style.height = 'auto';
+                                        img.style.cursor = 'zoom-out';
+                                    } else {
+                                        img.style.maxWidth = '100%';
+                                        img.style.maxHeight = '60vh';
+                                        img.style.cursor = 'zoom-in';
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        // branch permits
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.view-permit-branch').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const permitFile = this.getAttribute('data-permit');
+                    const permitType = this.getAttribute('data-type');
+                    const permitPath = '../assets/branch_permits/' + permitFile;
+
+                    if (permitType === 'pdf') {
+                        // Show PDF download modal
+                        Swal.fire({
+                            title: 'Branch Permit (PDF)',
+                            html: `
+                        <div class="text-center">
+                            <p>This branch permit is a PDF file.</p>
+                            <a href="${permitPath}" class="btn btn-primary" download>
+                                <i class="fas fa-download"></i> Download PDF
+                            </a>
+                        </div>
+                    `,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            width: '500px'
+                        });
+                    } else {
+                        // Show image modal
+                        Swal.fire({
+                            title: 'Branch Permit',
+                            html: `
+                        <div style="max-height: 70vh; overflow: auto;">
+                            <img src="${permitPath}" 
+                                 style="max-width: 100%; max-height: 60vh; display: block; margin: 0 auto;" 
+                                 alt="Branch Permit">
+                        </div>
+                    `,
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            width: '700px',
+                            customClass: {
+                                container: 'permit-modal-container'
+                            },
+                            didOpen: () => {
+                                // Make image zoomable
+                                const img = Swal.getHtmlContainer().querySelector('img');
+                                img.style.cursor = 'zoom-in';
+                                img.addEventListener('click', () => {
+                                    if (img.style.cursor === 'zoom-in') {
+                                        img.style.maxWidth = 'none';
+                                        img.style.maxHeight = 'none';
+                                        img.style.width = 'auto';
+                                        img.style.height = 'auto';
+                                        img.style.cursor = 'zoom-out';
+                                    } else {
+                                        img.style.maxWidth = '100%';
+                                        img.style.maxHeight = '60vh';
+                                        img.style.cursor = 'zoom-in';
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+
         document.getElementById('uploadDataButton').addEventListener('click', function () {
             Swal.fire({
                 title: 'Upload or Download Data',
@@ -533,51 +988,79 @@ $size_options = [
                 title: 'Add New Business',
                 html: `
             <div>
-                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
                 <textarea type="text" id="business-description" class="form-control mb-2" placeholder="Business Description"></textarea>
-                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
+                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location" required>
+                <div class="mt-3">
+                    <label for="business-permit" class="form-label">Business Permit (Image/PDF)</label>
+                    <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
+                    <small class="text-muted">Upload a clear image or PDF of your business permit (max 5MB)</small>
+                </div>
             </div>
         `,
                 confirmButtonText: 'Add Business',
                 showCancelButton: true,
                 preConfirm: () => {
                     const data = {
-                        name: $('#business-name').val(),
-                        description: $('#business-description').val(),
+                        name: $('#business-name').val().trim(),
+                        description: $('#business-description').val().trim(),
                         asset: parseInt($('#business-asset').val(), 10),
                         employeeCount: parseInt($('#employee-count').val(), 10),
-                        location: $('#business-location').val(),
+                        location: $('#business-location').val().trim(),
                         owner_id: ownerId,
                     };
 
-                    if (Object.values(data).some(value => !value)) {
+                    const permitFile = document.getElementById('business-permit').files[0];
+
+                    // Validate required fields
+                    if (Object.values(data).some(value => !value) || !permitFile) {
                         Swal.showValidationMessage('All fields are required');
                         return false;
                     }
 
+                    // Validate asset size
                     if (data.asset > 15000000) {
                         Swal.showValidationMessage('Asset size must not exceed 15,000,000');
                         return false;
                     }
 
+                    // Validate employee count
                     if (data.employeeCount > 99) {
                         Swal.showValidationMessage('Employee count must not exceed 99');
                         return false;
                     }
 
+                    // Validate file size (max 5MB)
+                    if (permitFile.size > 5 * 1024 * 1024) {
+                        Swal.showValidationMessage('File size must be less than 5MB');
+                        return false;
+                    }
+
+                    // Create FormData for file upload
+                    const formData = new FormData();
+                    formData.append('name', data.name);
+                    formData.append('description', data.description);
+                    formData.append('asset', data.asset);
+                    formData.append('employeeCount', data.employeeCount);
+                    formData.append('location', data.location);
+                    formData.append('owner_id', data.owner_id);
+                    formData.append('permit', permitFile);
+
                     return $.ajax({
                         url: '../endpoints/business/add_business.php',
                         type: 'POST',
-                        data: data,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
                     }).fail(() => {
                         Swal.showValidationMessage('Failed to add business. Please try again.');
                     });
                 },
             }).then(result => {
                 if (result.isConfirmed) {
-                    Swal.fire('Success!', 'Business added successfully.', 'success')
+                    Swal.fire('Success!', 'Business added successfully. Pending for approval', 'success')
                         .then(() => location.reload());
                 }
             });
@@ -603,6 +1086,11 @@ $size_options = [
                 <input type="number" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
                 <input type="number" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
                 <input type="text" id="edit-location" class="form-control mb-2" placeholder="Location" value="${location}">
+                <div class="mt-3">
+                    <label for="edit-business-permit" class="form-label">Change Business Permit (Image/PDF)</label>
+                    <input type="file" id="edit-business-permit" class="form-control" accept="image/*,.pdf">
+                    <small class="text-muted">Upload a clear image or PDF of your business permit (max 5MB)</small>
+                </div>
             `,
                     confirmButtonText: 'Save Changes',
                     showCancelButton: true,
@@ -616,8 +1104,8 @@ $size_options = [
                             location: $('#edit-location').val(),
                         };
 
-                        if (Object.values(updatedData).some(value => !value)) {
-                            Swal.showValidationMessage('All fields are required');
+                        if (Object.values(updatedData).some(value => !value && value !== 0)) {
+                            Swal.showValidationMessage('All fields are required except permit');
                             return false;
                         }
 
@@ -631,18 +1119,46 @@ $size_options = [
                             return false;
                         }
 
+                        // Handle file upload
+                        const permitFile = document.getElementById('edit-business-permit').files[0];
+                        const formData = new FormData();
+
+                        // Append all data to formData
+                        for (const key in updatedData) {
+                            formData.append(key, updatedData[key]);
+                        }
+
+                        if (permitFile) {
+                            // Validate file size (5MB max)
+                            if (permitFile.size > 5 * 1024 * 1024) {
+                                Swal.showValidationMessage('File size must not exceed 5MB');
+                                return false;
+                            }
+                            formData.append('permit', permitFile);
+                        }
+
                         return $.ajax({
                             url: '../endpoints/business/edit_business.php',
                             type: 'POST',
-                            data: updatedData,
-                        }).fail(() => {
-                            Swal.showValidationMessage('Failed to save changes. Please try again.');
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                        }).fail((error) => {
+                            Swal.showValidationMessage('Failed to save changes: ' + error.responseText);
                         });
                     },
                 }).then(result => {
                     if (result.isConfirmed) {
-                        Swal.fire('Updated!', 'Business details updated successfully.', 'success')
-                            .then(() => location.reload());
+                        Swal.fire({
+                            title: 'Updated!',
+                            text: 'Business details updated successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed || result.isDismissed) {
+                                location.reload();
+                            }
+                        });
                     }
                 });
             });
@@ -686,37 +1202,49 @@ $size_options = [
             Swal.fire({
                 title: 'Add Branch',
                 html: `
-            <input id="branch-location" class="form-control mb-2" placeholder="Branch Location">
+            <div>
+                <input id="branch-location" class="form-control mb-2" placeholder="Branch Location" required>
+                <div class="mt-3">
+                    <label for="branch-permit" class="form-label">Branch Business Permit (Image/PDF)</label>
+                    <input type="file" id="branch-permit" class="form-control" accept="image/*,.pdf" required>
+                    <small class="text-muted">Upload a clear image or PDF of your branch business permit (max 5MB)</small>
+                </div>
+            </div>
         `,
                 confirmButtonText: 'Add Branch',
                 focusConfirm: false,
                 showCancelButton: true,
                 preConfirm: () => {
-                    const location = document.getElementById('branch-location').value;
+                    const location = document.getElementById('branch-location').value.trim();
+                    const permitFile = document.getElementById('branch-permit').files[0];
 
-                    if (!location) {
-                        Swal.showValidationMessage('Please enter a branch location');
+                    if (!location || !permitFile) {
+                        Swal.showValidationMessage('Please enter branch location and upload permit');
+                        return false;
                     }
+
+                    if (permitFile.size > 5 * 1024 * 1024) {
+                        Swal.showValidationMessage('File size must be less than 5MB');
+                        return false;
+                    }
+
                     return {
-                        location
+                        location,
+                        permitFile
                     };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const {
-                        location
-                    } = result.value;
+                    const { location, permitFile } = result.value;
+                    const formData = new FormData();
 
-                    // Send data to add_branch.php
+                    formData.append('business_id', businessId);
+                    formData.append('location', location);
+                    formData.append('permit', permitFile);
+
                     fetch('../endpoints/branch/add_branch.php', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            business_id: businessId,
-                            location
-                        })
+                        body: formData
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -724,7 +1252,6 @@ $size_options = [
                                 Swal.fire('Success', data.message, 'success').then(() => {
                                     window.location.reload();
                                 });
-
                             } else {
                                 Swal.fire('Error', data.message, 'error');
                             }
@@ -745,46 +1272,62 @@ $size_options = [
                         <input id="branch-location" class="form-control mb-2" 
                                placeholder="Branch Location" 
                                value="${data.data.location}">
+                        <div class="mt-3">
+                            <label for="edit-business-branch-permit" class="form-label">Change Business Permit (Image/PDF)</label>
+                            <input type="file" id="edit-business-branch-permit" class="form-control" accept="image/*,.pdf">
+                            <small class="text-muted">Upload a clear image or PDF of your business permit (max 5MB)</small>
+                        </div>
                     `,
                             confirmButtonText: 'Save Changes',
                             focusConfirm: false,
                             showCancelButton: true,
                             preConfirm: () => {
                                 const location = document.getElementById('branch-location').value;
+                                const permitFile = document.getElementById('edit-business-branch-permit').files[0];
 
                                 if (!location) {
                                     Swal.showValidationMessage('Please enter a branch location');
+                                    return false;
                                 }
 
-                                return {
-                                    location
-                                };
+                                if (permitFile && permitFile.size > 5 * 1024 * 1024) {
+                                    Swal.showValidationMessage('File size must not exceed 5MB');
+                                    return false;
+                                }
+
+                                const formData = new FormData();
+                                formData.append('id', branchId);
+                                formData.append('location', location);
+                                if (permitFile) {
+                                    formData.append('permit', permitFile);
+                                }
+
+                                return formData;
                             }
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                const {
-                                    location
-                                } = result.value;
+                                const formData = result.value;
 
                                 fetch('../endpoints/branch/edit_branch.php', {
                                     method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        id: branchId,
-                                        location
-                                    })
+                                    body: formData
                                 })
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.success) {
-                                            Swal.fire('Success', 'Branch updated successfully!', 'success').then(() => {
+                                            Swal.fire({
+                                                title: 'Success',
+                                                text: 'Branch updated successfully!',
+                                                icon: 'success'
+                                            }).then(() => {
                                                 window.location.reload();
                                             });
                                         } else {
-                                            Swal.fire('Error', 'Failed to update branch!', 'error');
+                                            Swal.fire('Error', data.message || 'Failed to update branch!', 'error');
                                         }
+                                    })
+                                    .catch(error => {
+                                        Swal.fire('Error', 'Network error while updating branch', 'error');
                                     });
                             }
                         });

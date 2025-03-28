@@ -300,6 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
 // Profit Margin Chart
 function updateProfitMarginChart(data) {
     const ctx = document.getElementById('profitMarginChart').getContext('2d');

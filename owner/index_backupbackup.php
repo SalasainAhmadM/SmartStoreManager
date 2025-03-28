@@ -469,14 +469,16 @@ $products = [];
 $stockLevelsSold = [];
 
 if ($business_id) {
-    // Fetch Top Products Sold Across All Businesses
+    // Fetch Top Products Sold for the Selected Business and Branches
     $productQuery = "
     SELECT p.id, p.name, COALESCE(SUM(s.quantity), 0) AS total_sold
     FROM products p
     LEFT JOIN sales s ON p.id = s.product_id
+    LEFT JOIN branch br ON s.branch_id = br.id
+    WHERE p.business_id = $business_id
     GROUP BY p.id, p.name
     ORDER BY total_sold DESC
-    LIMIT 10"; // Show top 10 products sold across all businesses
+    LIMIT 10"; // Show top 10 products sold for the selected business
 
     $productResult = $conn->query($productQuery);
 
@@ -628,7 +630,31 @@ while ($row = $result->fetch_assoc()) {
         $positiveMonths[] = $month;
     }
 }
+// Fetch and process the result
+$previousMonthExpense = null;
+while ($row = $result->fetch_assoc()) {
+    $month = $row['month'];
+    $totalExpense = $row['total_expenses'];
 
+    // Set dynamic threshold (e.g., 80% of the total monthly expenses)
+    $threshold = $totalExpense * 0.8;
+    $thresholds[$month] = $threshold;
+
+    $expenseData[$month] = $totalExpense;
+
+    if ($totalExpense > $threshold) {
+        $breachMonths[] = $month;
+    } else {
+        $positiveMonths[] = $month;
+    }
+
+    // Check if expenses are lower than the previous month
+    if ($previousMonthExpense !== null && $totalExpense < $previousMonthExpense) {
+        $positiveMonths[] = $month; // Add to positive months if lower than previous month
+    }
+
+    $previousMonthExpense = $totalExpense; // Update previous month's expense
+}
 // Convert data to JSON
 $expensesJson = json_encode($expenseData);
 $thresholdsJson = json_encode($thresholds);
@@ -760,6 +786,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body class="d-flex">
@@ -770,7 +797,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
     <div class="container-fluid page-body">
         <div class="row">
-            <div class="col-md-12 dashboard-body">
+            <div class="col-12 dashboard-body">
                 <div class="dashboard-content">
                     <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</b></h1>
 
@@ -840,60 +867,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                             </div>
 
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
-                                        checkbox.addEventListener('change', function () {
-                                            const branchLocation = this.getAttribute('data-branch');
-                                            if (!this.checked) {
-                                                removeBranchFromChart(branchLocation);
-                                            } else {
-                                                addBranchToChart(branchLocation);
-                                            }
-                                        });
-                                    });
-                                });
 
-                                function removeBranchFromChart(branchLocation) {
-                                    if (financialChart) {
-                                        const index = financialChart.data.labels.indexOf(branchLocation);
-                                        if (index !== -1) {
-                                            financialChart.data.labels.splice(index, 1);
-                                            financialChart.data.datasets[0].data.splice(index, 1);
-                                            financialChart.data.datasets[1].data.splice(index, 1);
-                                            financialChart.update();
-                                        }
-                                    }
-                                    if (salesExpensesChart) {
-                                        const index = salesExpensesChart.data.labels.indexOf(branchLocation);
-                                        if (index !== -1) {
-                                            salesExpensesChart.data.labels.splice(index, 1);
-                                            salesExpensesChart.data.datasets[0].data.splice(index, 1);
-                                            salesExpensesChart.data.datasets[1].data.splice(index, 1);
-                                            salesExpensesChart.update();
-                                        }
-                                    }
-                                }
-
-                                function addBranchToChart(branchLocation) {
-                                    if (financialChart && selectedBusinessName) {
-                                        const branchData = chartData[selectedBusinessName][branchLocation];
-                                        if (branchData) {
-                                            // financialChart.data.labels.push(branchLocation);
-                                            // financialChart.data.datasets[0].data.push(branchData.sales);
-                                            // financialChart.data.datasets[1].data.push(branchData.expenses);
-                                            financialChart.update();
-                                        }
-                                    }
-                                    if (salesExpensesChart && selectedBusinessName) {
-                                        const branchData = chartData[selectedBusinessName][branchLocation];
-                                        if (branchData) {
-                                            salesExpensesChart.update();
-                                        }
-                                    }
-                                }
-
-                            </script>
 
 
                             <div class="col-md-7">
@@ -1134,9 +1108,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                 class="fas fa-info-circle"
                                                 onclick="showInfo(' Customer Demographics', 'This graph displays all the top products by location.');"></i></b>
                                     </h1>
-                                    <button id="selectBusinessBtn" class="btn btn-primary mb-1 mt-2">
-                                        <i class="fa-solid fa-filter"></i> Select Business and Branches
-                                    </button>
+
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
@@ -1338,23 +1310,60 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
 
     </div>
-    <!-- <script>
-        window.onload = function () {
-            Swal.fire({
-                icon: 'success',
-                title: 'Login Successful',
-                text: 'Welcome!',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                <?php unset($_SESSION['login_success']); ?>
-                <?php if ($isNewOwner): ?>
-                    triggerAddBusinessModal();
-                <?php endif; ?>
+    <script>
+        // Event listener for branch checkboxes
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const branchLocation = this.getAttribute('data-branch');
+                    if (!this.checked) {
+                        removeBranchFromChart(branchLocation);
+                    } else {
+                        addBranchToChart(branchLocation);
+                    }
+                });
             });
-        };
-    </script> -->
+        });
 
+        // Function to remove a branch from the chart
+        function removeBranchFromChart(branchLocation) {
+            if (financialChart) {
+                const index = financialChart.data.labels.indexOf(branchLocation);
+                if (index !== -1) {
+                    financialChart.data.labels.splice(index, 1);
+                    financialChart.data.datasets[0].data.splice(index, 1); // Remove sales data
+                    financialChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
+                    financialChart.update();
+                }
+            }
+            if (salesExpensesChart) {
+                const index = salesExpensesChart.data.labels.indexOf(branchLocation);
+                if (index !== -1) {
+                    salesExpensesChart.data.labels.splice(index, 1);
+                    salesExpensesChart.data.datasets[0].data.splice(index, 1); // Remove sales data
+                    salesExpensesChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
+                    salesExpensesChart.update();
+                }
+            }
+        }
+
+        // Function to add a branch to the chart
+        function addBranchToChart(branchLocation) {
+            if (financialChart && selectedBusinessName) {
+                const branchData = chartData[selectedBusinessName][branchLocation];
+                if (branchData) {
+                    financialChart.update();
+                }
+            }
+            if (salesExpensesChart && selectedBusinessName) {
+                const branchData = chartData[selectedBusinessName][branchLocation];
+                if (branchData) {
+                    salesExpensesChart.update();
+                }
+            }
+        }
+
+    </script>
     <script>
         document.getElementById('uploadDataButton').addEventListener('click', function () {
             Swal.fire({
@@ -1769,7 +1778,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     listItem.textContent = `⚠️ High Expense in ${monthNames[month - 1]}`;
                     breachList.appendChild(listItem);
                 });
-            } else if (positiveMonths.length > 0) {
+            }
+
+            if (positiveMonths.length > 0) {
                 positiveMonths.forEach(month => {
                     let listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-success";

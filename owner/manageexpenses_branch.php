@@ -41,7 +41,9 @@ $stmt->close();
     <div id="particles-js"></div>
 
     <?php include '../components/owner_sidebar.php'; ?>
+    <style>
 
+    </style>
     <div class="container-fluid page-body">
 
         <div class="row">

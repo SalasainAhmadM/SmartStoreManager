@@ -1,17 +1,20 @@
 function editFullName() {
     const fullName = document.getElementById('full_name_display').textContent.trim();
-    const [firstName = '', middleName = '', lastName = ''] = fullName.split(' ');
+    const nameParts = fullName.split(' ');
+    
+    const firstName = nameParts[0] || '';
+    const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
 
     Swal.fire({
         title: 'Edit Full Name',
         html: `
-    <label for="first_name">First Name</label>
-    <input id="first_name" class="swal2-input" value="${firstName}">
-    <label for="middle_name">Middle Name</label>
-    <input id="middle_name" class="swal2-input" value="${middleName}">
-    <label for="last_name">Last Name</label>
-    <input id="last_name" class="swal2-input" value="${lastName}">
-`,
+            <div>
+                <input type="text" id="first_name" class="form-control mb-2" placeholder="First Name" value="${firstName}">
+                <input type="text" id="middle_name" class="form-control mb-2" placeholder="Middle Name (Optional)" value="${middleName}">
+                <input type="text" id="last_name" class="form-control mb-2" placeholder="Last Name" value="${lastName}">
+            </div>
+        `,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
@@ -21,6 +24,7 @@ function editFullName() {
 
             if (!firstName || !lastName) {
                 Swal.showValidationMessage('First and Last Name are required!');
+                return false;
             }
 
             return { firstName, middleName, lastName };
@@ -35,9 +39,7 @@ function editFullName() {
                 updateProfileField('middle_name', middleName),
                 updateProfileField('last_name', lastName),
             ]).then(() => {
-                document.getElementById(
-                    'full_name_display'
-                ).textContent = `${firstName} ${middleName} ${lastName}`.trim();
+                document.getElementById('full_name_display').textContent = `${firstName} ${middleName} ${lastName}`.trim();
                 Swal.fire('Saved!', 'Your name has been updated.', 'success');
             }).catch(() => {
                 Swal.fire('Error!', 'Failed to update your name.', 'error');
@@ -45,6 +47,7 @@ function editFullName() {
         }
     });
 }
+
 
 // Reusable function to update a profile field
 function updateProfileField(field, value) {
@@ -209,45 +212,51 @@ function editPhone() {
     });
 }
 
-
 function editAddress() {
-    const address = document.getElementById('address_display').textContent.trim();
+    const addressText = document.getElementById('address_display').textContent.trim();
+    const [barangay = '', city = '', region = '', country = ''] = addressText.split(', ');
 
     Swal.fire({
         title: 'Edit Address',
-        html: `<textarea style='width: 300px' id="address" class="swal2-textarea" placeholder="Enter address">${address}</textarea>`,
+        html: `
+            <div>
+                <input type="text" id="barangay" class="form-control mb-2" placeholder="Barangay" value="${barangay}">
+                <input type="text" id="city" class="form-control mb-2" placeholder="City" value="${city}">
+                <input type="text" id="region" class="form-control mb-2" placeholder="Region" value="${region}">
+                <input type="text" id="country" class="form-control mb-2" placeholder="Country" value="${country}">
+            </div>
+        `,
         showCancelButton: true,
         confirmButtonText: 'Save',
         preConfirm: () => {
-            const address = document.getElementById('address').value.trim();
+            const barangay = document.getElementById('barangay').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const region = document.getElementById('region').value.trim();
+            const country = document.getElementById('country').value.trim();
 
-            if (!address) {
-                Swal.showValidationMessage('Address is required!');
+            if (!barangay || !city || !region || !country) {
+                Swal.showValidationMessage('All address fields are required!');
+                return false;
             }
 
-            return { address };
+            return { barangay, city, region, country };
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const { address } = result.value;
+            const { barangay, city, region, country } = result.value;
 
-            fetch('../endpoints/profile/update_profile.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ field: 'address', value: address }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.status === 'success') {
-                        document.getElementById('address_display').textContent = address;
-                        Swal.fire('Saved!', 'Your address has been updated.', 'success');
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(() => {
-                    Swal.fire('Error!', 'Failed to update your address.', 'error');
-                });
+            // Update fields separately
+            Promise.all([
+                updateProfileField('barangay', barangay),
+                updateProfileField('city', city),
+                updateProfileField('region', region),
+                updateProfileField('country', country),
+            ]).then(() => {
+                document.getElementById('address_display').textContent = `${barangay}, ${city}, ${region}, ${country}`;
+                Swal.fire('Saved!', 'Your address has been updated.', 'success');
+            }).catch(() => {
+                Swal.fire('Error!', 'Failed to update your address.', 'error');
+            });
         }
     });
 }

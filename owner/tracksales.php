@@ -144,9 +144,6 @@ WHERE b.owner_id = ? AND s.date = ?
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
     <link rel="icon" href="../assets/logo.png">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script> -->
-
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
@@ -154,7 +151,238 @@ WHERE b.owner_id = ? AND s.date = ?
     <div id="particles-js"></div>
 
     <?php include '../components/owner_sidebar.php'; ?>
+    <style>
+        /* General styles for all screen sizes */
+        .container-fluid {
+            padding: 0 15px;
+        }
 
+        .dashboard-body {
+            padding: 15px;
+        }
+
+        .dashboard-content h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+
+        .position-relative {
+            position: relative;
+        }
+
+        .position-absolute {
+            position: absolute;
+        }
+
+        .top-0 {
+            top: 0;
+        }
+
+        .end-0 {
+            right: 0;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mb-5 {
+            margin-bottom: 3rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        /* Media queries for mobile responsiveness */
+        @media (max-width: 767.98px) {
+            .dashboard-content h1 {
+                font-size: 20px;
+            }
+
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .form-control {
+                font-size: 14px;
+            }
+
+            .position-absolute {
+                position: static;
+                margin-top: 10px;
+            }
+
+            .w-50 {
+                width: 100% !important;
+            }
+
+            .d-flex {
+                /* flex-direction: column; */
+                align-items: flex-start;
+            }
+
+            .ms-auto {
+                margin-left: 0 !important;
+                margin-top: 10px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+
+            .table thead th {
+                font-size: 14px;
+            }
+
+            .table tbody td {
+                font-size: 14px;
+            }
+
+            .btn-success,
+            .btn-danger,
+            .btn-primary {
+                font-size: 14px;
+            }
+
+            /* Adjust search bar and buttons for mobile */
+            .mt-2.d-flex {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .mt-2.d-flex .form-control {
+                width: 100% !important;
+            }
+
+            .mt-2.d-flex .d-flex {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            /* Adjust filter buttons for mobile */
+            .position-absolute.top-0.end-0 {
+                position: static;
+                margin-top: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .position-absolute.top-0.end-0 .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-content h1 {
+                font-size: 18px;
+            }
+
+            .btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            .form-control {
+                font-size: 12px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.375rem;
+            }
+
+            .table thead th {
+                font-size: 12px;
+            }
+
+            .table tbody td {
+                font-size: 12px;
+            }
+
+            .btn-success,
+            .btn-danger,
+            .btn-primary {
+                font-size: 12px;
+            }
+        }
+    </style>
     <div class="container-fluid page-body">
         <div class="row">
             <div class="col-md-12 dashboard-body">

@@ -79,9 +79,12 @@ $owner = array_map(function ($value) {
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-home"></i>
-                                <span id="address_display"><b><?= $owner['address']; ?></b></span>
+                                <span id="address_display">
+                                    <b><?= $owner['barangay'] . ', ' . $owner['city'] . ', ' . $owner['region'] . ', ' . $owner['country']; ?></b>
+                                </span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAddress()"></a>
                             </div>
+
                             <div class="form-group">
                                 <i class="fas fa-venus-mars"></i>
                                 <span id="gender_display"><b><?= $owner['gender']; ?></b></span>

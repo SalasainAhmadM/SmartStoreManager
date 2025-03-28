@@ -25,7 +25,200 @@ $owner_id = $_SESSION['user_id'];
     <div id="particles-js"></div>
 
     <?php include '../components/owner_sidebar.php'; ?>
+    <style>
+        @media (max-width: 767.98px) {
+            .container-fluid {
+                padding: 0 15px;
+            }
 
+            .dashboard-body {
+                padding: 15px;
+            }
+
+            .dashboard-content h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .manage-expenses h5 {
+                font-size: 16px;
+            }
+
+            .manage-expenses label {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .manage-expenses label input {
+                margin-right: 5px;
+            }
+
+            #expensesPanel {
+                overflow-x: auto;
+            }
+
+            .scrollable-table {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .table {
+                width: 100%;
+                margin-bottom: 1rem;
+                color: #212529;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.75rem;
+                vertical-align: top;
+                border-top: 1px solid #dee2e6;
+            }
+
+            .table thead th {
+                vertical-align: bottom;
+                border-bottom: 2px solid #dee2e6;
+            }
+
+            .table-striped tbody tr:nth-of-type(odd) {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+
+            .table-hover tbody tr:hover {
+                background-color: rgba(0, 0, 0, 0.075);
+            }
+
+            .btn {
+                display: inline-block;
+                font-weight: 400;
+                color: #212529;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+                background-color: transparent;
+                border: 1px solid transparent;
+                padding: 0.375rem 0.75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: 0.25rem;
+                transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            }
+
+            .btn-success {
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+
+            .btn-primary {
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .btn-dark {
+                color: #fff;
+                background-color: #343a40;
+                border-color: #343a40;
+            }
+
+            .dashboard-content h1 {
+                font-size: 20px;
+            }
+
+            .manage-expenses h5 {
+                font-size: 14px;
+            }
+
+            .manage-expenses label {
+                display: block;
+                margin-bottom: 8px;
+            }
+
+            .manage-expenses label input {
+                margin-right: 3px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            #expensesPanel {
+                padding: 0 10px;
+            }
+
+            .scrollable-table {
+                overflow-x: auto;
+            }
+
+            .table thead th {
+                font-size: 14px;
+            }
+
+            .table tbody td {
+                font-size: 14px;
+            }
+
+            .btn-success,
+            .btn-primary,
+            .btn-dark {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-content h1 {
+                font-size: 18px;
+            }
+
+            .manage-expenses h5 {
+                font-size: 12px;
+            }
+
+            .manage-expenses label {
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            .manage-expenses label input {
+                margin-right: 2px;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.375rem;
+            }
+
+            .btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            #expensesPanel {
+                padding: 0 5px;
+            }
+
+            .table thead th {
+                font-size: 12px;
+            }
+
+            .table tbody td {
+                font-size: 12px;
+            }
+
+            .btn-success,
+            .btn-primary,
+            .btn-dark {
+                font-size: 12px;
+            }
+        }
+    </style>
     <div class="container-fluid page-body">
 
         <div class="row">

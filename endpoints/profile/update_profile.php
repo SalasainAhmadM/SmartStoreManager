@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $field = $data['field'] ?? null;
     $value = $data['value'] ?? null;
 
-    $allowed_fields = ['first_name', 'middle_name', 'last_name', 'email', 'password', 'contact_number', 'address', 'gender', 'age', 'birthday'];
+    $allowed_fields = ['first_name', 'middle_name', 'last_name', 'email', 'password', 'contact_number', 'barangay', 'city', 'region', 'country', 'gender', 'age', 'birthday'];
 
     if (!in_array($field, $allowed_fields)) {
         echo json_encode(['status' => 'error', 'message' => 'Invalid field']);
