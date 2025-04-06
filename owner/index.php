@@ -961,199 +961,84 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                     <h1><b><i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview</b></h1>
 
                     <div class="container-fluid">
-                        <div class="row">
 
-                            <div class="col-md-5">
-                                <h5 class="mt-5"><b>Select Business:</b></h5>
-                                <div class="scroll-container">
-                                    <?php
-                                    if (empty($businessData)) {
-                                        echo '<p>No business found.</p>';
-                                    } else {
-                                        foreach ($businessData as $businessName => $branches) {
-                                            echo '<div class="col-md-12 card" data-business-name="' . $businessName . '" onclick="showBusinessData(\'' . $businessName . '\')">';
-                                            echo '<h5>' . $businessName . '</h5>';
+                        <div class="col-md-12 mt-5">
 
-                                            // Fetch business-level sales and expenses
-                                            $businessSales = $processedData[$businessName]['Business/Main Branch']['sales'] ?? null;
-                                            $businessExpenses = $processedData[$businessName]['Business/Main Branch']['expenses'] ?? null;
-
-                                            // Main Branch Table
-                                            if ($businessSales !== null || $businessExpenses !== null) {
-                                                echo '<table class="table table-striped table-hover mt-4">';
-                                                echo '<thead class="table-dark"><tr><th class="text-center" colspan="2">' . $businessName . ' Sales and Expenses/Main Branch</th></tr></thead>';
-                                                echo '<thead class="table-dark"><tr><th>Total Sales (₱)</th><th>Total Expenses (₱)</th></tr></thead>';
-                                                echo '<tbody>';
-                                                echo '<tr>';
-                                                echo '<td>' . number_format($businessSales, 2) . '</td>';
-                                                echo '<td>' . number_format($businessExpenses, 2) . '</td>';
-                                                echo '</tr>';
-                                                echo '</tbody>';
-                                                echo '</table>';
-                                            }
-
-                                            // Branch-Level Table
-                                            echo '<table class="table table-striped table-hover mt-4">';
-                                            echo '<thead class="table-dark"><tr><th>Branches</th><th>Total Sales (₱)</th><th>Total Expenses (₱)</th><th>Include in Chart</th></tr></thead>';
-                                            echo '<tbody>';
-
-                                            // Loop through each branch of the business and display the expenses
-                                            foreach ($branches as $branchLocation) {
-                                                if ($branchLocation === 'No Branch for this Business') {
-                                                    echo '<tr><td colspan="4" class="text-center">No Branch for this Business</td></tr>';
-                                                } else {
-                                                    $totalSales = $processedData[$businessName][$branchLocation]['sales'] ?? null;
-                                                    $totalExpenses = $processedData[$businessName][$branchLocation]['expenses'] ?? null;
-                                                    echo '<tr>';
-                                                    echo '<td>' . $branchLocation . '</td>';
-                                                    if ($totalSales !== null || $totalExpenses !== null) {
-                                                        echo '<td>' . number_format($totalSales, 2) . '</td>';
-                                                        echo '<td>' . number_format($totalExpenses, 2) . '</td>';
-                                                    } else {
-                                                        echo '<td colspan="2" class="text-center">No Data Available</td>';
-                                                    }
-                                                    echo '<td><input type="checkbox" class="branch-checkbox" data-branch="' . $branchLocation . '" checked></td>';
-                                                    echo '</tr>';
-                                                }
-                                            }
-
-                                            echo '</tbody>';
-                                            echo '</table>';
-                                            echo '</div>';
-                                        }
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-
-                            <script>
-                                // Event listener for branch checkboxes
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
-                                        checkbox.addEventListener('change', function () {
-                                            const branchLocation = this.getAttribute('data-branch');
-                                            if (!this.checked) {
-                                                removeBranchFromChart(branchLocation);
-                                            } else {
-                                                addBranchToChart(branchLocation);
-                                            }
-                                        });
-                                    });
-                                });
-
-                                // Function to remove a branch from the chart
-                                function removeBranchFromChart(branchLocation) {
-                                    if (financialChart) {
-                                        const index = financialChart.data.labels.indexOf(branchLocation);
-                                        if (index !== -1) {
-                                            financialChart.data.labels.splice(index, 1);
-                                            financialChart.data.datasets[0].data.splice(index, 1); // Remove sales data
-                                            financialChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
-                                            financialChart.update();
-                                        }
-                                    }
-                                    if (salesExpensesChart) {
-                                        const index = salesExpensesChart.data.labels.indexOf(branchLocation);
-                                        if (index !== -1) {
-                                            salesExpensesChart.data.labels.splice(index, 1);
-                                            salesExpensesChart.data.datasets[0].data.splice(index, 1); // Remove sales data
-                                            salesExpensesChart.data.datasets[1].data.splice(index, 1); // Remove expenses data
-                                            salesExpensesChart.update();
-                                        }
-                                    }
-                                }
-
-                                // Function to add a branch to the chart
-                                function addBranchToChart(branchLocation) {
-                                    if (financialChart && selectedBusinessName) {
-                                        const branchData = chartData[selectedBusinessName][branchLocation];
-                                        if (branchData) {
-                                            financialChart.update();
-                                        }
-                                    }
-                                    if (salesExpensesChart && selectedBusinessName) {
-                                        const branchData = chartData[selectedBusinessName][branchLocation];
-                                        if (branchData) {
-                                            salesExpensesChart.update();
-                                        }
-                                    }
-                                }
-
-                            </script>
-
-
-                            <div class="col-md-7">
-                                <h5 class="mt-5"><b>Financial Overview <i class="fas fa-info-circle"
-                                            onclick="showInfo(' Financial Overview', 'This graph displays all the financial overview of your business/businesses.');"></i></b>
-                                </h5>
-
-                                <!-- Original Chart -->
-                                <div class="chart-container mb-4">
-                                    <canvas id="financialChart"></canvas>
-                                    <button class="btn btn-dark mt-2 mb-5" id="printChartButton">
-                                        <i class="fas fa-print me-2"></i> Generate Report
-                                    </button>
+                            <div class="row">
+                                <!-- Financial Overview Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b><i class="fa-solid fa-chart-line"></i> Financial Overview <i
+                                                    class="fas fa-info-circle"
+                                                    onclick="showInfo(' Financial Overview', 'This graph displays all the financial overview of your business/businesses.');"></i></b>
+                                        </h5>
+                                        <canvas id="financialChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChartButton">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Sales vs Expenses Chart -->
-                                <div class="chart-container mb-4">
-                                    <h6>Sales vs Expenses <i class="fas fa-info-circle"
-                                            onclick="showInfo(' Sales vs Expenses', 'This graph displays all the sales vs expenses.');"></i>
-                                    </h6>
-                                    <canvas id="salesExpensesChart"></canvas>
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Sales vs Expenses</b> <i class="fas fa-info-circle"
+                                                onclick="showInfo(' Sales vs Expenses', 'This graph displays all the sales vs expenses.');"></i>
+                                        </h5>
+                                        <canvas id="salesExpensesChart"></canvas>
+                                    </div>
                                 </div>
+                            </div>
 
-                                <div class="mt-3">
-                                    <label for="monthFilter"><b>Filter Sales vs Expenses by Month
-                                            (<?php echo date("Y"); ?>):</b></label>
-                                    <select id="monthFilter" class="form-control"
-                                        onchange="filterSalesExpensesByMonth(this.value)">
-                                        <option value="0">Select Month</option>
-                                        <option value="1">January</option>
-                                        <option value="2">February</option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September</option>
-                                        <option value="10">October</option>
-                                        <option value="11">November</option>
-                                        <option value="12">December</option>
-                                    </select>
-                                </div>
+                            <!-- Sales vs Expenses Filter -->
+                            <div class="mt-3">
+                                <label for="monthFilter"><b>Filter Sales vs Expenses by Month
+                                        (<?php echo date("Y"); ?>):</b></label>
+                                <select id="monthFilter" class="form-control"
+                                    onchange="filterSalesExpensesByMonth(this.value)">
+                                    <option value="0">Select Month</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
 
-                                <button class="btn btn-dark mt-2 mb-5"
-                                    onclick="printFinancialOverviewAndSalesvsExpensesTable()">
-                                    <i class="fas fa-print me-2"></i> Generate Report
-                                </button>
+                            <button class="btn btn-dark mt-2 mb-5"
+                                onclick="printFinancialOverviewAndSalesvsExpensesTable()">
+                                <i class="fas fa-print me-2"></i> Generate Report
+                            </button>
 
-
-
+                            <div class="row">
                                 <!-- Profit Margin Chart -->
-                                <div class="chart-container mb-4">
-                                    <h6>Profit Margin Trends <i class="fas fa-info-circle"
-                                            onclick="showInfo(' Profit Margin Trends', 'This graph displays all the profit margin trends.');"></i>
-                                    </h6>
-                                    <canvas id="profitMarginChart"></canvas>
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Profit Margin Trends</b> <i class="fas fa-info-circle"
+                                                onclick="showInfo(' Profit Margin Trends', 'This graph displays all the profit margin trends.');"></i>
+                                        </h5>
+                                        <canvas id="profitMarginChart"></canvas>
+                                    </div>
                                 </div>
 
                                 <!-- Cash Flow Chart -->
-                                <div class="chart-container mb-4">
-                                    <h6>Monthly Cash Flow <i class="fas fa-info-circle"
-                                            onclick="showInfo(' Monthly Cash Flow', 'This graph displays all the cash inflow and cash outflow.');"></i>
-                                    </h6>
-                                    <canvas id="cashFlowChart"></canvas>
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-5"><b>Monthly Cash Flow</b> <i class="fas fa-info-circle"
+                                                onclick="showInfo(' Monthly Cash Flow', 'This graph displays all the cash inflow and cash outflow.');"></i>
+                                        </h5>
+                                        <canvas id="cashFlowChart"></canvas>
+                                    </div>
                                 </div>
-
-                                <!-- 6 -->
-
                             </div>
-
-
                         </div>
-
 
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison <i

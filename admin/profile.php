@@ -86,7 +86,7 @@ $admin = array_map(function ($value) {
             </div>
         </div>
     </div>
-    <script src="../js/sidebar.js"></script>
+    <script src="../js/sidebar_admin.js"></script>
     <script src="../js/profile_admin.js"></script>
 
 </body>

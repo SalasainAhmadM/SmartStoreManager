@@ -458,6 +458,12 @@ $expenseDataBreakdown = [
     'recurringByMonth' => $recurringData
 ];
 // 7
+// Get the business ID of the logged-in owner
+$businessQuery = "SELECT id FROM business WHERE owner_id = $owner_id";
+$businessResult = $conn->query($businessQuery);
+$business = $businessResult->fetch_assoc();
+$business_id = $business['id'] ?? null; // Avoid errors if no business is found
+
 $businesses = [];
 $businessQuery = "SELECT id, name FROM business WHERE owner_id = $owner_id";
 $businessResult = $conn->query($businessQuery);
@@ -494,11 +500,6 @@ if ($selected_business_id) {
     }
 }
 
-// Prepare Data for JSON Output
-$inventoryData = [
-    'products' => $products,
-    'stockLevelsSold' => $stockLevelsSold
-];
 // Prepare Data for JSON Output
 $inventoryData = [
     'products' => $products,
@@ -1201,10 +1202,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             </div>
                         </div>
                         <!-- // 7 -->
-
-
                         <!-- Inventory Chart Section -->
-                        <div class="col-md-12 mt-5">
+                        <div class="col-md-12 mt-5" id="inventoryChart">
                             <h1>
                                 <b>
                                     <i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold
@@ -1212,6 +1211,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                         onclick="showInfo('Inventory Product Sold', 'This graph displays the stock levels sold of top products.');"></i>
                                 </b>
                             </h1>
+
                             <div class="col-md-12 mt-3">
                                 <label for="businessSelect"><b>Select Business:</b></label>
                                 <select id="businessSelect" class="form-control" onchange="changeBusiness()">
@@ -1418,12 +1418,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                                         <td><?php echo htmlspecialchars($product['type']); ?></td>
                                                         <td><?php echo '₱' . number_format($product['price'], 2); ?></td>
                                                         <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?></td>
+                                                        <td><?php echo '₱' . number_format($product['total_sales'], 2); ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="6" style="text-align: center;">No Popular Products Found
+                                                    <td colspan="6" style="text-align: center;">No Popular Products
+                                                        Found
                                                     </td>
                                                 </tr>
                                             <?php endif; ?>
@@ -1586,36 +1588,52 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             Swal.fire({
                 title: 'Add New Business',
                 html: `
-        <div>
-            <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name">
-            <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
-            <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size">
-            <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees">
-            <input type="text" id="business-location" class="form-control mb-2" placeholder="location">
-        </div>
+            <div>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
+                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location" required>
+                <div class="mt-3">
+                    <label for="business-permit" class="form-label">Business Permit (Image/PDF)</label>
+                    <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
+                    <small class="text-muted">Upload a clear image or PDF of your business permit</small>
+                </div>
+            </div>
         `,
                 confirmButtonText: 'Add Business',
                 showCancelButton: true,
-                cancelButtonText: 'Skip'
-            }).then((result) => {
-                if (result.isConfirmed) {
+                cancelButtonText: 'Skip',
+                preConfirm: () => {
                     const businessName = document.getElementById('business-name').value.trim();
-                    const businessDescription = document.getElementById('business-description').value.trim();
                     const businessAsset = document.getElementById('business-asset').value.trim();
                     const employeeCount = document.getElementById('employee-count').value.trim();
                     const location = document.getElementById('business-location').value.trim();
+                    const permitFile = document.getElementById('business-permit').files[0];
 
-                    if (!businessName || !businessAsset || !employeeCount) {
-                        Swal.fire('Error', 'Please fill in all required fields.', 'error');
-                        return;
+                    if (!businessName || !businessAsset || !employeeCount || !location || !permitFile) {
+                        Swal.showValidationMessage('Please fill in all required fields and upload business permit');
+                        return false;
                     }
 
+                    return {
+                        businessName,
+                        businessDescription: document.getElementById('business-description').value.trim(),
+                        businessAsset,
+                        employeeCount,
+                        location,
+                        permitFile
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
                     const formData = new FormData();
-                    formData.append('name', businessName);
-                    formData.append('description', businessDescription);
-                    formData.append('asset', businessAsset);
-                    formData.append('employeeCount', employeeCount);
-                    formData.append('location', location);
+                    formData.append('name', result.value.businessName);
+                    formData.append('description', result.value.businessDescription);
+                    formData.append('asset', result.value.businessAsset);
+                    formData.append('employeeCount', result.value.employeeCount);
+                    formData.append('location', result.value.location);
+                    formData.append('permit', result.value.permitFile);
                     formData.append('owner_id', ownerId || <?= json_encode($_SESSION['user_id']); ?>);
 
                     fetch('../endpoints/business/add_business_prompt.php', {
@@ -1640,7 +1658,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             console.error(err);
                         });
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    // Trigger update to set is_new_owner = 0
+                    // Skip business creation
                     fetch('../endpoints/business/skip_business_prompt.php', {
                         method: 'POST',
                         headers: {
@@ -1818,8 +1836,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         // 7
         function changeBusiness() {
             var selectedBusiness = document.getElementById("businessSelect").value;
-            window.location.href = "?business_id=" + selectedBusiness;
+            window.location.href = "?business_id=" + selectedBusiness + "#inventoryChart"; // Redirect with fragment
         }
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.location.hash === "#inventoryChart") {
+                document.getElementById("inventoryChart").scrollIntoView({ behavior: "smooth" });
+            }
+        });
 
         var inventoryData = <?php echo json_encode($inventoryData); ?>;
 
@@ -1841,30 +1864,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                 responsive: true,
                 scales: {
                     y: { beginAtZero: true }
-                }
-            }
-        });
-
-        // Initial chart rendering
-        var ctx1 = document.getElementById('stockLevelSoldChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: inventoryData.products,
-                datasets: [{
-                    label: 'Stock Levels Sold',
-                    data: inventoryData.stockLevelsSold,
-                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                    borderColor: 'rgb(153, 102, 255)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
                 }
             }
         });
@@ -2020,7 +2019,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         var demographicsData = <?php echo json_encode($demographicsData); ?>;
         var trendData = <?php echo json_encode($trendData); ?>;
     </script>
-    <script src="../js/chart.js"></script>
+    <script src="../js/chart_backup.js"></script>
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>

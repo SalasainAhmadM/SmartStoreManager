@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 28, 2025 at 04:34 PM
+-- Generation Time: Apr 02, 2025 at 01:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -364,7 +364,7 @@ CREATE TABLE `owner` (
 --
 
 INSERT INTO `owner` (`id`, `user_name`, `email`, `first_name`, `middle_name`, `last_name`, `gender`, `age`, `birthday`, `contact_number`, `created_at`, `image`, `valid_id`, `password`, `is_new_owner`, `barangay`, `city`, `region`, `country`, `verification_token`, `is_verified`, `is_approved`) VALUES
-(1, 'testusername', 'binimaloi35221@gmail.com', 'Sengokuw', 'D', 'Business', 'Female', '22', '2024-11-03', '12344', '2024-11-25 22:51:33', '1_1732805415.jpg', '', '$2y$10$xRzWm7zxYAgT2mB7mdTXmOYjJnFwCs4zH5QkCZN2sdte/KhPQo9MO', 0, '', '', '', '', NULL, 0, 0),
+(1, 'testusername', 'binimaloi35221@gmail.com', 'Sengokuw', 'D', 'Business', 'Female', '22', '2024-11-03', '12344', '2024-11-25 22:51:33', '1_1732805415.jpg', '', '$2y$10$xRzWm7zxYAgT2mB7mdTXmOYjJnFwCs4zH5QkCZN2sdte/KhPQo9MO', 0, '', '', '', '', NULL, 1, 1),
 (2, 'testusername2', 'binimaloi3522@gmail.com', 'Garp', 'D', 'Monkey', 'Female', '22', '1993-02-28', '122323', '2024-11-25 22:51:33', '2_1732811018.jpg', '', '$2y$10$xRzWm7zxYAgT2mB7mdTXmOYjJnFwCs4zH5QkCZN2sdte/KhPQo9MO', 0, '', '', '', '', NULL, 0, 0),
 (3, 'testusername2', 'binimal11oi3522@gmail.com', 'Garp', 'D', 'Monkey', 'Female', '22', '1993-02-28', '122323', '2024-11-25 22:51:33', '2_1732811018.jpg', '', '$2y$10$xRzWm7zxYAgT2mB7mdTXmOYjJnFwCs4zH5QkCZN2sdte/KhPQo9MO', 0, '', '', '', '', NULL, 0, 0),
 (5, 'testusername123', 'sam@gmail.com', 'Sam', 'D.', 'Cena', '', '', NULL, '122323', '2025-03-28 07:38:47', '5_1743120199.png', '', '$2y$10$cCDqB3inNl/RAo3bibquk.UGDNG3c6GPZT7G6Mhu9gHe0oMMcPZxi', 0, 'Kasanyangan1', 'Zamboanga City1', 'Zamboanga Del Sur1', 'Philippines1', NULL, 0, 0),

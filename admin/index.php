@@ -233,6 +233,7 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
         </div>
     </div>
 
+    <script src="../js/sidebar_admin.js"></script>
     <script>
         // Auto-hide the pending notification after 10 seconds
         $(document).ready(function () {
