@@ -50,14 +50,20 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
+                    // Trigger modal if needed
                     " . ($isNewOwner ? "triggerAddBusinessModal();" : "") . "
+                    
+                    // Remove 'status' and 'id' from the URL
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('status');
+                    url.searchParams.delete('id');
+                    window.history.replaceState({}, document.title, url.pathname);
                 });
             });
         </script>
     ";
     unset($_SESSION['login_success']);
 }
-
 
 // Query to fetch business and its branches
 $sql = "SELECT b.id AS business_id, b.name AS business_name, br.location AS branch_location
@@ -459,11 +465,6 @@ $expenseDataBreakdown = [
 ];
 // 7
 // Get the business ID of the logged-in owner
-$businessQuery = "SELECT id FROM business WHERE owner_id = $owner_id";
-$businessResult = $conn->query($businessQuery);
-$business = $businessResult->fetch_assoc();
-$business_id = $business['id'] ?? null; // Avoid errors if no business is found
-
 $businesses = [];
 $businessQuery = "SELECT id, name FROM business WHERE owner_id = $owner_id";
 $businessResult = $conn->query($businessQuery);
@@ -471,47 +472,126 @@ while ($row = $businessResult->fetch_assoc()) {
     $businesses[] = $row;
 }
 
-// Get selected business ID (default to the first business)
-$selected_business_id = $_GET['business_id'] ?? ($businesses[0]['id'] ?? null);
+// Get selected parameters
+$selected_business_id = $_GET['business_id'] ?? null;
+$selected_branch_id = $_GET['branch_id'] ?? null;
 
-// Initialize arrays
+// Validate business-branch relationship
+if ($selected_business_id && $selected_branch_id && $selected_branch_id != 0) {
+    $branchCheckQuery = "SELECT id FROM branch WHERE id = $selected_branch_id AND business_id = $selected_business_id";
+    $branchCheckResult = $conn->query($branchCheckQuery);
+    if ($branchCheckResult->num_rows === 0) {
+        $selected_branch_id = null;
+    }
+}
+
+// Get branches for selected business
+$branches = [];
+if ($selected_business_id) {
+    $branchQuery = "SELECT id, location FROM branch WHERE business_id = $selected_business_id";
+    $branchResult = $conn->query($branchQuery);
+    while ($row = $branchResult->fetch_assoc()) {
+        $branches[] = $row;
+    }
+}
+
+$whereClauses = ["p.business_id IN (SELECT id FROM business WHERE owner_id = $owner_id)"];
+
+// Filter by specific business if selected
+if ($selected_business_id) {
+    $whereClauses[] = "p.business_id = " . intval($selected_business_id);
+}
+
+// Filter based on branch or business level
+if ($selected_branch_id !== null) {
+    if ($selected_branch_id == 0) {
+        // Business-level only sales
+        $whereClauses[] = "s.type = 'business'";
+    } else {
+        // Branch-level sales
+        $whereClauses[] = "s.branch_id = " . intval($selected_branch_id);
+        $whereClauses[] = "s.type = 'branch'";
+    }
+} else {
+    // If no branch selected, include both business and branch-level sales related to the owner
+    $whereClauses[] = "(s.type = 'business' OR s.type = 'branch')";
+}
+
+// Fetch product sales data
 $products = [];
 $stockLevelsSold = [];
+$colors = [];
 
-if ($selected_business_id) {
-    // Fetch Top Products Sold for the Selected Business
-    $productQuery = "
+$productQuery = "
     SELECT p.id, p.name, COALESCE(SUM(s.quantity), 0) AS total_sold
     FROM products p
-    LEFT JOIN sales s ON p.id = s.product_id
-    LEFT JOIN branch br ON s.branch_id = br.id
-    WHERE p.business_id = $selected_business_id
+    LEFT JOIN sales s ON s.product_id = p.id
+    WHERE " . implode(" AND ", $whereClauses) . "
     GROUP BY p.id, p.name
     ORDER BY total_sold DESC
     LIMIT 10";
 
-    $productResult = $conn->query($productQuery);
+$productResult = $conn->query($productQuery);
 
-    if ($productResult->num_rows > 0) {
-        while ($row = $productResult->fetch_assoc()) {
-            $products[] = $row['name'];
-            $stockLevelsSold[] = $row['total_sold'];
-        }
+
+if ($productResult->num_rows > 0) {
+    $colorIndex = 0;
+    $colorPalette = [
+        '#FF6384',
+        '#36A2EB',
+        '#FFCE56',
+        '#4BC0C0',
+        '#9966FF',
+        '#FF9F40',
+        '#EB3B5A',
+        '#00B894',
+        '#FD7272',
+        '#1B1464'
+    ];
+
+    while ($row = $productResult->fetch_assoc()) {
+        $products[] = $row['name'];
+        $stockLevelsSold[] = $row['total_sold'];
+        $colors[] = $colorPalette[$colorIndex % count($colorPalette)];
+        $colorIndex++;
     }
 }
 
-// Prepare Data for JSON Output
+// Prepare data for JSON
 $inventoryData = [
     'products' => $products,
-    'stockLevelsSold' => $stockLevelsSold
+    'stockLevelsSold' => $stockLevelsSold,
+    'colors' => $colors
 ];
-
 // 8
 // Fetch Total Sales
+$selectedBusiness = $_GET['business'] ?? 'all';
+$selectedBranch = $_GET['branch'] ?? 'all';
+
+$businessFilterSQL = "";
+$expenseFilterSQL = "";
+
+if ($selectedBusiness !== 'all' && $selectedBranch === 'all') {
+    // Only filter by Business
+    $businessFilterSQL = "AND p.business_id = $selectedBusiness";
+    $expenseFilterSQL = "AND (
+        (e.category = 'business' AND e.category_id = $selectedBusiness)
+    )";
+} elseif ($selectedBusiness !== 'all' && $selectedBranch !== 'all') {
+    // Filter by both Business and Branch
+    $businessFilterSQL = "AND p.business_id = $selectedBusiness AND s.branch_id = $selectedBranch";
+    $expenseFilterSQL = "AND (
+        (e.category = 'branch' AND e.category_id = $selectedBranch)
+    )";
+}
+
+// Fetch Total Sales
 $salesQuery = "
-SELECT SUM(total_sales) AS total_sales
-FROM sales
-WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
+SELECT SUM(s.total_sales) AS total_sales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+WHERE p.business_id IN (SELECT id FROM business WHERE owner_id = $owner_id)
+$businessFilterSQL
 ";
 $salesResult = $conn->query($salesQuery);
 $salesData = $salesResult->fetch_assoc();
@@ -519,21 +599,24 @@ $totalSales = $salesData['total_sales'] ?? 0;
 
 // Fetch Total Expenses
 $expensesQuery = "
-SELECT SUM(amount) AS total_expenses
-FROM expenses
-WHERE owner_id = $owner_id
+SELECT SUM(e.amount) AS total_expenses
+FROM expenses e
+WHERE e.owner_id = $owner_id
+$expenseFilterSQL
 ";
 $expensesResult = $conn->query($expensesQuery);
 $expensesData = $expensesResult->fetch_assoc();
 $totalExpenses = $expensesData['total_expenses'] ?? 0;
 
-// Fetch Revenue Growth (Current vs Previous Month)
+// Revenue Growth (Current vs Previous Month)
 $revenueGrowthQuery = "
 SELECT
-SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) THEN total_sales ELSE 0 END) AS currentMonthSales,
-SUM(CASE WHEN MONTH(date) = MONTH(CURRENT_DATE()) - 1 THEN total_sales ELSE 0 END) AS previousMonthSales
-FROM sales
-WHERE product_id IN (SELECT id FROM products WHERE business_id IN (SELECT id FROM business WHERE owner_id = $owner_id))
+SUM(CASE WHEN MONTH(s.date) = MONTH(CURRENT_DATE()) THEN s.total_sales ELSE 0 END) AS currentMonthSales,
+SUM(CASE WHEN MONTH(s.date) = MONTH(CURRENT_DATE()) - 1 THEN s.total_sales ELSE 0 END) AS previousMonthSales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+WHERE p.business_id IN (SELECT id FROM business WHERE owner_id = $owner_id)
+$businessFilterSQL
 ";
 $revenueGrowthResult = $conn->query($revenueGrowthQuery);
 $revenueGrowthData = $revenueGrowthResult->fetch_assoc();
@@ -554,19 +637,44 @@ function formatCurrency($value)
 
 // 9
 // Fetch monthly sales for past 12 months
+$filters = [];
+$params = [];
+$types = "";
+
+// Base query for sales
 $salesForecastQuery = "
-SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_sales) AS total_sales
-FROM sales
-WHERE product_id IN (
-SELECT id FROM products WHERE business_id IN (
-SELECT id FROM business WHERE owner_id = ?
-)
-)
-GROUP BY month
-ORDER BY month ASC
-";
+SELECT DATE_FORMAT(s.date, '%Y-%m') AS month, SUM(s.total_sales) AS total_sales
+FROM sales s
+JOIN products p ON s.product_id = p.id
+WHERE p.business_id IN (
+    SELECT id FROM business WHERE owner_id = ?
+)";
+$params[] = $owner_id;
+$types .= "i";
+
+// Add filters if business/branch selected
+if ($selectedBusiness !== 'all') {
+    $salesForecastQuery .= " AND p.business_id = ?";
+    $params[] = $selectedBusiness;
+    $types .= "i";
+
+    if ($selectedBranch !== 'all') {
+        if ($selectedBranch == "0") {
+            // Business-level filter
+            $salesForecastQuery .= " AND s.branch_id = 0 AND s.type = 'business'";
+        } else {
+            // Branch-level filter
+            $salesForecastQuery .= " AND s.branch_id = ? AND s.type = 'branch'";
+            $params[] = $selectedBranch;
+            $types .= "i";
+        }
+    }
+}
+
+$salesForecastQuery .= " GROUP BY month ORDER BY month ASC";
+
 $stmt = $conn->prepare($salesForecastQuery);
-$stmt->bind_param("i", $owner_id);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -574,17 +682,37 @@ $salesData = [];
 while ($row = $result->fetch_assoc()) {
     $salesData[$row['month']] = $row['total_sales'];
 }
-
-// Fetch monthly expenses for past 12 months
-$expenseForecastQuery = "
-SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(amount) AS total_expenses
-FROM expenses
-WHERE owner_id = ?
-GROUP BY month
-ORDER BY month ASC
+$expensesForecastQuery = "
+SELECT DATE_FORMAT(e.created_at, '%Y-%m') AS month, SUM(e.amount) AS total_expenses
+FROM expenses e
+WHERE e.owner_id = ?
 ";
-$stmt = $conn->prepare($expenseForecastQuery);
-$stmt->bind_param("i", $owner_id);
+$params = [$owner_id];
+$types = "i";
+
+// Filter by selected business or branch
+if ($selectedBusiness !== 'all') {
+    $expensesForecastQuery .= " AND e.category = 'business' AND e.category_id = ?";
+    $params[] = $selectedBusiness;
+    $types .= "i";
+
+    if ($selectedBranch !== 'all') {
+        if ($selectedBranch == "0") {
+            // Business-level
+            $expensesForecastQuery .= " AND e.category = 'business'";
+        } else {
+            // Branch-level
+            $expensesForecastQuery .= " AND e.category = 'branch' AND e.category_id = ?";
+            $params[] = $selectedBranch;
+            $types .= "i";
+        }
+    }
+}
+
+$expensesForecastQuery .= " GROUP BY month ORDER BY month ASC";
+
+$stmt = $conn->prepare($expensesForecastQuery);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -690,19 +818,23 @@ $positiveMonthsJson = json_encode($positiveMonths);
 // Get customer demographics data
 
 $sqlDemographics = "SELECT
-br.location,
-p.name as product_name,
-COUNT(*) as purchase_count,
-SUM(s.total_sales) as total_revenue
+  CASE 
+    WHEN s.branch_id = 0 THEN CONCAT(b.location, ' - Main Branch')
+    ELSE br.location
+  END AS location,
+  p.name AS product_name,
+  COUNT(*) AS purchase_count,
+  SUM(s.total_sales) AS total_revenue
 FROM sales s
-JOIN branch br ON s.branch_id = br.id
 JOIN products p ON s.product_id = p.id
 JOIN business b ON p.business_id = b.id
+LEFT JOIN branch br ON s.branch_id = br.id
 WHERE b.owner_id = ?
 AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-GROUP BY br.location, p.name
+GROUP BY location, p.name
 ORDER BY total_revenue DESC
-LIMIT 10";
+LIMIT 10
+";
 
 $stmtDemographics = $conn->prepare($sqlDemographics);
 $stmtDemographics->bind_param("i", $owner_id);
@@ -799,6 +931,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     echo fetchFilteredData($owner_id, $selectedMonth);
     exit;
 }
+
+
+
 ?>
 
 
@@ -962,68 +1097,94 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                     <div class="container-fluid">
 
-                        <div class="col-md-12 mt-5">
-
+                        <div class="col-md-12 mt-2" style="display: none;">
                             <div class="row">
                                 <!-- Financial Overview Chart -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-4">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b><i class="fa-solid fa-chart-line"></i> Financial Overview <i
-                                                    class="fas fa-info-circle"
-                                                    onclick="showInfo(' Financial Overview', 'This graph displays all the financial overview of your business/businesses.');"></i></b>
-                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-1">
+                                                <label for="financialBusinessSelect"><b>Select Business:</b></label>
+                                                <select id="financialBusinessSelect" class="form-control"
+                                                    onchange="handleBusinessSelect(this, 'financialBranchSelect', 'financialBranchSelectContainer'); updateFinancialChart(this.value, 'all')">
+                                                    <option value="all">All Businesses</option>
+                                                    <?php foreach (array_keys($businessData) as $businessName): ?>
+                                                        <option value="<?= htmlspecialchars($businessName) ?>">
+                                                            <?= htmlspecialchars($businessName) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-1" id="financialBranchSelectContainer">
+                                                <label for="financialBranchSelect"><b>Select Branch:</b></label>
+                                                <select id="financialBranchSelect" class="form-control"
+                                                    onchange="updateFinancialChart(document.getElementById('financialBusinessSelect').value, this.value)">
+                                                    <option value="all">All Branches</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <h5 class="mt-2"><b><i class="fa-solid fa-chart-line"></i> Financial
+                                                Overview</b></h5>
                                         <canvas id="financialChart"></canvas>
-                                        <button class="btn btn-dark mt-2 mb-5" id="printChartButton">
-                                            <i class="fas fa-print me-2"></i> Generate Report
-                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Sales vs Expenses Chart -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-4">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Sales vs Expenses</b> <i class="fas fa-info-circle"
-                                                onclick="showInfo(' Sales vs Expenses', 'This graph displays all the sales vs expenses.');"></i>
-                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-1">
+                                                <label for="salesExpensesBusinessSelect"><b>Select Business:</b></label>
+                                                <select id="salesExpensesBusinessSelect" class="form-control"
+                                                    onchange="handleBusinessSelect(this, 'salesExpensesBranchSelect', 'salesExpensesBranchSelectContainer'); updateSalesExpensesChart(this.value, 'all')">
+                                                    <option value="all">All Businesses</option>
+                                                    <?php foreach (array_keys($businessData) as $businessName): ?>
+                                                        <option value="<?= htmlspecialchars($businessName) ?>">
+                                                            <?= htmlspecialchars($businessName) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-1" id="salesExpensesBranchSelectContainer">
+                                                <label for="salesExpensesBranchSelect"><b>Select Branch:</b></label>
+                                                <select id="salesExpensesBranchSelect" class="form-control"
+                                                    onchange="updateSalesExpensesChart(document.getElementById('salesExpensesBusinessSelect').value, this.value)">
+                                                    <option value="all">All Branches</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <h5 class="mt-2"><b>Sales vs Expenses</b></h5>
                                         <canvas id="salesExpensesChart"></canvas>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Sales vs Expenses Filter -->
-                            <div class="mt-3">
-                                <label for="monthFilter"><b>Filter Sales vs Expenses by Month
-                                        (<?php echo date("Y"); ?>):</b></label>
-                                <select id="monthFilter" class="form-control"
-                                    onchange="filterSalesExpensesByMonth(this.value)">
-                                    <option value="0">Select Month</option>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-
-                            <button class="btn btn-dark mt-2 mb-5"
-                                onclick="printFinancialOverviewAndSalesvsExpensesTable()">
-                                <i class="fas fa-print me-2"></i> Generate Report
-                            </button>
-
                             <div class="row">
                                 <!-- Profit Margin Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Profit Margin Trends</b> <i class="fas fa-info-circle"
-                                                onclick="showInfo(' Profit Margin Trends', 'This graph displays all the profit margin trends.');"></i>
-                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="profitMarginBusinessSelect"><b>Select Business:</b></label>
+                                                <select id="profitMarginBusinessSelect" class="form-control"
+                                                    onchange="handleBusinessSelect(this, 'profitMarginBranchSelect', 'profitMarginBranchSelectContainer'); updateProfitMarginChart(this.value, 'all')">
+                                                    <option value="all">All Businesses</option>
+                                                    <?php foreach (array_keys($businessData) as $businessName): ?>
+                                                        <option value="<?= htmlspecialchars($businessName) ?>">
+                                                            <?= htmlspecialchars($businessName) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3" id="profitMarginBranchSelectContainer">
+                                                <label for="profitMarginBranchSelect"><b>Select Branch:</b></label>
+                                                <select id="profitMarginBranchSelect" class="form-control"
+                                                    onchange="updateProfitMarginChart(document.getElementById('profitMarginBusinessSelect').value, this.value)">
+                                                    <option value="all">All Branches</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <h5 class="mt-2"><b>Profit Margin Trends</b></h5>
                                         <canvas id="profitMarginChart"></canvas>
                                     </div>
                                 </div>
@@ -1031,26 +1192,530 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <!-- Cash Flow Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Monthly Cash Flow</b> <i class="fas fa-info-circle"
-                                                onclick="showInfo(' Monthly Cash Flow', 'This graph displays all the cash inflow and cash outflow.');"></i>
-                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="cashFlowBusinessSelect"><b>Select Business:</b></label>
+                                                <select id="cashFlowBusinessSelect" class="form-control"
+                                                    onchange="handleBusinessSelect(this, 'cashFlowBranchSelect', 'cashFlowBranchSelectContainer'); updateCashFlowChart(this.value, 'all')">
+                                                    <option value="all">All Businesses</option>
+                                                    <?php foreach (array_keys($businessData) as $businessName): ?>
+                                                        <option value="<?= htmlspecialchars($businessName) ?>">
+                                                            <?= htmlspecialchars($businessName) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3" id="cashFlowBranchSelectContainer">
+                                                <label for="cashFlowBranchSelect"><b>Select Branch:</b></label>
+                                                <select id="cashFlowBranchSelect" class="form-control"
+                                                    onchange="updateCashFlowChart(document.getElementById('cashFlowBusinessSelect').value, this.value)">
+                                                    <option value="all">All Branches</option>
+                                                </select>
+                                            </div>
+                                            <!-- Financial Overview Chart -->
+                                            <div style="display: none;" class="col-md-6 mb-4">
+                                                <div class="chart-container mb-4" style="height: 400px;">
+
+                                                    <h5 class="mt-2"><b><i class="fa-solid fa-chart-line"></i> Financial
+                                                            Overview</b></h5>
+                                                    <canvas id="financialOverviewNewChart"></canvas>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <h5 class="mt-2"><b>Monthly Cash Flow</b></h5>
                                         <canvas id="cashFlowChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <!-- // 1 -->
+                        <?php
+                        $businessNewData = [];
+                        $branchNewInfo = []; // Stores branch details by ID
+                        
+                        while ($business = $businessResult->fetch_assoc()) {
+                            $businessId = $business['id'];
+                            $businessNewData[$business['name']] = [];
 
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Business Comparison <i
-                                        class="fas fa-info-circle"
-                                        onclick="showInfo(' Business Comparison', 'This graph displays all the comparison of all your businesses with sales and expenses.');"></i></i>
+                            $branchQuery = "SELECT id, location FROM branch WHERE business_id = ?";
+                            $branchStmt = $conn->prepare($branchQuery);
+                            $branchStmt->bind_param("i", $businessId);
+                            $branchStmt->execute();
+                            $branchResult = $branchStmt->get_result();
+
+                            while ($branch = $branchResult->fetch_assoc()) {
+                                $branchId = $branch['id'];
+                                $businessNewData[$business['name']][$branchId] = $branch['location'];
+                                $branchNewInfo[$branchId] = $branch['location'];
+                            }
+                        }
+
+                        ?>
+
+
+                        <?php
+                        $businessNewData = [];
+                        $branchNewData = [];
+                        $businessIdNameMap = [];
+
+                        $businessQuery = "SELECT id, name FROM business WHERE owner_id = ?";
+                        $stmt = $conn->prepare($businessQuery);
+                        $stmt->bind_param("i", $owner_id);
+                        $stmt->execute();
+                        $businessResult = $stmt->get_result();
+
+                        while ($business = $businessResult->fetch_assoc()) {
+                            $businessId = $business['id'];
+                            $businessName = $business['name'];
+
+                            $businessNewData[$businessId] = [];
+                            $businessIdNameMap[$businessId] = $businessName;
+
+                            $branchQuery = "SELECT id, location FROM branch WHERE business_id = ?";
+                            $branchStmt = $conn->prepare($branchQuery);
+                            $branchStmt->bind_param("i", $businessId);
+                            $branchStmt->execute();
+                            $branchResult = $branchStmt->get_result();
+
+                            while ($branch = $branchResult->fetch_assoc()) {
+                                $branchId = $branch['id'];
+                                $location = $branch['location'];
+                                $businessNewData[$businessId][] = ['id' => $branchId, 'location' => $location];
+                                $branchNewData[$branchId] = $location;
+                            }
+                        }
+
+                        // Get selected values from $_GET
+                        $selectedBusiness = $_GET['business'] ?? 'all';
+                        $selectedBranch = $_GET['branch'] ?? 'all';
+                        ?>
+
+                        <!-- new Charts -->
+                        <div id="saleExpense-section" class="col-md-12 mt-2">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="salesExpensesBusinessSelect"><b>Select Business:</b></label>
+                                    <select id="forecastBusinessSelect" class="form-control"
+                                        onchange="handleBusinessSelect(this, 'forecastBranchSelect', 'forecastBranchSelectContainer'); updatesalesExpensesChart(this.value, 'all')">
+                                        <option value="all" <?= $selectedBusiness === 'all' ? 'selected' : '' ?>>All
+                                            Businesses
+                                        </option>
+                                        <?php foreach ($businessIdNameMap as $id => $name): ?>
+                                            <option value="<?= $id ?>" <?= $selectedBusiness == $id ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($name) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3" id="forecastBranchSelectContainer">
+                                    <label for="forecastBranchSelect"><b>Select Branch:</b></label>
+                                    <select id="forecastBranchSelect" class="form-control"
+                                        onchange="updatesalesExpensesChart(document.getElementById('forecastBusinessSelect').value, this.value)">
+                                        <option value="all" <?= $selectedBranch === 'all' ? 'selected' : '' ?>>All Branches
+                                        </option>
+                                        <?php
+                                        if ($selectedBusiness !== 'all' && isset($businessNewData[$selectedBusiness])) {
+                                            foreach ($businessNewData[$selectedBusiness] as $branch) {
+                                                $selected = $selectedBranch == $branch['id'] ? 'selected' : '';
+                                                echo "<option value='{$branch['id']}' $selected>" . htmlspecialchars($branch['location']) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <!-- Financial  Overview -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+
+                                        <h5 class="mt-2"><b><i class="fa-solid fa-chart-line"></i> Financial
+                                                Overview</b> <i class="fas fa-info-circle"
+                                                onclick="showInfo('Financial Overview', 'Charts are based on monthly totals. Sales and expenses are fetched from your records and grouped by business or branch selection.');">
+                                            </i>
+
+                                        </h5>
+                                        <canvas id="salesAndExpensesNewChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart1Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Sales vs Expenses Chart -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-2"><b>Sales vs Expenses</b> <i class="fas fa-info-circle"
+                                                onclick="showInfo('Sales vs Expenses', 'This chart shows trends over time. It uses historical data to plot monthly sales and expenses.');">
+                                            </i>
+
+                                        </h5>
+                                        <canvas id="salesVsExpensesNewChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart2Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                function updatesalesExpensesChart(selectedBusiness, selectedBranch) {
+                                    const url = `index.php?business=${selectedBusiness}&branch=${selectedBranch}`;
+                                    window.location.href = url;
+                                }
+
+
+                                document.addEventListener("DOMContentLoaded", () => {
+                                    const business = document.getElementById("forecastBusinessSelect").value;
+                                    const branch = document.getElementById("forecastBranchSelect").value;
+                                    fetch(`../endpoints/chart/data.php?id=<?= $owner_id ?>&business=${business}&branch=${branch}`)
+                                        .then((res) => res.json())
+                                        .then((data) => {
+                                            // Bar Chart
+                                            new Chart(document.getElementById("salesAndExpensesNewChart"), {
+                                                type: "bar",
+                                                data: {
+                                                    labels: data.labels,
+                                                    datasets: [
+                                                        {
+                                                            label: "Sales (₱)",
+                                                            backgroundColor: "rgba(75, 192, 192, 0.5)",
+                                                            borderColor: "rgba(75, 192, 192, 1)",
+                                                            borderWidth: 1,
+                                                            data: data.sales,
+                                                        },
+                                                        {
+                                                            label: "Expenses (₱)",
+                                                            backgroundColor: "rgba(255, 99, 132, 0.5)",
+                                                            borderColor: "rgba(255, 99, 132, 1)",
+                                                            borderWidth: 1,
+                                                            data: data.expenses,
+                                                        },
+                                                    ],
+                                                },
+                                                options: {
+                                                    responsive: true,
+                                                    plugins: {
+                                                        legend: { position: "top" },
+                                                        tooltip: { mode: "index", intersect: false },
+                                                    },
+                                                    scales: {
+                                                        y: {
+                                                            beginAtZero: true,
+                                                            ticks: { callback: (val) => `₱${val}` },
+                                                        },
+                                                        x: {
+                                                            ticks: {
+                                                                callback: function (val) {
+                                                                    let label = this.getLabelForValue(val);
+                                                                    return label.length > 20 ? label.substr(0, 20) + "..." : label;
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            });
+
+                                            // Line Chart
+                                            new Chart(document.getElementById("salesVsExpensesNewChart"), {
+                                                type: "line",
+                                                data: {
+                                                    labels: data.dates,
+                                                    datasets: [
+                                                        {
+                                                            label: "Total Sales (₱)",
+                                                            data: data.salesOverTime,
+                                                            borderColor: "rgba(75, 192, 192, 1)",
+                                                            backgroundColor: "rgba(75, 192, 192, 0.2)",
+                                                            fill: true,
+                                                            tension: 0.4,
+                                                        },
+                                                        {
+                                                            label: "Total Expenses (₱)",
+                                                            data: data.expensesOverTime,
+                                                            borderColor: "rgba(255, 99, 132, 1)",
+                                                            backgroundColor: "rgba(255, 99, 132, 0.2)",
+                                                            fill: true,
+                                                            tension: 0.4,
+                                                        },
+                                                    ],
+                                                },
+                                                options: {
+                                                    responsive: true,
+                                                    plugins: {
+                                                        legend: { position: "top" },
+                                                        tooltip: { mode: "index", intersect: false },
+                                                    },
+                                                    scales: {
+                                                        y: {
+                                                            beginAtZero: true,
+                                                            ticks: { callback: (val) => `₱${val}` },
+                                                        },
+                                                    },
+                                                },
+                                            });
+                                        });
+                                });
+
+
+                            </script>
+                            <div id="cash-section" class="row">
+                                <!-- Profit Margin Chart -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 mt-3">
+                                        <label for="salesExpensesBusinessSelect"><b>Select Business:</b></label>
+                                        <select id="forecastBusinessSelect" class="form-control"
+                                            onchange="handleBusinessSelect(this, 'forecastBranchSelect', 'forecastBranchSelectContainer'); updateProfitCashChart(this.value, 'all')">
+                                            <option value="all" <?= $selectedBusiness === 'all' ? 'selected' : '' ?>>All
+                                                Businesses
+                                            </option>
+                                            <?php foreach ($businessIdNameMap as $id => $name): ?>
+                                                <option value="<?= $id ?>" <?= $selectedBusiness == $id ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($name) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3 mt-3" id="forecastBranchSelectContainer">
+                                        <label for="forecastBranchSelect"><b>Select Branch:</b></label>
+                                        <select id="forecastBranchSelect" class="form-control"
+                                            onchange="updateProfitCashChart(document.getElementById('forecastBusinessSelect').value, this.value)">
+                                            <option value="all" <?= $selectedBranch === 'all' ? 'selected' : '' ?>>All
+                                                Branches
+                                            </option>
+                                            <?php
+                                            if ($selectedBusiness !== 'all' && isset($businessNewData[$selectedBusiness])) {
+                                                foreach ($businessNewData[$selectedBusiness] as $branch) {
+                                                    $selected = $selectedBranch == $branch['id'] ? 'selected' : '';
+                                                    echo "<option value='{$branch['id']}' $selected>" . htmlspecialchars($branch['location']) . "</option>";
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" style="display: none;">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+
+                                        <h5 class="mt-2"><b>Profit Margin Trends</b></h5>
+                                        <canvas id="profitMarginNewChart"></canvas>
+                                        <!-- <button class="btn btn-dark mt-2 mb-5" id="printChart18Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button> -->
+                                    </div>
+                                </div>
+                                <!-- Profit Margin -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-2">
+                                            <b>Profit Margin Trends</b>
+                                            <i class="fas fa-info-circle"
+                                                onclick="showInfo('Profit Margin Trends', 'This chart displays the profit margin percentage over the past 12 months. It is calculated monthly using the formula: (Total Profit / Total Sales) × 100. Profit is derived from the difference between total sales and the product cost. This helps you understand profitability trends across time.')">
+                                            </i>
+                                        </h5>
+                                        <canvas id="profitBarChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart17Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Cash Flow Chart -->
+                                <div class="col-md-6">
+                                    <div class="chart-container mb-4" style="height: 400px;">
+                                        <h5 class="mt-2">
+                                            <b>Monthly Cash Flow</b>
+                                            <i class="fas fa-info-circle"
+                                                onclick="showInfo('Monthly Cash Flow', 'This chart visualizes the total monthly cash inflow (from sales) and cash outflow (from expenses) for the last 12 months. It helps you track how much money is coming into and going out of your business or branch each month.')">
+                                            </i>
+                                        </h5>
+                                        <canvas id="cashFlowNewChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart18Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                const businessId = document.getElementById('forecastBusinessSelect').value;
+                                const branchId = document.getElementById('forecastBranchSelect').value;
+                                loadProfitMarginChart(businessId, branchId);
+                            });
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const business = document.getElementById('forecastBusinessSelect').value;
+                                const branch = document.getElementById('forecastBranchSelect').value;
+                                fetchAndRenderCharts(business, branch);
+                            });
+                            function updateProfitCashChart(selectedBusiness, selectedBranch) {
+                                fetchAndRenderCharts(selectedBusiness, selectedBranch);
+                            }
+
+                            function loadProfitMarginChart(businessId = 'all', branchId = 'all') {
+                                fetch(`../endpoints/chart/get_profit_comparison.php?id=<?= $owner_id ?>&business=${businessId}&branch=${branchId}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        const ctx = document.getElementById('profitBarChart').getContext('2d');
+
+                                        if (window.profitChart) {
+                                            window.profitChart.destroy(); // destroy previous instance
+                                        }
+
+                                        window.profitChart = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: {
+                                                labels: ['Profit Margin (%)'],
+                                                datasets: [{
+                                                    label: 'Profit Margin (%)',
+                                                    data: [data.margin],
+                                                    backgroundColor: ['rgba(75, 192, 192, 0.5)'],
+                                                    borderColor: ['rgba(75, 192, 192, 1)'],
+                                                    borderWidth: 1,
+                                                    borderRadius: 5
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        ticks: {
+                                                            callback: function (value) {
+                                                                return value + '%';
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                plugins: {
+                                                    tooltip: {
+                                                        callbacks: {
+                                                            label: function (context) {
+                                                                return context.dataset.label + ': ' + context.raw + '%';
+                                                            }
+                                                        }
+                                                    },
+                                                    legend: {
+                                                        display: false
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    });
+                            }
+
+
+                            function fetchAndRenderCharts(businessId = 'all', branchId = 'all') {
+                                const url = `../endpoints/chart/get_trends_data.php?id=<?= $owner_id ?>&business=${businessId}&branch=${branchId}`;
+
+                                fetch(url)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        // Destroy previous charts if they exist
+                                        if (window.profitChartInstance) window.profitChartInstance.destroy();
+                                        if (window.cashFlowChartInstance) window.cashFlowChartInstance.destroy();
+
+                                        const ctxMargin = document.getElementById('profitMarginNewChart').getContext('2d');
+                                        window.profitChartInstance = new Chart(ctxMargin, {
+                                            type: 'bar',
+                                            data: {
+                                                labels: data.labels,
+                                                datasets: [{
+                                                    label: 'Profit Margin (%)',
+                                                    data: data.margins,
+                                                    backgroundColor: 'rgba(153, 102, 255, 0.3)',
+                                                    borderColor: 'rgba(153, 102, 255, 1)',
+                                                    borderWidth: 2
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    y: {
+                                                        min: 0,
+                                                        max: 100,
+                                                        ticks: {
+                                                            callback: value => value + '%'
+                                                        }
+                                                    }
+                                                },
+                                                plugins: {
+                                                    tooltip: {
+                                                        callbacks: {
+                                                            label: context => `${context.dataset.label}: ${context.formattedValue}%`
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+
+                                        const ctxCash = document.getElementById('cashFlowNewChart').getContext('2d');
+                                        window.cashFlowChartInstance = new Chart(ctxCash, {
+                                            type: 'line',
+                                            data: {
+                                                labels: data.labels,
+                                                datasets: [
+                                                    {
+                                                        label: 'Total Cash Inflow (₱)',
+                                                        data: data.sales,
+                                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                                        backgroundColor: 'rgba(75, 192, 192, 0.3)',
+                                                        fill: false,
+                                                        tension: 0.4
+                                                    },
+                                                    {
+                                                        label: 'Total Cash Outflow (₱)',
+                                                        data: data.expenses,
+                                                        borderColor: 'rgba(255, 99, 132, 1)',
+                                                        backgroundColor: 'rgba(255, 99, 132, 0.3)',
+                                                        fill: false,
+                                                        tension: 0.4
+                                                    }
+                                                ]
+                                            },
+                                            options: {
+                                                scales: {
+                                                    y: {
+                                                        ticks: {
+                                                            callback: value => '₱' + value
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    });
+                            }
+
+
+
+                            function updateProfitCashChart(selectedBusiness, selectedBranch) {
+                                const url = `index.php?business=${selectedBusiness}&branch=${selectedBranch}#cash-section`;
+                                window.location.href = url;
+                            }
+                        </script>
+
+                        <div class="col-md-12 mt-5 mb-5">
+                            <h1>
+                                <b>
+                                    <i class="fa-solid fa-chart-line"></i> Business Comparison
+                                    <i class="fas fa-info-circle"
+                                        onclick="showInfo('Business Comparison', 'This chart compares the performance of all your businesses based on total sales and expenses. It aggregates financial data by business, helping you identify which entities are most and least profitable.');">
+                                    </i>
+                                </b>
                             </h1>
+
+
                             <div class="row">
                                 <!-- Business Performance Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Business Performance Comparison </b></h5>
                                         <canvas id="businessPerformanceChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart3Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1059,21 +1724,34 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Revenue Contribution by Business</b></h5>
                                         <canvas id="revenueContributionChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart4Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-pie"></i> Expense Breakdown <i class="fas fa-info-circle"
-                                        onclick="showInfo(' Expense Breakdown', 'This graph displays all the category-wise expenses and recurring vs. one-time expenses.');"></i>
-                                </b></h1>
+                            <h1>
+                                <b>
+                                    <i class="fa-solid fa-chart-pie mt-5"></i> Expense Breakdown
+                                    <i class="fas fa-info-circle"
+                                        onclick="showInfo('Expense Breakdown', 'This chart shows a breakdown of total expenses by category (business or branch), and separates recurring versus one-time expenses by month. Categories are dynamically labeled based on business names or branch locations.');">
+                                    </i>
+                                </b>
+                            </h1>
+
+
                             <div class="row">
                                 <!-- Category-Wise Expenses -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Category-Wise Expenses</b></h5>
                                         <canvas id="categoryExpenseChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart5Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1082,6 +1760,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Recurring vs. One-Time Expenses</b></h5>
                                         <canvas id="recurringExpenseChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart6Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -1091,36 +1772,98 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         <div class="col-md-12 mt-5" id="inventoryChart">
                             <h1>
                                 <b>
-                                    <i class="fa-solid fa-boxes-stacked"></i> Inventory Product Sold
+                                    <i class="fa-solid fa-boxes-stacked mt-5"></i> Inventory Product Sold
                                     <i class="fas fa-info-circle"
-                                        onclick="showInfo('Inventory Product Sold', 'This graph displays the stock levels sold of top products.');"></i>
+                                        onclick="showInfo('Inventory Product Sold', 'This chart displays the top 10 products with the highest quantity sold, based on sales records filtered by selected business and branch.');">
+                                    </i>
                                 </b>
                             </h1>
 
-                            <div class="col-md-12 mt-3">
-                                <label for="businessSelect"><b>Select Business:</b></label>
-                                <select id="businessSelect" class="form-control" onchange="changeBusiness()">
-                                    <?php foreach ($businesses as $business): ?>
-                                        <option value="<?= $business['id'] ?>" <?= $business['id'] == $selected_business_id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($business['name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="businessSelect"><b>Select Business:</b></label>
+                                    <select id="businessSelect" class="form-control" onchange="changeBusiness()">
+                                        <option value="">All Businesses</option>
+                                        <?php foreach ($businesses as $business): ?>
+                                            <option value="<?= $business['id'] ?>" <?= $business['id'] == $selected_business_id ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($business['name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="branchSelect"><b>Select Branch:</b></label>
+                                    <select id="branchSelect" class="form-control" onchange="changeBranch()"
+                                        <?= $selected_business_id ? '' : 'disabled' ?>>
+                                        <option value="">All Branches</option>
+                                        <?php if ($selected_business_id): ?>
+                                            <option value="0" <?= $selected_branch_id === '0' ? 'selected' : '' ?>>Business
+                                                Level</option>
+                                            <?php foreach ($branches as $branch): ?>
+                                                <option value="<?= $branch['id'] ?>" <?= $branch['id'] == $selected_branch_id ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($branch['location']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                </div>
                             </div>
+
+
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="chart-container mb-4" style="height: 400px;">
-                                        <h5 class="mt-5"><b>Stock Levels Sold of Top Products</b></h5>
+                                        <h5 class="mt-3"><b>Top Selling Products</b></h5>
                                         <canvas id="stockLevelSoldChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart7Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Key Performance Indicators (KPIs) <i
+
+
+
+                        <div id="kpi-section" class="col-md-12 mt-5">
+                            <h1><b><i class="fa-solid fa-chart-line mt-5"></i> Key Performance Indicators (KPIs) <i
                                         class="fas fa-info-circle"
-                                        onclick="showInfo(' Key Performance Indicators', 'This chart displays all the gross profit, revenue growth rate and return of investment.');"></i></b>
+                                        onclick="showInfo('Key Performance Indicators', 'These metrics are calculated from financial data including profit margins, revenue changes, and investment returns to assess business performance.');"></i></b>
                             </h1>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6 mb-3">
+                                    <label for="kpiBusinessSelect"><b>Select Business:</b></label>
+                                    <select id="kpiBusinessSelect" class="form-control"
+                                        onchange="handleBusinessSelect(this, 'kpiBranchSelect', 'kpiBranchSelectContainer'); updateKPIChart(this.value, 'all')">
+                                        <option value="all" <?= $selectedBusiness === 'all' ? 'selected' : '' ?>>All
+                                            Businesses
+                                        </option>
+                                        <?php foreach ($businessIdNameMap as $id => $name): ?>
+                                            <option value="<?= $id ?>" <?= $selectedBusiness == $id ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($name) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3" id="kpiBranchSelectContainer">
+                                    <label for="kpiBranchSelect"><b>Select Branch:</b></label>
+                                    <select id="kpiBranchSelect" class="form-control"
+                                        onchange="updateKPIChart(document.getElementById('kpiBusinessSelect').value, this.value)">
+                                        <option value="all" <?= $selectedBranch === 'all' ? 'selected' : '' ?>>All Branches
+                                        </option>
+                                        <?php
+                                        if ($selectedBusiness !== 'all' && isset($businessNewData[$selectedBusiness])) {
+                                            foreach ($businessNewData[$selectedBusiness] as $branch) {
+                                                $selected = $selectedBranch == $branch['id'] ? 'selected' : '';
+                                                echo "<option value='{$branch['id']}' $selected>" . htmlspecialchars($branch['location']) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                            </div>
                             <div class="row">
                                 <!-- Gross Profit Percentage -->
                                 <div class="col-md-4">
@@ -1151,18 +1894,66 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                             </div>
                         </div>
+                        <script>
 
-                        <div class="col-md-12 mt-5">
-                            <h1><b><i class="fa-solid fa-chart-line"></i> Forecasting & Predictions <i
-                                        class="fas fa-info-circle"
-                                        onclick="showInfo(' Forecasting & Predictions', 'This graph displays all the sales forecast and expense forecast.');"></i></b>
+
+                        </script>
+
+                        <!-- // 9 -->
+                        <div id="forecast-section" class="col-md-12 mt-5">
+                            <h1>
+                                <b>
+                                    <i class="fa-solid fa-chart-line"></i> Forecasting & Predictions
+                                    <i class="fas fa-info-circle" onclick="showInfo(
+               'Forecasting & Predictions',
+               'These charts are generated using historical sales and expense data. The system analyzes trends and patterns over time to predict future values, helping you make informed business decisions.'
+           );">
+                                    </i>
+                                </b>
                             </h1>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6 mb-3">
+                                    <label for="forecastBusinessSelect"><b>Select Business:</b></label>
+                                    <select id="forecastBusinessSelect" class="form-control"
+                                        onchange="handleBusinessSelect(this, 'forecastBranchSelect', 'forecastBranchSelectContainer'); updateForecastChart(this.value, 'all')">
+                                        <option value="all" <?= $selectedBusiness === 'all' ? 'selected' : '' ?>>All
+                                            Businesses
+                                        </option>
+                                        <?php foreach ($businessIdNameMap as $id => $name): ?>
+                                            <option value="<?= $id ?>" <?= $selectedBusiness == $id ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($name) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3" id="forecastBranchSelectContainer">
+                                    <label for="forecastBranchSelect"><b>Select Branch:</b></label>
+                                    <select id="forecastBranchSelect" class="form-control"
+                                        onchange="updateForecastChart(document.getElementById('forecastBusinessSelect').value, this.value)">
+                                        <option value="all" <?= $selectedBranch === 'all' ? 'selected' : '' ?>>All Branches
+                                        </option>
+                                        <?php
+                                        if ($selectedBusiness !== 'all' && isset($businessNewData[$selectedBusiness])) {
+                                            foreach ($businessNewData[$selectedBusiness] as $branch) {
+                                                $selected = $selectedBranch == $branch['id'] ? 'selected' : '';
+                                                echo "<option value='{$branch['id']}' $selected>" . htmlspecialchars($branch['location']) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="row">
                                 <!-- Sales Forecast -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5><b>Sales Forecast</b></h5>
                                         <canvas id="salesForecastChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart8Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1171,22 +1962,92 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5><b>Expense Forecast</b></h5>
                                         <canvas id="expenseForecastChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart9Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <script>
+                            const businessBranchMap = <?= json_encode($businessNewData) ?>;
+
+                            function handleBusinessSelect(selectEl, branchSelectId, branchContainerId) {
+                                const selectedBusiness = selectEl.value;
+                                const branchSelect = document.getElementById(branchSelectId);
+
+                                branchSelect.innerHTML = `<option value="all">All Branches</option>`;
+
+                                if (selectedBusiness !== 'all' && businessBranchMap[selectedBusiness]) {
+                                    businessBranchMap[selectedBusiness].forEach(branch => {
+                                        const option = document.createElement("option");
+                                        option.value = branch.id;
+                                        option.textContent = branch.location;
+                                        branchSelect.appendChild(option);
+                                    });
+                                }
+                            }
+
+                            function updateKPIChart(selectedBusiness, selectedBranch) {
+                                const url = `index.php?business=${selectedBusiness}&branch=${selectedBranch}#kpi-section`;
+                                window.location.href = url;
+                            }
+
+
+
+                            function updateForecastChart(selectedBusiness, selectedBranch) {
+                                const url = `index.php?business=${selectedBusiness}&branch=${selectedBranch}#forecast-section`;
+                                window.location.href = url;
+                            }
+                        </script>
 
                         <div class="col-md-12 mt-5">
                             <h1><b><i class="fa-solid fa-box"></i> Product/Service Analysis <i
                                         class="fas fa-info-circle"
                                         onclick="showInfo(' Product/Service Analysis', 'This graph displays all the top-selling products/services and low-performing products/serices.');"></i></b>
                             </h1>
+                            <!-- <div class="row mt-3">
+                                <div class="col-md-6 mb-3">
+                                    <label for="analysisBusinessSelect"><b>Select Business:</b></label>
+                                    <select id="analysisBusinessSelect" class="form-control"
+                                        onchange="handleBusinessSelect(this, 'analysisBranchSelect', 'analysisBranchSelectContainer'); updateAnalysisChart(this.value, 'all')">
+                                        <option value="all" <?= $selectedBusiness === 'all' ? 'selected' : '' ?>>All
+                                            Businesses
+                                        </option>
+                                        <?php foreach ($businessIdNameMap as $id => $name): ?>
+                                            <option value="<?= $id ?>" <?= $selectedBusiness == $id ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($name) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-1" id="analysisBranchSelectContainer">
+                                    <label for="analysisBranchSelect"><b>Select Branch:</b></label>
+                                    <select id="analysisBranchSelect" class="form-control"
+                                        onchange="updateAnalysisChart(document.getElementById('analysisBusinessSelect').value, this.value)">
+                                        <option value="all" <?= $selectedBranch === 'all' ? 'selected' : '' ?>>All Branches
+                                        </option>
+                                        <?php
+                                        if ($selectedBusiness !== 'all' && isset($businessNewData[$selectedBusiness])) {
+                                            foreach ($businessNewData[$selectedBusiness] as $branch) {
+                                                $selected = $selectedBranch == $branch['id'] ? 'selected' : '';
+                                                echo "<option value='{$branch['id']}' $selected>" . htmlspecialchars($branch['location']) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div> -->
                             <div class="row">
                                 <!-- Top-Selling Products Chart -->
                                 <div class="col-md-6">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top-Selling Products/Services</b></h5>
                                         <canvas id="topProductsChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart10Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1195,45 +2056,65 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Low-Performing Products/Services</b></h5>
                                         <canvas id="lowProductsChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart11Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Product Profitability Chart -->
-                                <div class="col-md-12">
+                                <div class="col-md-12 mt-5">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5 mb-3"><b>Product/Service Profitability Analysis<i
                                                     class="fas fa-info-circle"
                                                     onclick="showInfo(' Product/Service Profitability Analysis', 'This graph displays all the products/services profitability analysis.');"></i></b>
                                         </h5>
                                         <canvas id="productProfitabilityChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart12Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Customer Demographics -->
                                 <div class="col-md-12 mt-5">
-                                    <h1><b><i class="fa-solid fa-users"></i> Customer Demographics <i
-                                                class="fas fa-info-circle"
-                                                onclick="showInfo(' Customer Demographics', 'This graph displays all the top products by location.');"></i></b>
-                                    </h1>
+                                    <h1><b><i class="fa-solid fa-users mt-5"></i> Customer Demographics
+                                            <i class="fas fa-info-circle" onclick="showInfo(
+           'Customer Demographics', 
+           'This graph displays the top products sold per location, including branches and main business sites, based on sales volume and revenue.'
+       );"></i>
+                                        </b></h1>
+
 
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart13Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Trend Analysis -->
                                 <div class="col-md-12 mt-5">
-                                    <h1><b><i class="fa-solid fa-chart-line"></i> Trend Analysis<i
-                                                class="fas fa-info-circle"
-                                                onclick="showInfo(' Trend Analysis', 'This graph displays all the seasonal trends and growth rate analysis.');"></i></b>
+                                    <h1>
+                                        <b>
+                                            <i class="fa-solid fa-chart-line mt-5"></i> Trend Analysis
+                                            <i class="fas fa-info-circle"
+                                                onclick="showInfo('Trend Analysis', 'This chart visualizes monthly trends for sales, expenses, and profits over the past year. Data is aggregated using actual sales and expense records to help identify seasonal patterns and growth.');">
+                                            </i>
+                                        </b>
                                     </h1>
+
                                     <div class="row">
                                         <!-- Seasonal Trends Chart -->
                                         <div class="col-md-6">
                                             <div class="chart-container mb-4" style="height: 400px;">
                                                 <h5 class="mt-5"><b>Seasonal Trends</b></h5>
                                                 <canvas id="seasonalTrendsChart"></canvas>
+                                                <button class="btn btn-dark mt-2 mb-5" id="printChart14Button">
+                                                    <i class="fas fa-print me-2"></i> Generate Report
+                                                </button>
                                             </div>
                                         </div>
 
@@ -1242,6 +2123,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                             <div class="chart-container mb-4" style="height: 400px;">
                                                 <h5 class="mt-5"><b>Growth Rate Analysis</b></h5>
                                                 <canvas id="growthRateChart"></canvas>
+                                                <button class="btn btn-dark mt-2 mb-5" id="printChart15Button">
+                                                    <i class="fas fa-print me-2"></i> Generate Report
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -1252,7 +2136,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <div id="popularProductsSection">
                             <div class="col-md-12 mt-5">
-                                <h1><b><i class="fa-solid fa-boxes icon"></i> Popular Products<i
+                                <h1><b><i class="fa-solid fa-boxes icon  mt-5"></i> Popular Products<i
                                             class="fas fa-info-circle"
                                             onclick="showInfo(' Popular Products', 'This graph displays all the popular products and can be filtered also by months.');"></i></b>
                                 </h1>
@@ -1332,15 +2216,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 <b>
                                     <i class="fa-solid fa-exclamation-triangle"></i> Alerts & Thresholds
                                     <i class="fas fa-info-circle"
-                                        onclick="showInfo('Alerts & Thresholds', 'This graph displays expense threshold breaches and positive responses based on past month\'s expenses.');"></i>
+                                        onclick="showInfo('Alerts & Thresholds', 'This chart analyzes your monthly expenses against dynamic thresholds based on your total assets. It highlights months where expenses exceeded your assets (breaches) and months with improved or stable spending (positives).');">
+                                    </i>
                                 </b>
                             </h1>
+
                             <div class="row">
                                 <!-- Expense Threshold Bar Chart -->
                                 <div class="col-md-8">
                                     <div class="chart-container mb-4" style="height: 400px;">
                                         <h5><b>Expense Threshold Breach</b></h5>
                                         <canvas id="expenseThresholdChart"></canvas>
+                                        <button class="btn btn-dark mt-2 mb-5" id="printChart16Button">
+                                            <i class="fas fa-print me-2"></i> Generate Report
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1356,7 +2245,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                         <div id="recentActivitiesSection">
                             <div class="col-md-12 mt-5">
-                                <h1><b><i class="fas fa-bell"></i> Activity Log <i class="fas fa-info-circle"
+                                <h1><b><i class="fas fa-bell mt-5"></i> Activity Log <i class="fas fa-info-circle"
                                             onclick="showInfo(' Activity Log', 'This table displays all the latest activities.');"></i></b>
                                 </h1>
                                 <div class="col-md-12 dashboard-content">
@@ -1720,39 +2609,89 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
         // 7
         function changeBusiness() {
-            var selectedBusiness = document.getElementById("businessSelect").value;
-            window.location.href = "?business_id=" + selectedBusiness + "#inventoryChart"; // Redirect with fragment
+            const businessId = document.getElementById("businessSelect").value;
+
+            // Create a clean URL base
+            const baseUrl = `${window.location.origin}${window.location.pathname}`;
+            const url = new URL(baseUrl);
+
+            // Set parameters and hash
+            url.searchParams.set('business_id', businessId);
+            url.hash = 'inventoryChart';
+
+            // Reset branch filter
+            url.searchParams.delete('branch_id');
+
+            window.location.href = url.toString();
         }
+
+
+        function changeBranch() {
+            const businessId = document.getElementById("businessSelect").value;
+            const branchId = document.getElementById("branchSelect").value;
+
+            // Clean base URL
+            const baseUrl = `${window.location.origin}${window.location.pathname}`;
+            const url = new URL(baseUrl);
+
+            url.searchParams.set('business_id', businessId);
+
+            // Conditionally set branch_id
+            if (branchId !== "0") {
+                url.searchParams.set('branch_id', branchId);
+            }
+
+            url.hash = 'inventoryChart';
+            window.location.href = url.toString();
+        }
+
+
+
         document.addEventListener("DOMContentLoaded", function () {
             if (window.location.hash === "#inventoryChart") {
                 document.getElementById("inventoryChart").scrollIntoView({ behavior: "smooth" });
             }
         });
 
-        var inventoryData = <?php echo json_encode($inventoryData); ?>;
+        const inventoryData = <?= json_encode($inventoryData) ?>;
 
-        // Bar Chart: Stock Levels Sold
-        var ctx1 = document.getElementById('stockLevelSoldChart').getContext('2d');
-        var stockChart = new Chart(ctx1, {
+        // Bar Chart with colored products
+        new Chart(document.getElementById('stockLevelSoldChart').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: inventoryData.products,
                 datasets: [{
-                    label: 'Stock Levels Sold',
+                    label: 'Units Sold',
                     data: inventoryData.stockLevelsSold,
-                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                    borderColor: 'rgb(153, 102, 255)',
-                    borderWidth: 1
+                    backgroundColor: inventoryData.colors,
+                    borderColor: inventoryData.colors.map(color => color.replace(/0\.\d+\)/, '1)')),
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Units Sold'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 }
             }
         });
-
         // 9
         document.addEventListener("DOMContentLoaded", function () {
             // Parse JSON data from PHP
@@ -1905,7 +2844,93 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         var trendData = <?php echo json_encode($trendData); ?>;
     </script>
     <script src="../js/chart.js"></script>
+    <script>
+        function handleBusinessSelect(selectElement, branchSelectId, containerId) {
+            const businessName = selectElement.value;
+            const branchSelect = document.getElementById(branchSelectId);
+            branchSelect.innerHTML = '<option value="all">All Branches</option>';
 
+            if (businessName !== 'all' && businessBranches[businessName]) {
+                Object.keys(businessBranches[businessName]).forEach(branchId => {
+                    const option = document.createElement('option');
+                    option.value = branchId;
+                    option.textContent = businessBranches[businessName][branchId];
+                    branchSelect.appendChild(option);
+                });
+            }
+        }
+        function updateFinancialNewChart(businessName, branchId) {
+            const chartContainer = document.getElementById('financialOverviewNewChart').parentElement;
+            chartContainer.classList.add('loading');
+
+            fetch(`../endpoints/chart/financial_data.php?business=${encodeURIComponent(businessName)}&branch=${encodeURIComponent(branchId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    financialOverviewNewChart.data.datasets[0].data = data.sales;
+                    financialOverviewNewChart.data.datasets[1].data = data.expenses;
+                    financialOverviewNewChart.update();
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => chartContainer.classList.remove('loading'));
+        }
+        var businessBranches = " . json_encode($businessNewData) . ";
+        var branchInfo = " . json_encode($branchNewInfo) . ";
+        // 1 
+        let financialOverviewNewChart;
+
+        function initFinancialOverviewChart() {
+            const ctx = document.getElementById('financialOverviewNewChart').getContext('2d');
+            financialOverviewNewChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Sales (₱)',
+                            data: new Array(12).fill(0),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Expenses (₱)',
+                            data: new Array(12).fill(0),
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            // Load initial data
+            updateFinancialNewChart('all', 'all');
+        }
+
+
+        // Initialize the chart when the page loads
+        document.addEventListener('DOMContentLoaded', initFinancialOverviewChart);
+
+
+    </script>
     <script src="../js/sidebar.js"></script>
     <script src="../js/sort_items.js"></script>
     <script src="../js/show_info.js"></script>
@@ -2012,6 +3037,126 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             printWindow.print();
             printWindow.document.close();
         }
+
+        function cloneChartForPrint(originalCanvasId, reportTitle) {
+            const originalCanvas = document.getElementById(originalCanvasId);
+            const chartDataUrl = originalCanvas.toDataURL();
+
+            const printWindow = window.open('', '', 'height=600,width=800');
+
+            printWindow.document.write(`
+            <html>
+                <head>
+                    <title>${reportTitle}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        img { max-width: 100%; height: auto; }
+
+                        @media print {
+                            @page {
+                                size: landscape;
+                                margin: 2cm;
+                            }
+                            body {
+                                margin: 0;
+                            }
+                            h1 {
+                                text-align: center;
+                                margin-bottom: 1cm;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${reportTitle}</h1>
+                    <div>
+                        <img src="${chartDataUrl}" alt="Chart Image" />
+                    </div>
+                </body>
+            </html>
+        `);
+
+            printWindow.document.close();
+            printWindow.focus();
+
+            // Wait a moment to ensure content loads before printing
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+
+        // Attach button event listeners
+        document.getElementById("printChart1Button").addEventListener("click", () => {
+            cloneChartForPrint("salesAndExpensesNewChart", "Financial Overview Report");
+        });
+
+        document.getElementById("printChart2Button").addEventListener("click", () => {
+            cloneChartForPrint("salesVsExpensesNewChart", "Sales vs Expenses Report");
+        });
+
+        document.getElementById("printChart3Button").addEventListener("click", () => {
+            cloneChartForPrint("businessPerformanceChart", "Business Performance Report");
+        });
+
+        document.getElementById("printChart4Button").addEventListener("click", () => {
+            cloneChartForPrint("revenueContributionChart", "Revenue Contribution Report");
+        });
+
+        document.getElementById("printChart5Button").addEventListener("click", () => {
+            cloneChartForPrint("categoryExpenseChart", "Category Expense Report");
+        });
+
+        document.getElementById("printChart6Button").addEventListener("click", () => {
+            cloneChartForPrint("recurringExpenseChart", "Recurring Expense Report");
+        });
+
+        document.getElementById("printChart7Button").addEventListener("click", () => {
+            cloneChartForPrint("stockLevelSoldChart", "Stock Level Sold Report");
+        });
+
+        document.getElementById("printChart8Button").addEventListener("click", () => {
+            cloneChartForPrint("salesForecastChart", "Sales Forecast Report");
+        });
+
+        document.getElementById("printChart9Button").addEventListener("click", () => {
+            cloneChartForPrint("expenseForecastChart", "Expense Forecast Report");
+        });
+
+        document.getElementById("printChart10Button").addEventListener("click", () => {
+            cloneChartForPrint("topProductsChart", "Top Products Report");
+        });
+
+        document.getElementById("printChart11Button").addEventListener("click", () => {
+            cloneChartForPrint("lowProductsChart", "Low Products Report");
+        });
+
+        document.getElementById("printChart12Button").addEventListener("click", () => {
+            cloneChartForPrint("productProfitabilityChart", "Product Profitability Report");
+        });
+
+        document.getElementById("printChart13Button").addEventListener("click", () => {
+            cloneChartForPrint("demographicsChart", "Demographics Report");
+        });
+
+        document.getElementById("printChart14Button").addEventListener("click", () => {
+            cloneChartForPrint("seasonalTrendsChart", "Seasonal Trends Report");
+        });
+
+        document.getElementById("printChart15Button").addEventListener("click", () => {
+            cloneChartForPrint("growthRateChart", "Growth Rate Report");
+        });
+
+        document.getElementById("printChart16Button").addEventListener("click", () => {
+            cloneChartForPrint("expenseThresholdChart", "Expense Threshold Report");
+        });
+
+        document.getElementById("printChart17Button").addEventListener("click", () => {
+            cloneChartForPrint("profitBarChart", "Profit Margin Report");
+        });
+
+        document.getElementById("printChart18Button").addEventListener("click", () => {
+            cloneChartForPrint("cashFlowNewChart", "Cash Flow Report");
+        });
     </script>
 </body>
 

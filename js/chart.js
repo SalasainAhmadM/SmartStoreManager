@@ -112,177 +112,63 @@ function initFinancialChart() {
 
 
 
-// Sales vs Expenses Chart
-function updateSalesExpensesChart(data, selectedMonth = null) {
+function updateSalesExpensesChart(data) {
     const ctx = document.getElementById('salesExpensesChart').getContext('2d');
 
-    // Function to group data by time period
-    function groupDataBy(data, period, selectedMonth = null) {
-        const grouped = {};
-
-        data.forEach(item => {
-            let key;
-            const date = new Date(item.date);
-
-            // Filter by selected month if provided
-            if (selectedMonth !== null && date.getMonth() + 1 !== selectedMonth) {
-                return;
-            }
-
-            switch (period) {
-                case 'daily':
-                    key = item.date;
-                    break;
-                case 'weekly':
-                    // Get the Monday of the week
-                    const day = date.getDay();
-                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-                    const monday = new Date(date);
-                    monday.setDate(diff);
-                    const sunday = new Date(monday);
-                    sunday.setDate(monday.getDate() + 6);
-                    key = `${monday.toISOString().split('T')[0]} to ${sunday.toISOString().split('T')[0]}`;
-                    break;
-                case 'monthly':
-                    // Format as "Month YYYY"
-                    key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                    break;
-            }
-
-            if (!grouped[key]) {
-                grouped[key] = { sales: 0, expenses: 0 };
-            }
-            grouped[key].sales += parseFloat(item.sales) || 0;
-            grouped[key].expenses += parseFloat(item.expenses) || 0;
-        });
-
-        // Sort the keys
-        const sortedKeys = Object.keys(grouped).sort((a, b) => {
-            if (period === 'daily') {
-                return new Date(a) - new Date(b);
-            } else if (period === 'weekly') {
-                return new Date(a.split(' to ')[0]) - new Date(b.split(' to ')[0]);
-            } else {
-                // For monthly, convert back to date for sorting
-                return new Date(a) - new Date(b);
-            }
-        });
-
-        const sortedGrouped = {};
-        sortedKeys.forEach(key => {
-            sortedGrouped[key] = grouped[key];
-        });
-
-        return sortedGrouped;
+    // Destroy existing chart instance if it exists
+    if (salesExpensesChart) {
+        salesExpensesChart.destroy();
     }
 
-    function updateChartWithPeriod(period) {
-        const currentData = selectedBusinessName ?
-            dailyData.filter(item => item.business_name === selectedBusinessName) :
-            data;
-
-        const groupedData = groupDataBy(currentData, period, selectedMonth);
-        const labels = Object.keys(groupedData);
-        const sales = labels.map(key => groupedData[key].sales);
-        const expenses = labels.map(key => groupedData[key].expenses);
-
-        if (salesExpensesChart) {
-            salesExpensesChart.destroy();
+    // Aggregate data across all businesses and branches
+    const aggregatedData = data.reduce((acc, item) => {
+        const date = item.date;
+        if (!acc[date]) {
+            acc[date] = { sales: 0, expenses: 0 };
         }
+        acc[date].sales += item.sales;
+        acc[date].expenses += item.expenses;
+        return acc;
+    }, {});
 
-        salesExpensesChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Sales',
-                    data: sales,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }, {
-                    label: 'Expenses',
-                    data: expenses,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgb(255, 99, 132)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Amount (₱)'
+    const labels = Object.keys(aggregatedData).sort((a, b) => new Date(a) - new Date(b));
+    const sales = labels.map(date => aggregatedData[date].sales);
+    const expenses = labels.map(date => aggregatedData[date].expenses);
+
+    salesExpensesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Sales (₱)',
+                data: sales,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+                tension: 0.1
+            }, {
+                label: 'Total Expenses (₱)',
+                data: expenses,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
                         }
                     }
                 }
             }
-        });
-    }
-
-    const container = document.getElementById('salesExpensesChart').parentElement;
-    let buttonGroup = container.querySelector('.btn-group');
-
-    if (!buttonGroup) {
-        buttonGroup = document.createElement('div');
-        buttonGroup.className = 'btn-group mb-3';
-        buttonGroup.style.marginBottom = '1rem';
-
-        ['Daily', 'Weekly', 'Monthly'].forEach(period => {
-            const button = document.createElement('button');
-            // Update button classes for dark theme
-            button.className = 'btn btn-outline-light';
-            button.style.cssText = `
-                background-color: #343a40;
-                color: #fff;
-                border: 1px solid #6c757d;
-                margin-right: 5px;
-                padding: 8px 16px;
-                border-radius: 5px;
-                transition: all 0.3s ease;
-            `;
-            button.textContent = period;
-
-            button.onmouseover = () => {
-                if (!button.classList.contains('active')) {
-                    button.style.backgroundColor = '#495057';
-                }
-            };
-            button.onmouseout = () => {
-                if (!button.classList.contains('active')) {
-                    button.style.backgroundColor = '#343a40';
-                }
-            };
-
-            button.onclick = () => {
-                buttonGroup.querySelectorAll('button').forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.style.backgroundColor = '#343a40';
-                    btn.style.color = '#fff';
-                });
-                button.classList.add('active');
-                button.style.backgroundColor = '#6c757d';
-                button.style.color = '#fff';
-                updateChartWithPeriod(period.toLowerCase());
-            };
-            buttonGroup.appendChild(button);
-        });
-
-        container.insertBefore(buttonGroup, container.firstChild);
-    }
-
-    updateChartWithPeriod('daily');
-    const firstButton = buttonGroup.querySelector('button');
-    firstButton.classList.add('active');
-    firstButton.style.backgroundColor = '#6c757d';
-}
-
-function filterSalesExpensesByMonth(selectedMonth) {
-    const month = parseInt(selectedMonth, 10);
-    updateSalesExpensesChart(dailyData, month);
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -305,6 +191,24 @@ document.addEventListener('DOMContentLoaded', function () {
 function updateProfitMarginChart(data) {
     const ctx = document.getElementById('profitMarginChart').getContext('2d');
     
+    // Aggregate data across all businesses
+    const aggregatedData = data.reduce((acc, item) => {
+        const date = item.date;
+        if (!acc[date]) {
+            acc[date] = { sales: 0, expenses: 0 };
+        }
+        acc[date].sales += item.sales;
+        acc[date].expenses += item.expenses;
+        return acc;
+    }, {});
+
+    const labels = Object.keys(aggregatedData).sort((a, b) => new Date(a) - new Date(b));
+    const profitMargins = labels.map(date => {
+        const sales = aggregatedData[date].sales;
+        const expenses = aggregatedData[date].expenses;
+        return sales > 0 ? ((sales - expenses) / sales * 100) : 0;
+    });
+
     if (profitMarginChart) {
         profitMarginChart.destroy();
     }
@@ -312,10 +216,10 @@ function updateProfitMarginChart(data) {
     profitMarginChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.map(d => d.date),
+            labels: labels,
             datasets: [{
                 label: 'Profit Margin (%)',
-                data: data.map(d => d.profit_margin),
+                data: profitMargins,
                 backgroundColor: 'rgba(153, 102, 255, 0.5)',
                 borderColor: 'rgb(153, 102, 255)',
                 borderWidth: 1
@@ -326,20 +230,35 @@ function updateProfitMarginChart(data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Profit Margin (%)'
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
                     }
                 }
             }
         }
     });
 }
-
 // Cash Flow Chart
 function updateCashFlowChart(data) {
     const ctx = document.getElementById('cashFlowChart').getContext('2d');
     
+    // Aggregate monthly data across all businesses
+    const aggregatedData = data.reduce((acc, item) => {
+        const month = item.month;
+        if (!acc[month]) {
+            acc[month] = { inflow: 0, outflow: 0 };
+        }
+        acc[month].inflow += item.inflow;
+        acc[month].outflow += item.outflow;
+        return acc;
+    }, {});
+
+    const labels = Object.keys(aggregatedData).sort();
+    const inflowData = labels.map(month => aggregatedData[month].inflow);
+    const outflowData = labels.map(month => aggregatedData[month].outflow);
+
     if (cashFlowChart) {
         cashFlowChart.destroy();
     }
@@ -347,17 +266,17 @@ function updateCashFlowChart(data) {
     cashFlowChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.map(d => d.month),
+            labels: labels,
             datasets: [{
-                label: 'Cash Inflow',
-                data: data.map(d => d.inflow),
+                label: 'Total Cash Inflow (₱)',
+                data: inflowData,
                 fill: true,
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1
             }, {
-                label: 'Cash Outflow',
-                data: data.map(d => d.outflow),
+                label: 'Total Cash Outflow (₱)',
+                data: outflowData,
                 fill: true,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -369,15 +288,35 @@ function updateCashFlowChart(data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Amount (₱)'
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
                     }
                 }
             }
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize financial chart first
+    initFinancialChart();
+    
+    // Then initialize other charts with slight delay
+    setTimeout(() => {
+        updateSalesExpensesChart(dailyData);
+        updateProfitMarginChart(dailyData);
+        updateCashFlowChart(monthlyData);
+        
+        // Initialize additional charts
+        updateBusinessPerformanceChart();
+        updateRevenueContributionChart();
+        updateProductCharts();
+        updateDemographicsChart();
+        updateTrendCharts();
+    }, 100);
+});
 
 
 document.getElementById('printChartButton').addEventListener('click', function() {

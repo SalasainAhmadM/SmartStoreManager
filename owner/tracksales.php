@@ -174,7 +174,7 @@ WHERE b.owner_id = ? AND s.date = ?
             vertical-align: middle;
             cursor: pointer;
             background-color: transparent;
-            border: 1px solid transparent;
+            /* border: 1px solid transparent; */
             padding: 0.375rem 0.75rem;
             font-size: 1rem;
             line-height: 1.5;
@@ -184,8 +184,8 @@ WHERE b.owner_id = ? AND s.date = ?
 
         .btn-success {
             color: #fff;
-            background-color: #28a745;
-            border-color: #28a745;
+            background-color: #198754;
+            border-color: #198754;
         }
 
         .btn-danger {

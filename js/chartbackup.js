@@ -1,4 +1,3 @@
-
 // Global variables to store chart instances
 let financialChart = null;
 let salesExpensesChart = null;
@@ -11,6 +10,7 @@ var labels = [];
 var salesData = [];
 var expensesData = [];
 
+
 // Loop through the processed data to extract labels (branch names) and the corresponding sales and expenses
 for (var businessName in chartData) {
     if (chartData.hasOwnProperty(businessName)) {
@@ -21,6 +21,47 @@ for (var businessName in chartData) {
                 expensesData.push(chartData[businessName][branchLocation].expenses);
             }
         }
+    }
+}
+
+
+// Function to update all charts for a selected business
+function showBusinessData(businessName) {
+    selectedBusinessName = businessName; // Store the selected business name
+    const branches = chartData[businessName];
+
+    // Update financial chart
+    if (financialChart) {
+        financialChart.data.labels = [];
+        financialChart.data.datasets[0].data = [];
+        financialChart.data.datasets[1].data = [];
+
+        for (var branchLocation in branches) {
+            if (branches.hasOwnProperty(branchLocation)) {
+                financialChart.data.labels.push(branchLocation);
+                financialChart.data.datasets[0].data.push(branches[branchLocation].sales);
+                financialChart.data.datasets[1].data.push(branches[branchLocation].expenses);
+            }
+        }
+        financialChart.update();
+    }
+
+    // Filter data for selected business
+    const filteredDailyData = dailyData.filter(item => item.business_name === businessName);
+    const filteredMonthlyData = monthlyData.filter(item => item.business_name === businessName);
+
+    // Update other charts
+    updateSalesExpensesChart(filteredDailyData);
+    updateProfitMarginChart(filteredDailyData);
+    updateCashFlowChart(filteredMonthlyData);
+
+    // Update UI
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('active');
+    });
+    const activeCard = document.querySelector(`div[data-business-name="${businessName}"]`);
+    if (activeCard) {
+        activeCard.classList.add('active');
     }
 }
 
@@ -69,223 +110,105 @@ function initFinancialChart() {
     });
 }
 
-// Function to update all charts for a selected business
-function showBusinessData(businessName) {
-    selectedBusinessName = businessName; // Store the selected business name
-    const branches = chartData[businessName];
 
-    // Update financial chart
-    if (financialChart) {
-        financialChart.data.labels = [];
-        financialChart.data.datasets[0].data = [];
-        financialChart.data.datasets[1].data = [];
 
-        for (var branchLocation in branches) {
-            if (branches.hasOwnProperty(branchLocation)) {
-                financialChart.data.labels.push(branchLocation);
-                financialChart.data.datasets[0].data.push(branches[branchLocation].sales);
-                financialChart.data.datasets[1].data.push(branches[branchLocation].expenses);
-            }
-        }
-        financialChart.update();
-    }
-
-    // Filter data for selected business
-    const filteredDailyData = dailyData.filter(item => item.business_name === businessName);
-    const filteredMonthlyData = monthlyData.filter(item => item.business_name === businessName);
-
-    // Update other charts
-    updateSalesExpensesChart(filteredDailyData);
-    updateProfitMarginChart(filteredDailyData);
-    updateCashFlowChart(filteredMonthlyData);
-
-    // Update UI
-    document.querySelectorAll('.card').forEach(card => {
-        card.classList.remove('active');
-    });
-    const activeCard = document.querySelector(`div[data-business-name="${businessName}"]`);
-    if (activeCard) {
-        activeCard.classList.add('active');
-    }
-}
-
-// Sales vs Expenses Chart
 function updateSalesExpensesChart(data) {
     const ctx = document.getElementById('salesExpensesChart').getContext('2d');
-    
-    // Function to group data by time period
-    function groupDataBy(data, period) {
-        const grouped = {};
-        
-        data.forEach(item => {
-            let key;
-            const date = new Date(item.date);
-            
-            switch(period) {
-                case 'daily':
-                    key = item.date;
-                    break;
-                case 'weekly':
-                    // Get the Monday of the week
-                    const day = date.getDay();
-                    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-                    const monday = new Date(date);
-                    monday.setDate(diff);
-                    const sunday = new Date(monday);
-                    sunday.setDate(monday.getDate() + 6);
-                    key = `${monday.toISOString().split('T')[0]} to ${sunday.toISOString().split('T')[0]}`;
-                    break;
-                case 'monthly':
-                    // Format as "Month YYYY"
-                    key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                    break;
-            }
-            
-            if (!grouped[key]) {
-                grouped[key] = { sales: 0, expenses: 0 };
-            }
-            grouped[key].sales += parseFloat(item.sales) || 0;
-            grouped[key].expenses += parseFloat(item.expenses) || 0;
-        });
 
-        // Sort the keys
-        const sortedKeys = Object.keys(grouped).sort((a, b) => {
-            if (period === 'daily') {
-                return new Date(a) - new Date(b);
-            } else if (period === 'weekly') {
-                return new Date(a.split(' to ')[0]) - new Date(b.split(' to ')[0]);
-            } else {
-                // For monthly, convert back to date for sorting
-                return new Date(a) - new Date(b);
-            }
-        });
-
-        // Create a new sorted object
-        const sortedGrouped = {};
-        sortedKeys.forEach(key => {
-            sortedGrouped[key] = grouped[key];
-        });
-        
-        return sortedGrouped;
+    // Destroy existing chart instance if it exists
+    if (salesExpensesChart) {
+        salesExpensesChart.destroy();
     }
 
-    // Function to update chart with period data
-    function updateChartWithPeriod(period) {
-        // Make sure we're using the correct data for the selected business
-        const currentData = selectedBusinessName ? 
-            dailyData.filter(item => item.business_name === selectedBusinessName) : 
-            data;
-
-        const groupedData = groupDataBy(currentData, period);
-        const labels = Object.keys(groupedData);
-        const sales = labels.map(key => groupedData[key].sales);
-        const expenses = labels.map(key => groupedData[key].expenses);
-
-        if (salesExpensesChart) {
-            salesExpensesChart.destroy();
+    // Aggregate data across all businesses and branches
+    const aggregatedData = data.reduce((acc, item) => {
+        const date = item.date;
+        if (!acc[date]) {
+            acc[date] = { sales: 0, expenses: 0 };
         }
+        acc[date].sales += item.sales;
+        acc[date].expenses += item.expenses;
+        return acc;
+    }, {});
 
-        salesExpensesChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Sales',
-                    data: sales,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }, {
-                    label: 'Expenses',
-                    data: expenses,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgb(255, 99, 132)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Amount (₱)'
+    const labels = Object.keys(aggregatedData).sort((a, b) => new Date(a) - new Date(b));
+    const sales = labels.map(date => aggregatedData[date].sales);
+    const expenses = labels.map(date => aggregatedData[date].expenses);
+
+    salesExpensesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Sales (₱)',
+                data: sales,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+                tension: 0.1
+            }, {
+                label: 'Total Expenses (₱)',
+                data: expenses,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
                         }
                     }
                 }
             }
-        });
-    }
-
-    // Create or update period selection buttons
-    const container = document.getElementById('salesExpensesChart').parentElement;
-    let buttonGroup = container.querySelector('.btn-group');
-    
-    // Create button group if it doesn't exist
-    if (!buttonGroup) {
-        buttonGroup = document.createElement('div');
-        buttonGroup.className = 'btn-group mb-3';
-        buttonGroup.style.marginBottom = '1rem';
-        
-        ['Daily', 'Weekly', 'Monthly'].forEach(period => {
-            const button = document.createElement('button');
-            // Update button classes for dark theme
-            button.className = 'btn btn-outline-light';
-            button.style.cssText = `
-                background-color: #343a40;
-                color: #fff;
-                border: 1px solid #6c757d;
-                margin-right: 5px;
-                padding: 8px 16px;
-                border-radius: 5px;
-                transition: all 0.3s ease;
-            `;
-            button.textContent = period;
-
-            // Add hover effect
-            button.onmouseover = () => {
-                if (!button.classList.contains('active')) {
-                    button.style.backgroundColor = '#495057';
-                }
-            };
-            button.onmouseout = () => {
-                if (!button.classList.contains('active')) {
-                    button.style.backgroundColor = '#343a40';
-                }
-            };
-
-            button.onclick = () => {
-                // Remove active class and reset styles for all buttons
-                buttonGroup.querySelectorAll('button').forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.style.backgroundColor = '#343a40';
-                    btn.style.color = '#fff';
-                });
-                // Add active class and update styles for clicked button
-                button.classList.add('active');
-                button.style.backgroundColor = '#6c757d';
-                button.style.color = '#fff';
-                updateChartWithPeriod(period.toLowerCase());
-            };
-            buttonGroup.appendChild(button);
-        });
-
-        // Insert button group before chart
-        container.insertBefore(buttonGroup, container.firstChild);
-    }
-
-    // Initialize with daily view and set active state
-    updateChartWithPeriod('daily');
-    const firstButton = buttonGroup.querySelector('button');
-    firstButton.classList.add('active');
-    firstButton.style.backgroundColor = '#6c757d';
+        }
+    });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    updateSalesExpensesChart(dailyData);
+
+    // Add event listeners to checkboxes
+    document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const branchLocation = this.getAttribute('data-branch');
+            if (!this.checked) {
+                removeBranchFromChart(branchLocation);
+            } else {
+                addBranchToChart(branchLocation);
+            }
+        });
+    });
+});
 
 // Profit Margin Chart
 function updateProfitMarginChart(data) {
     const ctx = document.getElementById('profitMarginChart').getContext('2d');
     
+    // Aggregate data across all businesses
+    const aggregatedData = data.reduce((acc, item) => {
+        const date = item.date;
+        if (!acc[date]) {
+            acc[date] = { sales: 0, expenses: 0 };
+        }
+        acc[date].sales += item.sales;
+        acc[date].expenses += item.expenses;
+        return acc;
+    }, {});
+
+    const labels = Object.keys(aggregatedData).sort((a, b) => new Date(a) - new Date(b));
+    const profitMargins = labels.map(date => {
+        const sales = aggregatedData[date].sales;
+        const expenses = aggregatedData[date].expenses;
+        return sales > 0 ? ((sales - expenses) / sales * 100) : 0;
+    });
+
     if (profitMarginChart) {
         profitMarginChart.destroy();
     }
@@ -293,10 +216,10 @@ function updateProfitMarginChart(data) {
     profitMarginChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: data.map(d => d.date),
+            labels: labels,
             datasets: [{
                 label: 'Profit Margin (%)',
-                data: data.map(d => d.profit_margin),
+                data: profitMargins,
                 backgroundColor: 'rgba(153, 102, 255, 0.5)',
                 borderColor: 'rgb(153, 102, 255)',
                 borderWidth: 1
@@ -307,9 +230,10 @@ function updateProfitMarginChart(data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Profit Margin (%)'
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
                     }
                 }
             }
@@ -321,6 +245,21 @@ function updateProfitMarginChart(data) {
 function updateCashFlowChart(data) {
     const ctx = document.getElementById('cashFlowChart').getContext('2d');
     
+    // Aggregate monthly data across all businesses
+    const aggregatedData = data.reduce((acc, item) => {
+        const month = item.month;
+        if (!acc[month]) {
+            acc[month] = { inflow: 0, outflow: 0 };
+        }
+        acc[month].inflow += item.inflow;
+        acc[month].outflow += item.outflow;
+        return acc;
+    }, {});
+
+    const labels = Object.keys(aggregatedData).sort();
+    const inflowData = labels.map(month => aggregatedData[month].inflow);
+    const outflowData = labels.map(month => aggregatedData[month].outflow);
+
     if (cashFlowChart) {
         cashFlowChart.destroy();
     }
@@ -328,17 +267,17 @@ function updateCashFlowChart(data) {
     cashFlowChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.map(d => d.month),
+            labels: labels,
             datasets: [{
-                label: 'Cash Inflow',
-                data: data.map(d => d.inflow),
+                label: 'Total Cash Inflow (₱)',
+                data: inflowData,
                 fill: true,
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1
             }, {
-                label: 'Cash Outflow',
-                data: data.map(d => d.outflow),
+                label: 'Total Cash Outflow (₱)',
+                data: outflowData,
                 fill: true,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -350,9 +289,10 @@ function updateCashFlowChart(data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Amount (₱)'
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
                     }
                 }
             }
@@ -360,6 +300,138 @@ function updateCashFlowChart(data) {
     });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    initFinancialChart();
+    updateSalesExpensesChart(dailyData);
+    updateProfitMarginChart(dailyData);
+    updateCashFlowChart(monthlyData);
+});
+
+document.getElementById('printChartButton').addEventListener('click', function() {
+    // Open a new window for printing
+    const printWindow = window.open('', '', 'height=600,width=800');
+    
+    // Write the HTML structure for the new window
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Financial Chart Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    canvas { max-width: 100%; height: auto; }
+
+                    /* Define print-specific styles */
+                    @media print {
+                        @page {
+                            size: landscape; /* Set the page orientation to landscape */
+                            margin: 2cm; /* Add margins */
+                        }
+                        body {
+                            margin: 0; /* Remove default body margin */
+                        }
+                        h1 {
+                            text-align: center; /* Center the title */
+                            margin-bottom: 1cm; /* Add space below the title */
+                        }
+                        canvas {
+                            width: 100%; /* Ensure the chart fills the width */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Financial Chart Report</h1>
+                <div>
+                    <canvas id="printChart" width="800" height="400"></canvas>
+                </div>
+            </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+
+    // Wait for the content to load, then render the chart
+    setTimeout(function() {
+        const printCanvas = printWindow.document.getElementById('printChart');
+        const printCtx = printCanvas.getContext('2d');
+
+        // Clone the original chart data and options
+        const originalChart = financialChart;
+        const clonedChart = new Chart(printCtx, {
+            type: originalChart.config.type,
+            data: JSON.parse(JSON.stringify(originalChart.config.data)),
+            options: JSON.parse(JSON.stringify(originalChart.config.options))
+        });
+
+        setTimeout(() => {
+            printWindow.print();
+        }, 500); // Adjust the delay if needed
+    }, 500); // Adjust the delay if needed
+});
+// Print Financial Overview and Sales vs Expenses Table
+function printFinancialOverviewAndSalesvsExpensesTable() {
+    // Open a new window for printing
+    const printWindow = window.open('', '', 'height=600,width=800');
+
+    // Write the HTML structure for the new window
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Sales vs Expenses Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    canvas { max-width: 100%; height: auto; }
+
+                    /* Define print-specific styles */
+                    @media print {
+                        @page {
+                            size: landscape; /* Set the page orientation to landscape */
+                            margin: 2cm; /* Add margins */
+                        }
+                        body {
+                            margin: 0; /* Remove default body margin */
+                        }
+                        h1 {
+                            text-align: center; /* Center the title */
+                            margin-bottom: 1cm; /* Add space below the title */
+                        }
+                        canvas {
+                            width: 100%; /* Ensure the chart fills the width */
+                            height: auto; /* Maintain aspect ratio */
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Sales vs Expenses Report</h1>
+                <div>
+                    <canvas id="printChart" width="800" height="400"></canvas>
+                </div>
+            </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    // Wait for the content to load, then render the chart
+    setTimeout(function () {
+        const printCanvas = printWindow.document.getElementById('printChart');
+        const printCtx = printCanvas.getContext('2d');
+
+        // Clone the original chart data and options
+        const originalChart = salesExpensesChart;
+        const clonedChart = new Chart(printCtx, {
+            type: originalChart.config.type,
+            data: JSON.parse(JSON.stringify(originalChart.config.data)),
+            options: JSON.parse(JSON.stringify(originalChart.config.options))
+        });
+
+        setTimeout(() => {
+            printWindow.print();
+        }, 500); // Adjust the delay if needed
+    }, 500); // Adjust the delay if needed
+}
 // Business Performance Comparison Chart
 function updateBusinessPerformanceChart() {
     const ctx = document.getElementById('businessPerformanceChart').getContext('2d');
@@ -537,6 +609,27 @@ function updateRevenueContributionChart() {
 
 // Product Analysis Charts
 function updateProductCharts() {
+    // Generate a color palette for businesses
+    const businessColors = {};
+    const uniqueBusinesses = [...new Set(productData.map(p => p.business_name))];
+    const colorPalette = [
+        'rgba(75, 192, 192, 0.6)', // Teal
+        'rgba(255, 99, 132, 0.6)', // Red
+        'rgba(54, 162, 235, 0.6)', // Blue
+        'rgba(255, 206, 86, 0.6)', // Yellow
+        'rgba(153, 102, 255, 0.6)', // Purple
+        'rgba(255, 159, 64, 0.6)', // Orange
+        'rgba(199, 199, 199, 0.6)', // Gray
+        'rgba(83, 102, 255, 0.6)', // Indigo
+        'rgba(40, 167, 69, 0.6)', // Green
+        'rgba(220, 53, 69, 0.6)' // Dark Red
+    ];
+
+    // Assign a color to each business
+    uniqueBusinesses.forEach((business, index) => {
+        businessColors[business] = colorPalette[index % colorPalette.length];
+    });
+
     // Sort products by revenue
     const sortedProducts = [...productData].sort((a, b) => b.revenue - a.revenue);
     const topProducts = sortedProducts.slice(0, 10);
@@ -551,8 +644,8 @@ function updateProductCharts() {
             datasets: [{
                 label: 'Revenue',
                 data: topProducts.map(p => p.revenue),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: topProducts.map(p => businessColors[p.business_name]),
+                borderColor: topProducts.map(p => businessColors[p.business_name].replace('0.6', '1')),
                 borderWidth: 1
             }]
         },
@@ -600,8 +693,8 @@ function updateProductCharts() {
             datasets: [{
                 label: 'Revenue',
                 data: lowProducts.map(p => p.revenue),
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: lowProducts.map(p => businessColors[p.business_name]),
+                borderColor: lowProducts.map(p => businessColors[p.business_name].replace('0.6', '1')),
                 borderWidth: 1
             }]
         },
@@ -645,20 +738,23 @@ function updateProductCharts() {
     new Chart(profitCtx, {
         type: 'scatter',
         data: {
-            datasets: [{
-                label: 'Products',
-                data: productData.map(p => ({
-                    x: p.revenue,
-                    y: p.profit,
-                    product: p.product_name,
-                    business: p.business_name
-                })),
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                pointRadius: 8,
-                pointHoverRadius: 10
-            }]
+            datasets: uniqueBusinesses.map(business => {
+                const businessProducts = productData.filter(p => p.business_name === business);
+                return {
+                    label: business,
+                    data: businessProducts.map(p => ({
+                        x: p.revenue,
+                        y: p.profit,
+                        product: p.product_name,
+                        business: p.business_name
+                    })),
+                    backgroundColor: businessColors[business],
+                    borderColor: businessColors[business].replace('0.6', '1'),
+                    borderWidth: 1,
+                    pointRadius: 8,
+                    pointHoverRadius: 10
+                };
+            })
         },
         options: {
             responsive: true,
@@ -700,6 +796,226 @@ function updateProductCharts() {
                             ];
                         }
                     }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Customer Demographics Chart
+function updateDemographicsChart() {
+    const ctx = document.getElementById('demographicsChart').getContext('2d');
+    
+    // Process data for visualization
+    const locations = [...new Set(demographicsData.map(d => d.location))];
+    const products = [...new Set(demographicsData.map(d => d.product_name))];
+    
+    // Create datasets
+    const datasets = products.map(product => {
+        const data = locations.map(location => {
+            const entry = demographicsData.find(d => 
+                d.location === location && d.product_name === product
+            );
+            return entry ? entry.total_revenue : 0;
+        });
+        
+        return {
+            label: product,
+            data: data,
+            backgroundColor: `hsla(${Math.random() * 360}, 70%, 50%, 0.2)`,
+            borderColor: `hsla(${Math.random() * 360}, 70%, 50%, 1)`,
+            borderWidth: 1
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: locations,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Location'
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue (₱)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            return `${context.dataset.label}: ₱${value.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Trend Analysis Charts
+function updateTrendCharts() {
+    // Format month labels
+    const formatMonth = (monthStr) => {
+        const date = new Date(monthStr + '-01');
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    };
+
+    // Seasonal Trends Chart
+    const seasonalCtx = document.getElementById('seasonalTrendsChart').getContext('2d');
+    new Chart(seasonalCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(d => formatMonth(d.month)),
+            datasets: [
+                {
+                    label: 'Sales',
+                    data: trendData.map(d => d.sales),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Expenses',
+                    data: trendData.map(d => d.expenses),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₱' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Growth Rate Chart
+    const growthCtx = document.getElementById('growthRateChart').getContext('2d');
+    
+    // Calculate percentage changes between months
+    const growthRates = trendData.map((data, index) => {
+        if (index === 0) return {
+            month: data.month,
+            sales: 0,
+            expenses: 0,
+            profit: 0
+        };
+        
+        const prevMonth = trendData[index - 1];
+        return {
+            month: data.month,
+            sales: ((data.sales - prevMonth.sales) / prevMonth.sales) * 100,
+            expenses: ((data.expenses - prevMonth.expenses) / prevMonth.expenses) * 100,
+            profit: ((data.profit - prevMonth.profit) / prevMonth.profit) * 100
+        };
+    });
+
+    new Chart(growthCtx, {
+        type: 'line',
+        data: {
+            labels: growthRates.map(d => formatMonth(d.month)),
+            datasets: [
+                {
+                    label: 'Sales Growth',
+                    data: growthRates.map(d => d.sales),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Expenses Growth',
+                    data: growthRates.map(d => d.expenses),
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.4,
+                    fill: false
+                },
+                {
+                    label: 'Profit Growth',
+                    data: growthRates.map(d => d.profit),
+                    borderColor: 'rgb(153, 102, 255)',
+                    tension: 0.4,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(1) + '%';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Growth Rate (%)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.raw.toFixed(1) + '%';
+                        }
+                    }
                 }
             }
         }
@@ -724,4 +1040,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize product analysis charts
     updateProductCharts();
+
+    // Initialize demographics chart
+    updateDemographicsChart();
+
+    // Initialize trend charts
+    updateTrendCharts();
 });
+

@@ -106,8 +106,8 @@ $owner_id = $_SESSION['user_id'];
 
             .btn-success {
                 color: #fff;
-                background-color: #28a745;
-                border-color: #28a745;
+                background-color: #198754;
+                border-color: #198754;
             }
 
             .btn-primary {

@@ -190,8 +190,8 @@ $size_options = [
 
             .btn-success {
                 color: #fff;
-                background-color: #28a745;
-                border-color: #28a745;
+                background-color: #198754;
+                border-color: #198754;
             }
 
             .btn-danger {
@@ -262,7 +262,7 @@ $size_options = [
             }
 
             .text-success {
-                color: #28a745 !important;
+                color: #198754 !important;
             }
 
             .dashboard-content h1 {
