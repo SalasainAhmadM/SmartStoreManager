@@ -949,6 +949,149 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
+<style>
+    .chart-container {
+        position: relative;
+        height: 400px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .btn-print {
+        background: #2c3e50;
+        color: white;
+        padding: 8px 15px;
+        margin-top: 15px;
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        .dashboard-content h1 {
+            font-size: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-bottom: 1.5rem;
+        }
+
+        .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .form-control {
+            font-size: 14px;
+        }
+    }
+
+    /* Small mobile styles */
+    @media (max-width: 480px) {
+        .dashboard-content h1 {
+            font-size: 18px;
+        }
+
+        .chart-container {
+            height: 250px;
+            padding: 10px;
+        }
+
+        h5 {
+            font-size: 16px !important;
+        }
+    }
+
+    canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+
+    #popularProductsSection .dashboard-content,
+    #recentActivitiesSection .dashboard-content {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 600px;
+    }
+
+    #product-table th,
+    #product-table td {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+
+        #popularProductsSection h1,
+        #recentActivitiesSection h1 {
+            font-size: 1.5rem;
+        }
+
+        .table {
+            font-size: 14px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .form-control {
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 14px;
+        }
+
+        .fa-info-circle {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        #popularProductsSection h1,
+        #recentActivitiesSection h1 {
+            font-size: 1.3rem;
+        }
+
+        .table {
+            font-size: 12px;
+        }
+
+        .table th button {
+            padding: 0.25rem;
+        }
+
+        .btn-primary {
+            font-size: 12px;
+        }
+
+        td:nth-child(3) {
+            min-width: 80px;
+        }
+    }
+
+    .btn-primary {
+        margin-top: 1rem;
+    }
+
+    .fa-info-circle {
+        margin-left: 0.5rem;
+        cursor: pointer;
+    }
+
+    .table td:nth-child(3) {
+        font-weight: bold;
+    }
+</style>
 
 <body class="d-flex">
 
@@ -956,138 +1099,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
     <?php include '../components/owner_sidebar.php'; ?>
     <style>
-        @media (max-width: 768px) {
 
-            .container-fluid,
-            .row,
-            .col-12,
-            .col-md-5,
-            .col-md-7,
-            .col-md-6,
-            .col-md-4,
-            .col-md-8,
-            .col-md-12 {
-                width: 100%;
-                padding: 0;
-                margin: 0;
-                box-sizing: border-box;
-            }
-
-            h1,
-            h5,
-            h6,
-            th,
-            td,
-            label,
-            .btn {
-                font-size: 1rem;
-                /* Base font size */
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            h5 {
-                font-size: 1.2rem;
-            }
-
-            h6 {
-                font-size: 1rem;
-            }
-
-            .table-responsive {
-                overflow-x: auto;
-                display: block;
-                width: 100%;
-            }
-
-            .card,
-            .table {
-                width: 100%;
-                margin-bottom: 1rem;
-            }
-
-            .card h5 {
-                font-size: 1.1rem;
-            }
-
-            .row {
-                flex-direction: column;
-            }
-
-            .col-md-5,
-            .col-md-7,
-            .col-md-6,
-            .col-md-4,
-            .col-md-8,
-            .col-md-12 {
-                width: 100%;
-                padding: 0;
-            }
-
-            .dashboard-content {
-                padding: 10px;
-            }
-
-            .chart-container {
-                height: auto !important;
-                margin-bottom: 1rem;
-            }
-
-            .btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-
-            th,
-            td {
-                font-size: 0.9rem;
-                padding: 0.5rem;
-            }
-
-            .table thead th:nth-child(4),
-            .table tbody td:nth-child(4),
-            .table thead th:nth-child(5),
-            .table tbody td:nth-child(5) {
-                display: none;
-            }
-
-            .table-hover th,
-            .table-hover td {
-                font-size: 0.9rem;
-            }
-
-            .fa-user-plus,
-            .fa-cart-plus,
-            .fa-dollar-sign {
-                margin-right: 0.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.3rem;
-            }
-
-            h5 {
-                font-size: 1rem;
-            }
-
-            h6 {
-                font-size: 0.9rem;
-            }
-
-            .table thead th:nth-child(3),
-            .table tbody td:nth-child(3) {
-                display: none;
-            }
-
-            .table-hover th,
-            .table-hover td {
-                font-size: 0.8rem;
-            }
-        }
     </style>
     <div class="container-fluid page-body">
         <div class="row">
@@ -1101,7 +1113,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <div class="row">
                                 <!-- Financial Overview Chart -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <div class="row">
                                             <div class="col-md-6 mb-1">
                                                 <label for="financialBusinessSelect"><b>Select Business:</b></label>
@@ -1131,7 +1143,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Sales vs Expenses Chart -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <div class="row">
                                             <div class="col-md-6 mb-1">
                                                 <label for="salesExpensesBusinessSelect"><b>Select Business:</b></label>
@@ -1162,7 +1174,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <div class="row">
                                 <!-- Profit Margin Chart -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label for="profitMarginBusinessSelect"><b>Select Business:</b></label>
@@ -1191,7 +1203,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Cash Flow Chart -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label for="cashFlowBusinessSelect"><b>Select Business:</b></label>
@@ -1214,7 +1226,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                             </div>
                                             <!-- Financial Overview Chart -->
                                             <div style="display: none;" class="col-md-6 mb-4">
-                                                <div class="chart-container mb-4" style="height: 400px;">
+                                                <div class="chart-container mb-4">
 
                                                     <h5 class="mt-2"><b><i class="fa-solid fa-chart-line"></i> Financial
                                                             Overview</b></h5>
@@ -1330,7 +1342,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Financial  Overview -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
 
                                         <h5 class="mt-2"><b><i class="fa-solid fa-chart-line"></i> Financial
                                                 Overview</b> <i class="fas fa-info-circle"
@@ -1346,7 +1358,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                                 <!-- Sales vs Expenses Chart -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-2"><b>Sales vs Expenses</b> <i class="fas fa-info-circle"
                                                 onclick="showInfo('Sales vs Expenses', 'This chart shows trends over time. It uses historical data to plot monthly sales and expenses.');">
                                             </i>
@@ -1496,7 +1508,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     </div>
                                 </div>
                                 <div class="col-md-6" style="display: none;">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
 
                                         <h5 class="mt-2"><b>Profit Margin Trends</b></h5>
                                         <canvas id="profitMarginNewChart"></canvas>
@@ -1507,7 +1519,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                 </div>
                                 <!-- Profit Margin -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-2">
                                             <b>Profit Margin Trends</b>
                                             <i class="fas fa-info-circle"
@@ -1523,7 +1535,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Cash Flow Chart -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-2">
                                             <b>Monthly Cash Flow</b>
                                             <i class="fas fa-info-circle"
@@ -1757,7 +1769,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Recurring vs. One-Time Expenses -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-5"><b>Recurring vs. One-Time Expenses</b></h5>
                                         <canvas id="recurringExpenseChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart6Button">
@@ -1812,7 +1824,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-3"><b>Top Selling Products</b></h5>
                                         <canvas id="stockLevelSoldChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart7Button">
@@ -1948,7 +1960,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <div class="row">
                                 <!-- Sales Forecast -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5><b>Sales Forecast</b></h5>
                                         <canvas id="salesForecastChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart8Button">
@@ -1959,7 +1971,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Expense Forecast -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5><b>Expense Forecast</b></h5>
                                         <canvas id="expenseForecastChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart9Button">
@@ -2042,7 +2054,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <div class="row">
                                 <!-- Top-Selling Products Chart -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-5"><b>Top-Selling Products/Services</b></h5>
                                         <canvas id="topProductsChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart10Button">
@@ -2053,7 +2065,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Low-Performing Products Chart -->
                                 <div class="col-md-6">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-5"><b>Low-Performing Products/Services</b></h5>
                                         <canvas id="lowProductsChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart11Button">
@@ -2064,7 +2076,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 <!-- Product Profitability Chart -->
                                 <div class="col-md-12 mt-5">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-5 mb-3"><b>Product/Service Profitability Analysis<i
                                                     class="fas fa-info-circle"
                                                     onclick="showInfo(' Product/Service Profitability Analysis', 'This graph displays all the products/services profitability analysis.');"></i></b>
@@ -2086,7 +2098,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                         </b></h1>
 
 
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5 class="mt-5"><b>Top Products by Location</b></h5>
                                         <canvas id="demographicsChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart13Button">
@@ -2109,7 +2121,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                                     <div class="row">
                                         <!-- Seasonal Trends Chart -->
                                         <div class="col-md-6">
-                                            <div class="chart-container mb-4" style="height: 400px;">
+                                            <div class="chart-container mb-4">
                                                 <h5 class="mt-5"><b>Seasonal Trends</b></h5>
                                                 <canvas id="seasonalTrendsChart"></canvas>
                                                 <button class="btn btn-dark mt-2 mb-5" id="printChart14Button">
@@ -2120,7 +2132,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                         <!-- Growth Rate Chart -->
                                         <div class="col-md-6">
-                                            <div class="chart-container mb-4" style="height: 400px;">
+                                            <div class="chart-container mb-4">
                                                 <h5 class="mt-5"><b>Growth Rate Analysis</b></h5>
                                                 <canvas id="growthRateChart"></canvas>
                                                 <button class="btn btn-dark mt-2 mb-5" id="printChart15Button">
@@ -2224,7 +2236,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             <div class="row">
                                 <!-- Expense Threshold Bar Chart -->
                                 <div class="col-md-8">
-                                    <div class="chart-container mb-4" style="height: 400px;">
+                                    <div class="chart-container mb-4">
                                         <h5><b>Expense Threshold Breach</b></h5>
                                         <canvas id="expenseThresholdChart"></canvas>
                                         <button class="btn btn-dark mt-2 mb-5" id="printChart16Button">
@@ -2326,6 +2338,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
     </script> -->
 
     <script>
+
         document.getElementById('uploadDataButton').addEventListener('click', function () {
             Swal.fire({
                 title: 'Upload or Download Data',

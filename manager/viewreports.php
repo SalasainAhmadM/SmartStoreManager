@@ -100,6 +100,119 @@ while ($row = $sales_result->fetch_assoc()) {
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+<style>
+    @media (max-width: 767.98px) {
+        .container-fluid.page-body {
+            padding: 0 15px;
+        }
+
+        .dashboard-content h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-content h4 {
+            font-size: 18px;
+        }
+
+        .card-one h4,
+        .card-one h5 {
+            font-size: 16px;
+        }
+
+        .position-relative {
+            flex-direction: column;
+        }
+
+        .position-absolute {
+            position: static !important;
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #productSearchInput {
+            width: 100% !important;
+            margin-bottom: 10px;
+        }
+
+        .btn-success,
+        .btn-danger {
+            width: 100%;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .scrollable-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table {
+            min-width: 600px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            font-size: 14px;
+        }
+
+        #printReportBtn {
+            width: 100%;
+            margin-top: 20px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 20px;
+        }
+
+        .dashboard-content h4 {
+            font-size: 16px;
+        }
+
+        .card-one h4,
+        .card-one h5 {
+            font-size: 14px;
+        }
+
+        .btn-success,
+        .btn-danger {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.5rem;
+            font-size: 12px;
+        }
+
+        .position-absolute {
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+
+    .product-row td {
+        white-space: nowrap;
+    }
+
+    .table-dark th {
+        background-color: #343a40;
+        position: sticky;
+        left: 0;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+    }
+
+    #salesReportPanel {
+        position: relative;
+    }
+</style>
 
 <body class="d-flex">
 

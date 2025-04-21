@@ -19,6 +19,117 @@ $businessResult = $conn->query($businessQuery);
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+<style>
+    @media (max-width: 767.98px) {
+        .container-fluid.page-body {
+            padding: 0 15px;
+        }
+
+        .nav-pills {
+            flex-direction: column;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            padding: 12px !important;
+        }
+
+        .nav-link h5 {
+            font-size: 16px !important;
+            margin: 0;
+        }
+
+        #businessSearchInput {
+            width: 100% !important;
+            margin-bottom: 15px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table {
+            min-width: 600px;
+        }
+
+        .table td,
+        .table th {
+            padding: 0.75rem;
+            font-size: 14px;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .btn-warning {
+            white-space: nowrap;
+            font-size: 13px;
+            padding: 5px 10px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            margin-top: 15px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-content h4 {
+            font-size: 18px;
+        }
+
+        .table td,
+        .table th {
+            padding: 0.5rem;
+            font-size: 13px;
+        }
+
+        .badge {
+            font-size: 12px !important;
+        }
+
+        .nav-link i {
+            font-size: 14px;
+        }
+    }
+
+    .table-dark th {
+        background-color: #343a40;
+        position: sticky;
+        left: 0;
+    }
+
+    .clickable-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    .card-one {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #branchContent .table {
+        margin-top: 15px;
+    }
+
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+</style>
 
 <body class="d-flex">
 

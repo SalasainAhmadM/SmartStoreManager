@@ -34,6 +34,89 @@ if (!$owner) {
     <?php include '../components/head_cdn.php'; ?>
 </head>
 
+<style>
+    @media (max-width: 767.98px) {
+        .container-fluid.page-body {
+            padding: 0 10px;
+        }
+
+        .col-md-4.col-lg-3,
+        .col-md-8.col-lg-9 {
+            width: 100%;
+            padding: 0 !important;
+        }
+
+        .list-group-item {
+            flex-direction: column;
+            align-items: flex-start !important;
+            padding: 15px !important;
+        }
+
+        .list-group-item img {
+            margin-bottom: 10px;
+            width: 50px !important;
+            height: 50px !important;
+        }
+
+        #chat-header {
+            padding: 15px !important;
+        }
+
+        #chat-messages {
+            height: 50vh !important;
+            padding: 10px !important;
+        }
+
+        .input-group {
+            flex-wrap: nowrap;
+        }
+
+        #message-input {
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+
+        #send-btn {
+            padding: 10px 20px !important;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .list-group-item div strong {
+            font-size: 14px;
+        }
+
+        .list-group-item div p {
+            font-size: 12px;
+        }
+
+        #chat-header h5 {
+            font-size: 1rem;
+        }
+
+        #message-input {
+            font-size: 13px;
+            padding: 8px 12px;
+        }
+
+        #send-btn {
+            padding: 8px 16px !important;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            padding: 8px 12px !important;
+        }
+
+        .message-time {
+            font-size: 10px !important;
+        }
+    }
+</style>
 
 <body class="d-flex">
 
@@ -55,7 +138,8 @@ if (!$owner) {
                                     <div class="p-3 bg-primary text-white">
                                         <h5 class="mb-0">Owner Details</h5>
                                     </div>
-                                    <div class="list-group-item list-group-item-action d-flex align-items-center bg-dark text-white">
+                                    <div
+                                        class="list-group-item list-group-item-action d-flex align-items-center bg-dark text-white">
                                         <img src="../assets/profiles/<?= !empty($owner['image']) ? $owner['image'] : '../assets/profile.png' ?>"
                                             alt="Owner Avatar" style="width: 60px; height: 60px; object-fit: cover;"
                                             class="rounded-circle me-3">
@@ -123,8 +207,8 @@ if (!$owner) {
                 }
 
                 messages.forEach(msg => {
-                        const isManager = msg.sender_type === 'manager';
-                        const messageElement = `
+                    const isManager = msg.sender_type === 'manager';
+                    const messageElement = `
                         <div class="d-flex ${isManager ? 'justify-content-end' : 'justify-content-start'} mb-3">
                             <div class="${isManager ? 'bg-primary text-white' : 'bg-white border'} px-4 py-2 rounded" style="max-width: 60%; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);">
                                 <p class="mb-0">${msg.message}</p>
@@ -133,8 +217,8 @@ if (!$owner) {
                                 </small>
                             </div>
                         </div>`;
-                        chatMessages.innerHTML += messageElement;
-                    });
+                    chatMessages.innerHTML += messageElement;
+                });
 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }

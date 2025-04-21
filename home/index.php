@@ -19,12 +19,15 @@
 
   <div class="homepage">
 
-    <div class="title">
-      <p>WELCOME TO</p>
-      <h1><b>SMART STORE MANAGER</b></h1>
+    <div class="title text-center my-4 px-3">
+      <p class="h6">WELCOME TO</p>
+      <h1 class="display-4"><b>SMART STORE MANAGER</b></h1>
     </div>
-    <p class="welcome-content">SmartStoreManager is your go-to solution for managing your business efficiently.
-      Our platform offers a range of features designed to streamline operations and enhance productivity.</p>
+    <p class="welcome-content text-center mx-auto px-3" style="max-width: 800px;">
+      SmartStoreManager is your go-to solution for managing your business efficiently.
+      Our platform offers a range of features designed to streamline operations and enhance productivity.
+    </p>
+
 
 
     <div class="container-fluid page-body">

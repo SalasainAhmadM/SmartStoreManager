@@ -108,6 +108,303 @@ while ($row = $result->fetch_assoc()) {
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+<style>
+    .permit-modal-container .swal2-popup {
+        max-height: 80vh;
+        overflow: hidden;
+    }
+
+    @media (max-width: 767.98px) {
+        .container-fluid {
+            padding: 0 15px;
+        }
+
+        .container-fluid {
+            padding: 0 15px;
+        }
+
+        .dashboard-body {
+            padding: 15px;
+        }
+
+        .dashboard-content h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .nav-pills {
+            flex-wrap: wrap;
+        }
+
+        .nav-pills .nav-item {
+            flex: 1 1 auto;
+            margin-bottom: 10px;
+        }
+
+        .nav-pills .nav-link {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .nav-pills .nav-link h5 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+
+        .scrollable-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: transparent;
+            /* border: 1px solid transparent; */
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .btn-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+
+        .position-relative {
+            position: relative;
+        }
+
+        .position-absolute {
+            position: absolute;
+        }
+
+        .top-0 {
+            top: 0;
+        }
+
+        .end-0 {
+            right: 0;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mb-5 {
+            margin-bottom: 3rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-primary {
+            color: #007bff !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+
+        .text-success {
+            color: #198754 !important;
+        }
+
+        .dashboard-content h1 {
+            font-size: 20px;
+        }
+
+        .nav-pills .nav-link h5 {
+            font-size: 14px;
+        }
+
+        .nav-pills .nav-link {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            font-size: 14px;
+        }
+
+        .position-absolute {
+            position: static;
+            margin-top: 10px;
+        }
+
+        .w-50 {
+            width: 100% !important;
+        }
+
+        .d-flex {
+            /* flex-direction: column; */
+            align-items: flex-start;
+        }
+
+        .ms-auto {
+            margin-left: 0 !important;
+            margin-top: 10px;
+        }
+
+        .scrollable-table {
+            overflow-x: auto;
+        }
+
+        .table thead th {
+            font-size: 14px;
+        }
+
+        .table tbody td {
+            font-size: 14px;
+        }
+
+        .btn-success,
+        .btn-danger,
+        .btn-primary,
+        .btn-secondary {
+            font-size: 14px;
+        }
+
+        .page-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-body {
+            order: 2;
+        }
+
+        .sidebar {
+            order: 1;
+            width: 100%;
+            position: static;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 18px;
+        }
+
+        .nav-pills .nav-link h5 {
+            font-size: 12px;
+        }
+
+        .nav-pills .nav-link {
+            font-size: 10px;
+            padding: 6px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.375rem;
+        }
+
+        .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .form-control {
+            font-size: 12px;
+        }
+
+        .table thead th {
+            font-size: 12px;
+        }
+
+        .table tbody td {
+            font-size: 12px;
+        }
+
+        .btn-success,
+        .btn-danger,
+        .btn-primary,
+        .btn-secondary {
+            font-size: 12px;
+        }
+    }
+</style>
 
 <body class="d-flex">
 

@@ -84,6 +84,122 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
         .activity-row:hover {
             background-color: #f8f9fa;
         }
+
+        @media (max-width: 767.98px) {
+            .container-fluid.page-body {
+                padding: 0 15px;
+            }
+
+            .pending-notification .alert {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+            .pending-notification i {
+                margin-bottom: 10px;
+            }
+
+            .pending-notification .btn {
+                width: 100%;
+                margin-top: 10px;
+                text-align: center;
+            }
+
+            .stat-card .col-md-6 {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .stat-icon {
+                font-size: 1.5rem !important;
+            }
+
+            .stat-value {
+                font-size: 1.8rem !important;
+            }
+
+            .stat-label {
+                font-size: 1rem !important;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table {
+                min-width: 600px;
+            }
+
+            .activity-row td {
+                white-space: nowrap;
+            }
+
+            .badge {
+                font-size: 12px !important;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-content h1 {
+                font-size: 24px;
+            }
+
+            .stat-card .card-body {
+                padding: 20px 15px !important;
+            }
+
+            .stat-value {
+                font-size: 1.5rem !important;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.75rem;
+                font-size: 14px;
+            }
+
+            .activity-badge {
+                font-size: 10px !important;
+            }
+        }
+
+        .pending-notification {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .stat-card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
     </style>
 </head>
 

@@ -96,7 +96,7 @@ $owner_id = $_SESSION['user_id'];
                 vertical-align: middle;
                 cursor: pointer;
                 background-color: transparent;
-                border: 1px solid transparent;
+                /* border: 1px solid transparent; */
                 padding: 0.375rem 0.75rem;
                 font-size: 1rem;
                 line-height: 1.5;

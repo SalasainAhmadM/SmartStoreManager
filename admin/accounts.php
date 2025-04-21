@@ -36,6 +36,80 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
             border-radius: 5px;
             cursor: pointer;
         }
+
+        @media (max-width: 767.98px) {
+            .container-fluid.page-body {
+                padding: 0 15px;
+            }
+
+            #ownerSearchInput {
+                width: 100% !important;
+                margin-bottom: 15px;
+            }
+
+            .scrollable-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #ownersTable {
+                min-width: 800px;
+            }
+
+            .table td,
+            .table th {
+                padding: 0.75rem;
+                font-size: 14px;
+                vertical-align: middle;
+            }
+
+            .thumbnail-img,
+            .thumbnail-img-id {
+                max-width: 40px;
+                height: auto;
+            }
+
+            .status-badge {
+                font-size: 12px;
+                padding: 4px 8px;
+                white-space: nowrap;
+            }
+
+            .approve-btn {
+                padding: 6px 10px !important;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+
+            .btn-primary {
+                width: 100%;
+                margin-top: 15px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-content h1 {
+                font-size: 24px;
+            }
+
+            .dashboard-content h4 {
+                font-size: 18px;
+            }
+
+            .table td,
+            .table th {
+                padding: 0.5rem;
+                font-size: 13px;
+            }
+
+            td:nth-child(2) {
+                min-width: 120px;
+            }
+
+            td:nth-child(3) {
+                min-width: 150px;
+            }
+        }
     </style>
 </head>
 

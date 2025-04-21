@@ -152,7 +152,6 @@ WHERE b.owner_id = ? AND s.date = ?
 
     <?php include '../components/owner_sidebar.php'; ?>
     <style>
-        /* General styles for all screen sizes */
         .container-fluid {
             padding: 0 15px;
         }
@@ -276,6 +275,7 @@ WHERE b.owner_id = ? AND s.date = ?
             .btn {
                 padding: 0.25rem 0.5rem;
                 font-size: 0.875rem;
+
             }
 
             .form-control {

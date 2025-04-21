@@ -102,6 +102,125 @@ $salesData = fetchSalesData($owner_id);
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+<style>
+    .container-fluid {
+        padding: 0 15px;
+    }
+
+    .dashboard-body {
+        padding: 15px;
+    }
+
+    .dashboard-content h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #212529;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.075);
+    }
+
+    .view-branches {
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 767.98px) {
+        .dashboard-content h1 {
+            font-size: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.5rem;
+            font-size: 14px;
+        }
+
+        .table thead th {
+            font-size: 14px;
+        }
+
+        .view-branches {
+            padding: 0.25rem 0.5rem;
+            font-size: 14px;
+        }
+
+        .dashboard-content h5 {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 18px;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.375rem;
+            font-size: 12px;
+        }
+
+        .table thead th {
+            font-size: 12px;
+        }
+
+        .view-branches {
+            padding: 0.2rem 0.4rem;
+            font-size: 12px;
+        }
+
+        .dashboard-content h5 {
+            font-size: 14px;
+        }
+
+        .container-fluid {
+            padding: 0 10px;
+        }
+
+        .dashboard-body {
+            padding: 10px;
+        }
+    }
+
+    /* Scrollable Table Container */
+    .scrollable-table-two {
+        overflow-x: auto;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+</style>
 
 <body class="d-flex">
     <div id="particles-js"></div>

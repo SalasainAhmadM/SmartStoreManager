@@ -4,22 +4,22 @@ require_once '../conn/auth.php';
 require_once '../conn/conn.php';
 validateSession('manager');
 
-if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
-    echo "
-        <script>
-            window.onload = function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            };
-        </script>
-    ";
-    unset($_SESSION['login_success']);
-}
+// if (isset($_SESSION['login_success']) && $_SESSION['login_success']) {
+//     echo "
+//         <script>
+//             window.onload = function() {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'Login Successful',
+//                     text: 'Welcome!',
+//                     timer: 2000,
+//                     showConfirmButton: false
+//                 });
+//             };
+//         </script>
+//     ";
+//     unset($_SESSION['login_success']);
+// }
 $manager_id = $_SESSION['user_id'];
 
 // Query to fetch the assigned branch or business
@@ -125,6 +125,139 @@ $sales_result->data_seek(0);
     <link rel="icon" href="../assets/logo.png">
     <?php include '../components/head_cdn.php'; ?>
 </head>
+<style>
+    .permit-modal-container .swal2-popup {
+        max-height: 80vh;
+        overflow: hidden;
+    }
+
+    @media (max-width: 767.98px) {
+        .container-fluid.page-body {
+            padding: 0 15px;
+        }
+
+        .dashboard-content h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-content h4 {
+            font-size: 18px;
+        }
+
+        .card-one h5 {
+            font-size: 16px;
+        }
+
+        .d-flex.align-items-center {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+
+        #searchInput,
+        #addBranchSaleBtn,
+        #addBusinessSaleBtn,
+        #uploadDataButton {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .scrollable-table {
+            overflow-x: auto;
+        }
+
+        .table thead th {
+            font-size: 14px;
+        }
+
+        .table tbody td {
+            font-size: 14px;
+            padding: 8px;
+        }
+
+        .row.mt-4 {
+            flex-direction: column;
+        }
+
+        .col-md-8,
+        .col-md-4 {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        #salesChart {
+            margin-top: 30px;
+            max-height: 300px;
+        }
+
+        #printReportBtn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #manager_sidebar {
+            order: -1;
+            position: static;
+            width: 100%;
+            height: auto;
+        }
+
+        .dashboard-body {
+            padding: 15px 0;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .dashboard-content h1 {
+            font-size: 20px;
+        }
+
+        .dashboard-content h4 {
+            font-size: 16px;
+        }
+
+        .card-one h5 {
+            font-size: 14px;
+        }
+
+        .table thead th {
+            font-size: 12px;
+        }
+
+        .table tbody td {
+            font-size: 12px;
+            padding: 6px;
+        }
+
+        .btn {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        #salesChart {
+            max-height: 250px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .product-row td {
+            white-space: nowrap;
+        }
+
+        .table-dark th {
+            background-color: #343a40;
+            position: sticky;
+            left: 0;
+        }
+
+        .text-center {
+            text-align: left !important;
+        }
+
+        .me-3 {
+            margin-right: 1rem !important;
+        }
+    }
+</style>
 
 <body class="d-flex">
 
@@ -739,6 +872,25 @@ $sales_result->data_seek(0);
                     confirmButtonText: 'OK'
                 }).then(() => {
                     removeQueryParam();
+                });
+            }
+        };
+
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+
+            if (status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome!',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Redirect to clean URL after SweetAlert closes
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.location.href = cleanUrl;
                 });
             }
         };
