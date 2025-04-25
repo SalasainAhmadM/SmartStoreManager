@@ -74,6 +74,87 @@ $size_options = [
     'Food' => ['Small (250g)', 'Medium (500g)', 'Large (1kg)'],
     // Add more categories and sizes as needed
 ];
+
+$sales_by_business = [];
+$sales_query = "SELECT p.business_id, SUM(CAST(s.total_sales AS DECIMAL(10,2))) AS total_sales 
+                FROM sales s 
+                INNER JOIN products p ON s.product_id = p.id 
+                GROUP BY p.business_id";
+$sales_stmt = $conn->prepare($sales_query);
+$sales_stmt->execute();
+$sales_result = $sales_stmt->get_result();
+
+while ($row = $sales_result->fetch_assoc()) {
+    $sales_by_business[$row['business_id']] = $row['total_sales'];
+}
+$sales_stmt->close();
+
+// Calculate ROI for each business
+foreach ($businesses as &$business) {
+    $asset = (float) $business['asset'];
+    $total_sales = $sales_by_business[$business['id']] ?? 0.0;
+
+    if ($asset <= 0) {
+        $roi_status = "N/A (Invalid Asset)";
+    } else {
+        $roi = (($total_sales - $asset) / $asset) * 100;
+        $roi_formatted = number_format($roi, 2) . '%';
+        $roi_status = $roi >= 0
+            ? "<span class='text-success'>Achieved ROI ($roi_formatted)</span>"
+            : "<span class='text-danger'>Not Achieved ROI ($roi_formatted)</span>";
+    }
+
+    $business['roi_status'] = $roi_status;
+}
+unset($business);
+
+$unviewed_business_query = "SELECT COUNT(*) AS count 
+                            FROM business 
+                            WHERE owner_id = ? 
+                            AND is_approved = 1 
+                            AND is_viewed = 0";
+$stmt = $conn->prepare($unviewed_business_query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$unviewed_business = $stmt->get_result()->fetch_assoc()['count'];
+$stmt->close();
+
+$unviewed_branch_query = "SELECT COUNT(branch.id) AS count 
+                          FROM branch 
+                          JOIN business ON branch.business_id = business.id 
+                          WHERE business.owner_id = ? 
+                          AND branch.is_approved = 1 
+                          AND branch.is_viewed = 0";
+$stmt = $conn->prepare($unviewed_branch_query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$unviewed_branch = $stmt->get_result()->fetch_assoc()['count'];
+$stmt->close();
+
+$unviewed_businesses = [];
+$unviewed_business_query = "SELECT id, name FROM business WHERE owner_id = ? AND is_approved = 1 AND is_viewed = 0";
+$stmt = $conn->prepare($unviewed_business_query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $unviewed_businesses[] = $row;
+}
+$stmt->close();
+
+$unviewed_branches = [];
+$unviewed_branch_query = "SELECT branch.id, branch.location AS branch_name, business.name AS business_name 
+                          FROM branch 
+                          JOIN business ON branch.business_id = business.id 
+                          WHERE business.owner_id = ? AND branch.is_approved = 1 AND branch.is_viewed = 0";
+$stmt = $conn->prepare($unviewed_branch_query);
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $unviewed_branches[] = $row;
+}
+$stmt->close();
 ?>
 
 
@@ -94,6 +175,15 @@ $size_options = [
 
     <?php include '../components/owner_sidebar.php'; ?>
     <style>
+        .notification-badge {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+
         .permit-modal-container .swal2-popup {
             max-height: 80vh;
             overflow: hidden;
@@ -407,15 +497,25 @@ $size_options = [
 
                     <ul class="nav nav-pills nav-fill mt-4">
                         <li class="nav-item">
-                            <a class="nav-link active" data-tab="businesslist">
+                            <a class="nav-link active position-relative" data-tab="businesslist">
                                 <i class="fas fa-list me-2"></i>
                                 <h5><b>Business List</b></h5>
+                                <?php if ($unviewed_business > 0): ?>
+                                    <span class="badge bg-danger notification-badge">
+                                        <?= $unviewed_business ?>
+                                    </span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-tab="branchlist">
+                            <a class="nav-link position-relative" data-tab="branchlist">
                                 <i class="fas fa-building me-2"></i>
                                 <h5><b>Branch List</b></h5>
+                                <?php if ($unviewed_branch > 0): ?>
+                                    <span class="badge bg-danger notification-badge">
+                                        <?= $unviewed_branch ?>
+                                    </span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -482,6 +582,8 @@ $size_options = [
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Asset Size <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
+                                        <th scope="col">ROI Status <button class="btn text-white"><i
+                                                    class="fas fa-sort"></i></button></th>
                                         <th scope="col">Employee Count <button class="btn text-white"><i
                                                     class="fas fa-sort"></i></button></th>
                                         <th scope="col">Location <button class="btn text-white"><i
@@ -499,12 +601,15 @@ $size_options = [
                                     <?php if (!empty($businesses)): ?>
                                         <?php foreach ($businesses as $business): ?>
                                             <tr data-id="<?php echo $business['id']; ?>" data-type="business">
-                                                <td class="business-name"><?php echo htmlspecialchars($business['name']); ?>
+                                                <td class="business-name">
+                                                    <?php echo htmlspecialchars($business['name'] ?? ''); ?>
                                                 </td>
-                                                <td><?php echo htmlspecialchars($business['description']); ?></td>
-                                                <td><?php echo htmlspecialchars($business['asset']); ?></td>
-                                                <td><?php echo htmlspecialchars($business['employee_count']); ?></td>
-                                                <td><?php echo htmlspecialchars($business['location']); ?></td>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($business['description'] ?? ''); ?>
+                                                <td><?php echo htmlspecialchars($business['asset'] ?? ''); ?>
+                                                <td><?php echo $business['roi_status']; ?></td>
+                                                <td><?php echo htmlspecialchars($business['employee_count'] ?? ''); ?>
+                                                <td><?php echo htmlspecialchars($business['location'] ?? ''); ?>
                                                 <td>
                                                     <?php if (!empty($business['business_permit'])): ?>
                                                         <a href="#" class="view-permit"
@@ -516,29 +621,50 @@ $size_options = [
                                                         No Permit
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?php echo htmlspecialchars($business['created_at']); ?></td>
-                                                <td><?php echo htmlspecialchars($business['updated_at']); ?></td>
+                                                <td><?php echo htmlspecialchars($business['created_at'] ?? ''); ?>
+                                                <td><?php echo htmlspecialchars($business['updated_at'] ?? ''); ?>
                                                 <td class="text-center">
-                                                    <a href="#" class="edit-button text-primary me-3" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="#" class="delete-button text-danger me-3" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                    <a href="#" class="print-button text-primary me-3" title="Print"
-                                                        data-id="<?php echo $business['id']; ?>" data-type="business">
-                                                        <i class="fas fa-print"></i>
-                                                    </a>
-                                                    <a href="#" class="text-success" title="Edit Product Availability"
-                                                        onclick="editProductAvailabilityBusiness(<?php echo $business['id']; ?>)">
-                                                        <i class="fas fa-box"></i>
-                                                    </a>
+                                                    <div class="d-flex flex-column gap-2">
+                                                        <!-- First Row -->
+                                                        <div class="row gx-1 mb-2">
+                                                            <div class="col-6 text-center">
+                                                                <a href="#" class="edit-button text-primary w-100"
+                                                                    title="Edit Business">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            </div>
+                                                            <div class="col-6 text-center">
+                                                                <a href="#" class="delete-button text-danger w-100"
+                                                                    title="Delete Business">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Second Row -->
+                                                        <div class="row gx-1">
+                                                            <div class="col-6 text-center">
+                                                                <a href="#" class="print-button text-primary w-100"
+                                                                    title="Print Details"
+                                                                    data-id="<?php echo $business['id']; ?>"
+                                                                    data-type="business">
+                                                                    <i class="fas fa-print"></i>
+                                                                </a>
+                                                            </div>
+                                                            <div class="col-6 text-center">
+                                                                <a href="#" class="text-success w-100" title="Manage Products"
+                                                                    onclick="editProductAvailabilityBusiness(<?php echo $business['id']; ?>)">
+                                                                    <i class="fas fa-box"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="9" style="text-align: center;">No Business Found</td>
+                                            <td colspan="10" style="text-align: center;">No Business Found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -1510,72 +1636,6 @@ $size_options = [
                     });
                 });
         }
-        // function editProduct(productId) {
-        //     fetch(`../endpoints/product/fetch_product.php?id=${productId}`)
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             Swal.fire({
-        //                 title: 'Edit Product',
-        //                 html: `
-        //             <input id="product-name" class="form-control mb-2" placeholder="Product Name" value="${data.name}">
-        //             <input id="product-type" class="form-control mb-2" placeholder="Product Type" value="${data.type}">
-        //             <input id="product-size" class="form-control mb-2" placeholder="Product Size" value="${data.size}">
-        //             <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price" value="${data.price}">
-        //             <textarea id="product-description" class="form-control mb-2" placeholder="Product Description">${data.description}</textarea>
-        //             <select id="product-status" class="form-control mb-2">
-        //                 <option value="Available" ${data.status === 'Available' ? 'selected' : ''}>Available</option>
-        //                 <option value="Unavailable" ${data.status === 'Unavailable' ? 'selected' : ''}>Unavailable</option>
-        //             </select>
-        //         `,
-        //                 showCancelButton: true,
-        //                 confirmButtonText: 'Save Changes',
-        //                 preConfirm: () => {
-        //                     const name = document.getElementById('product-name').value;
-        //                     const type = document.getElementById('product-type').value;
-        //                     const size = document.getElementById('product-size').value;
-        //                     const price = document.getElementById('product-price').value;
-        //                     const description = document.getElementById('product-description').value;
-        //                     const status = document.getElementById('product-status').value;
-
-        //                     if (!name || !type || !size || !price || !description || !status) {
-        //                         Swal.showValidationMessage('Please fill out all fields');
-        //                     }
-
-        //                     return {
-        //                         name,
-        //                         type,
-        //                         size,
-        //                         price,
-        //                         description,
-        //                         status
-        //                     };
-        //                 }
-        //             }).then(result => {
-        //                 if (result.isConfirmed) {
-        //                     fetch('../endpoints/product/edit_product.php', {
-        //                         method: 'POST',
-        //                         headers: {
-        //                             'Content-Type': 'application/json'
-        //                         },
-        //                         body: JSON.stringify({
-        //                             id: productId,
-        //                             ...result.value
-        //                         })
-        //                     })
-        //                         .then(response => response.json())
-        //                         .then(data => {
-        //                             if (data.success) {
-        //                                 Swal.fire('Success', 'Product updated successfully!', 'success').then(() => {
-        //                                     location.reload();
-        //                                 });
-        //                             } else {
-        //                                 Swal.fire('Error', 'Failed to update product!', 'error');
-        //                             }
-        //                         });
-        //                 }
-        //             });
-        //         });
-        // }
 
         // Delete Product
         function deleteProduct(productId) {
@@ -1818,23 +1878,6 @@ $size_options = [
                 });
             });
         });
-
-
-
-        // document.addEventListener('DOMContentLoaded', () => {
-        //     const navLinks = document.querySelectorAll('.nav-link');
-        //     const tabContents = document.querySelectorAll('.tab-content');
-
-        //     navLinks.forEach(link => {
-        //         link.addEventListener('click', () => {
-        //             navLinks.forEach(nav => nav.classList.remove('active'));
-        //             tabContents.forEach(content => content.classList.remove('active'));
-        //             link.classList.add('active');
-        //             const targetTab = document.getElementById(link.getAttribute('data-tab'));
-        //             targetTab.classList.add('active');
-        //         });
-        //     });
-        // });
 
         // business filter
         document.getElementById('search-business').addEventListener('input', function () {
@@ -2137,7 +2180,93 @@ $size_options = [
             fetchData(type, year, month);
         }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const unviewedBusinesses = <?php echo json_encode($unviewed_businesses); ?>;
 
+            if (unviewedBusinesses.length > 0) {
+                // Create list of business names
+                const businessList = unviewedBusinesses.map(b => `<li>${b.name}</li>`).join('');
+
+                Swal.fire({
+                    title: 'New Business Approvals!',
+                    html: `<p>The following businesses have been approved:</p><ul>${businessList}</ul>`,
+                    icon: 'success',
+                    confirmButtonText: 'Got it!',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // When "Got it!" button is clicked
+                        fetch('../endpoints/business/update_viewed_status.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                type: 'business',
+                                ids: unviewedBusinesses.map(b => b.id)
+                            })
+                        }).then(response => {
+                            // After updating, reload the page
+                            if (response.ok) {
+                                location.reload();
+                            } else {
+                                console.error('Failed to update viewed status.');
+                            }
+                        }).catch(error => {
+                            console.error('Error updating viewed status:', error);
+                        });
+                    }
+                });
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const unviewedBranches = <?php echo json_encode($unviewed_branches); ?>;
+            const branchTabLink = document.querySelector('[data-tab="branchlist"]');
+
+            function showBranchApprovalAlert() {
+                if (unviewedBranches.length > 0) {
+                    // Create list of branch names with business names
+                    const branchList = unviewedBranches.map(b =>
+                        `<li>${b.branch_name} (${b.business_name})</li>`
+                    ).join('');
+
+                    Swal.fire({
+                        title: 'New Branch Approvals!',
+                        html: `<p>The following branches have been approved:</p><ul>${branchList}</ul>`,
+                        icon: 'success',
+                        confirmButtonText: 'Got it!',
+                        didClose: () => {
+                            // Mark branches as viewed after alert is closed
+                            fetch('../endpoints/branch/update_viewed_status.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    type: 'branch',
+                                    ids: unviewedBranches.map(b => b.id)
+                                })
+                            }).then(response => {
+                                if (response.ok) {
+                                    // Remove branch notification badge
+                                    const badge = branchTabLink.querySelector('.notification-badge');
+                                    if (badge) badge.remove();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
+            if (document.getElementById('branchlist').classList.contains('active')) {
+                showBranchApprovalAlert();
+            }
+
+            branchTabLink.addEventListener('click', function () {
+                setTimeout(showBranchApprovalAlert, 50);
+            });
+        });
     </script>
 
 

@@ -141,7 +141,8 @@ CREATE TABLE `branch` (
   `updated_at` datetime DEFAULT NULL,
   `manager_id` int(11) DEFAULT NULL,
   `business_permit` varchar(255) DEFAULT NULL,
-  `is_approved` tinyint(1) NOT NULL DEFAULT 0
+  `is_approved` tinyint(1) NOT NULL DEFAULT 0,
+  `is_viewed` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -176,7 +177,8 @@ CREATE TABLE `business` (
   `manager_id` int(11) DEFAULT NULL,
   `location` varchar(250) DEFAULT NULL,
   `business_permit` varchar(255) DEFAULT NULL,
-  `is_approved` tinyint(1) NOT NULL DEFAULT 0
+  `is_approved` tinyint(1) NOT NULL DEFAULT 0,
+   `is_viewed` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --

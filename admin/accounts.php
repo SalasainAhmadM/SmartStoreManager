@@ -150,63 +150,77 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                         </tr>
                                     </thead>
                                     <tbody id="ownersBody">
-                                        <?php foreach ($owners as $owner): ?>
-                                            <?php
-                                            $status = '';
-                                            $statusClass = '';
-                                            if ($owner['is_approved'] == 0) {
-                                                $status = 'Pending Approval';
-                                                $statusClass = 'bg-warning text-dark';
-                                            } else if ($owner['is_verified'] == 0) {
-                                                $status = 'Unverified';
-                                                $statusClass = 'bg-info text-white';
-                                            } else {
-                                                $status = 'Active';
-                                                $statusClass = 'bg-success text-white';
-                                            }
-                                            ?>
-                                            <tr>
-                                                <td><?php if ($owner['image']): ?>
-                                                        <img src="../assets/profiles/<?= $owner['image'] ?>"
+                                        <?php if (!empty($owners)): ?>
+                                            <?php foreach ($owners as $owner): ?>
+                                                <?php
+                                                $status = '';
+                                                $statusClass = '';
+                                                if ($owner['is_approved'] == 0) {
+                                                    $status = 'Pending Approval';
+                                                    $statusClass = 'bg-warning text-dark';
+                                                } else if ($owner['is_verified'] == 0) {
+                                                    $status = 'Unverified';
+                                                    $statusClass = 'bg-info text-white';
+                                                } else {
+                                                    $status = 'Active';
+                                                    $statusClass = 'bg-success text-white';
+                                                }
+                                                ?>
+                                                <tr>
+                                                    <td>
+                                                        <img src="../assets/profiles/<?= $owner['image'] ? htmlspecialchars($owner['image']) : 'profile.png' ?>"
                                                             class="thumbnail-img"
-                                                            data-full="../assets/profiles/<?= $owner['image'] ?>"
+                                                            data-full="../assets/profiles/<?= $owner['image'] ? htmlspecialchars($owner['image']) : 'profile.png' ?>"
                                                             title="Click to view">
-                                                    <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <?= !empty(trim($owner['first_name'] . $owner['middle_name'] . $owner['last_name'])) ?
+                                                            htmlspecialchars($owner['first_name'] . ' ' . $owner['middle_name'] . ' ' . $owner['last_name']) :
+                                                            'N/A' ?>
+                                                    </td>
+                                                    <td><?= !empty($owner['email']) ? htmlspecialchars($owner['email']) : 'N/A' ?>
+                                                    </td>
+                                                    <td><?= !empty($owner['contact_number']) ? htmlspecialchars($owner['contact_number']) : 'N/A' ?>
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge <?= $statusClass ?>">
+                                                            <?= $status ?>
+                                                        </span>
+                                                    </td>
+                                                    <td><?= !empty($owner['created_at']) ? date('M d, Y h:i A', strtotime($owner['created_at'])) : 'N/A' ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php if (!empty($owner['valid_id'])): ?>
+                                                            <img src="../assets/valid_ids/<?= htmlspecialchars($owner['valid_id']) ?>"
+                                                                class="thumbnail-img-id"
+                                                                data-full="../assets/valid_ids/<?= htmlspecialchars($owner['valid_id']) ?>"
+                                                                title="Click to view">
+                                                        <?php else: ?>
+                                                            N/A
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php if ($owner['is_approved'] == 0): ?>
+                                                            <button class="btn btn-sm btn-success approve-btn"
+                                                                data-owner-id="<?= $owner['id'] ?>">
+                                                                <i class="fas fa-check"></i> Approve
+                                                            </button>
+                                                        <?php else: ?>
+                                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                                Approved
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="8" class="text-center py-4">
+                                                    <i class="fas fa-user-slash fa-2x mb-3"></i><br>
+                                                    No registered owners found.
                                                 </td>
-                                                <td>
-                                                    <?= htmlspecialchars($owner['first_name'] . ' ' . $owner['middle_name'] . ' ' . $owner['last_name']) ?>
-                                                </td>
-                                                <td><?= htmlspecialchars($owner['email']) ?></td>
-                                                <td><?= htmlspecialchars($owner['contact_number']) ?></td>
-                                                <td>
-                                                    <span class="status-badge <?= $statusClass ?>">
-                                                        <?= $status ?>
-                                                    </span>
-                                                </td>
-                                                <td><?= date('M d, Y h:i A', strtotime($owner['created_at'])) ?></td>
-                                                <td>
-                                                    <?php if ($owner['valid_id']): ?>
-                                                        <img src="../assets/valid_ids/<?= $owner['valid_id'] ?>"
-                                                            class="thumbnail-img-id"
-                                                            data-full="../assets/valid_ids/<?= $owner['valid_id'] ?>"
-                                                            title="Click to view">
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <?php if ($owner['is_approved'] == 0): ?>
-                                                        <button class="btn btn-sm btn-success approve-btn"
-                                                            data-owner-id="<?= $owner['id'] ?>">
-                                                            <i class="fas fa-check"></i> Approve
-                                                        </button>
-                                                    <?php else: ?>
-                                                        <button class="btn btn-sm btn-secondary" disabled>
-                                                            Approved
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </td>
-
                                             </tr>
-                                        <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
 
@@ -214,7 +228,6 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                     onclick="printContent('ownerlist', 'Owners List')">
                                     <i class="fas fa-print me-2"></i> Generate Report (Owner List)
                                 </button>
-
                             </div>
                         </div>
 

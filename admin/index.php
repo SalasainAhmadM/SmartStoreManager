@@ -12,7 +12,8 @@ $manager_count = $conn->query("SELECT COUNT(*) FROM manager")->fetch_row()[0];
 $business_count = $conn->query("SELECT COUNT(*) FROM business")->fetch_row()[0];
 $branch_count = $conn->query("SELECT COUNT(*) FROM branch")->fetch_row()[0];
 $pending_owners = $conn->query("SELECT COUNT(*) FROM owner WHERE is_approved = 0")->fetch_row()[0];
-
+$pending_businesses = $conn->query("SELECT COUNT(*) FROM business WHERE is_approved = 0")->fetch_row()[0];
+$pending_branches = $conn->query("SELECT COUNT(*) FROM branch WHERE is_approved = 0")->fetch_row()[0];
 // Get recent activities
 $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMIT 5");
 ?>
@@ -90,6 +91,17 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
                 padding: 0 15px;
             }
 
+            .notif-container {
+                left: 15px;
+                right: 15px;
+                top: 70px;
+                max-width: none;
+            }
+
+            .pending-alert {
+                width: 100%;
+            }
+
             .pending-notification .alert {
                 flex-direction: column;
                 align-items: flex-start;
@@ -165,6 +177,24 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
             }
         }
 
+        .notif-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .pending-alert {
+            animation: pulse 2s infinite;
+            margin: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+
         .pending-notification {
             position: sticky;
             top: 0;
@@ -207,19 +237,41 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
     <div id="particles-js"></div>
     <?php include '../components/admin_sidebar.php'; ?>
 
-    <!-- Pending Owners Notification -->
-    <?php if ($pending_owners > 0): ?>
-        <div class="pending-notification">
-            <div class="alert alert-danger d-flex align-items-center shadow-lg">
-                <i class="fas fa-exclamation-circle fa-2x me-3"></i>
-                <div>
+    <!-- Notifications Container -->
+    <div class="notif-container">
+        <?php if ($pending_owners > 0): ?>
+            <div class="alert alert-danger d-flex align-items-center pending-alert">
+                <i class="fas fa-user-clock fa-lg me-3"></i>
+                <div class="flex-grow-1">
                     <h5 class="mb-1">Pending Owner Approvals</h5>
-                    <p class="mb-0">You have <strong><?= $pending_owners ?></strong> owner accounts waiting for approval</p>
+                    <p class="mb-0"><?= $pending_owners ?> owner account(s) awaiting review</p>
                 </div>
-                <a href="accounts.php?filter=pending" class="btn btn-sm btn-outline-light ms-3">Review Now</a>
+                <a href="accounts.php?filter=pending" class="btn btn-sm btn-outline-light ms-3">Review</a>
             </div>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($pending_businesses > 0): ?>
+            <div class="alert alert-warning d-flex align-items-center pending-alert">
+                <i class="fas fa-store-alt fa-lg me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">Pending Business Registrations</h5>
+                    <p class="mb-0"><?= $pending_businesses ?> business(es) need approval</p>
+                </div>
+                <a href="business.php?filter=pending" class="btn btn-sm btn-outline-dark ms-3">Review</a>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($pending_branches > 0): ?>
+            <div class="alert alert-info d-flex align-items-center pending-alert">
+                <i class="fas fa-code-branch fa-lg me-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">Pending Branch Registrations</h5>
+                    <p class="mb-0"><?= $pending_branches ?> branch(es) need approval</p>
+                </div>
+                <a href="business.php?filter=pending" class="btn btn-sm btn-outline-dark ms-3">Review</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <div class="container-fluid page-body">
         <div class="row">
@@ -244,7 +296,7 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
                         </div>
 
                         <!-- Managers Card -->
-                        <div class="col-md-6 col-lg-3">
+                        <!-- <div class="col-md-6 col-lg-3">
                             <div class="card stat-card bg-success text-white">
                                 <div class="card-body text-center py-4">
                                     <i class="fas fa-user-shield stat-icon mb-3"></i>
@@ -255,7 +307,7 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
                                     <a href="accounts.php" class="text-white stretched-link">View Details</a>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Businesses Card -->
                         <div class="col-md-6 col-lg-3">
@@ -351,14 +403,16 @@ $activities = $conn->query("SELECT * FROM activity ORDER BY created_at DESC LIMI
 
     <script src="../js/sidebar_admin.js"></script>
     <script>
-        // Auto-hide the pending notification after 10 seconds
         $(document).ready(function () {
-            setTimeout(function () {
-                $('.pending-notification').fadeOut('slow');
-            }, 10000);
+            $('.pending-alert').each(function () {
+                var $alert = $(this);
+                setTimeout(function () {
+                    $alert.fadeOut('slow');
+                }, 10000);
+            });
 
-            // Click to hide
-            $('.pending-notification').click(function () {
+            // Click to hide individual notifications
+            $('.pending-alert').click(function () {
                 $(this).fadeOut('fast');
             });
         });

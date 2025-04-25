@@ -6,8 +6,17 @@ validateSession('admin');
 date_default_timezone_set('Asia/Manila');
 $admin_id = $_SESSION['user_id'];
 
-$businessQuery = "SELECT * FROM business ORDER BY is_approved ASC, created_at DESC";
+$businessQuery = "SELECT business.*, 
+                 owner.first_name, 
+                 owner.middle_name, 
+                 owner.last_name 
+                 FROM business 
+                 LEFT JOIN owner ON business.owner_id = owner.id 
+                 ORDER BY is_approved ASC, created_at DESC";
 $businessResult = $conn->query($businessQuery);
+
+$ownersQuery = "SELECT id, CONCAT(first_name, ' ', middle_name, ' ', last_name) AS full_name FROM owner";
+$ownersResult = $conn->query($ownersQuery);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -145,24 +154,51 @@ $businessResult = $conn->query($businessQuery);
                     <h4 class="mt-5"><b><i class="fas fa-tachometer-alt me-2"></i> Manage</b></h4>
 
                     <ul class="nav nav-pills nav-fill mt-4">
-                        <li class="nav-item">
+                        <li class="nav-item" id="businessTab">
                             <a class="nav-link active" href="business.php" onclick="clearBusinessSession()">
                                 <i class="fas fa-list me-2"></i>
                                 <h5><b>Business</b></h5>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" id="branchTab" style="display: none;">
                             <a class="nav-link" data-tab="branchlist">
                                 <i class="fas fa-building me-2"></i>
                                 <h5><b>Branches</b></h5>
                             </a>
                         </li>
+
                     </ul>
 
                     <div class="mt-4 position-relative">
-                        <form class="d-flex" role="search">
-                            <input class="form-control me-2 w-50" type="search" placeholder="Search business/branch..."
-                                aria-label="Search" id="businessSearchInput">
+                        <form class="d-flex flex-column gap-3" role="filter">
+
+                            <!-- Filter Row -->
+                            <div class="d-flex flex-wrap gap-3 align-items-end">
+                                <div class="flex-grow-1">
+                                    <input class="form-control me-2" type="search"
+                                        placeholder="Search business/branch..." aria-label="Search"
+                                        id="businessSearchInput">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <select class="form-select" id="ownerFilter">
+                                        <option value="">All Owners</option>
+                                        <?php while ($owner = $ownersResult->fetch_assoc()): ?>
+                                            <option value="<?= $owner['id'] ?>">
+                                                <?= htmlspecialchars($owner['full_name']) ?>
+                                            </option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="date" class="form-control" id="dateFilter">
+                                </div>
+                                <div class="flex-grow-0">
+                                    <button type="button" class="btn btn-outline-secondary h-100" title="Reset filters"
+                                        onclick="resetFilters()">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <!-- Business List Tab -->
@@ -173,6 +209,7 @@ $businessResult = $conn->query($businessQuery);
                                     <thead class="table-dark">
                                         <tr>
                                             <th>Business Name</th>
+                                            <th>Owner Name</th>
                                             <th>Description</th>
                                             <th>Status</th>
                                             <th>Location</th>
@@ -180,17 +217,30 @@ $businessResult = $conn->query($businessQuery);
                                         </tr>
                                     </thead>
                                     <tbody id="businessBody">
-                                        <?php while ($business = $businessResult->fetch_assoc()): ?>
-                                            <tr class="clickable-row" onclick="loadBranches(<?= $business['id'] ?>)">
+                                        <?php
+                                        // Reset pointer for business result
+                                        $businessResult->data_seek(0);
+                                        while ($business = $businessResult->fetch_assoc()):
+                                            $firstName = htmlspecialchars($business['first_name']);
+                                            $middleName = htmlspecialchars($business['middle_name']);
+                                            $lastName = htmlspecialchars($business['last_name']);
+                                            $ownerFullName = trim("$firstName $middleName $lastName");
+                                            $createdDate = date('Y-m-d', strtotime($business['created_at']));
+                                            ?>
+                                            <tr class="clickable-row" onclick="loadBranches(<?= $business['id'] ?>)"
+                                                data-owner-id="<?= $business['owner_id'] ?>"
+                                                data-created-date="<?= $createdDate ?>">
                                                 <td><?= htmlspecialchars($business['name']) ?></td>
+                                                <td><?= $ownerFullName ?></td>
                                                 <td><?= htmlspecialchars($business['description']) ?></td>
                                                 <td>
                                                     <?php if ($business['is_approved']): ?>
                                                         <span class="badge bg-success">Approved</span>
                                                     <?php else: ?>
                                                         <button class="btn btn-warning btn-sm"
-                                                            onclick="event.stopPropagation(); approveBusiness(<?= $business['id'] ?>)">Pending
-                                                            Approval</button>
+                                                            onclick="event.stopPropagation(); approveBusiness(<?= $business['id'] ?>)">
+                                                            Pending Approval
+                                                        </button>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><?= htmlspecialchars($business['location']) ?></td>
@@ -222,20 +272,39 @@ $businessResult = $conn->query($businessQuery);
 
     <script>
 
-        // Search functionality
-        document.getElementById('businessSearchInput').addEventListener('input', function () {
-            const searchTerm = this.value.toLowerCase();
-            document.querySelectorAll('#businessBody tr').forEach(row => {
-                const name = row.cells[0].textContent.toLowerCase();
-                const email = row.cells[1].textContent.toLowerCase();
-                const contact = row.cells[2].textContent.toLowerCase();
-                if (name.includes(searchTerm) || email.includes(searchTerm) || contact.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('businessSearchInput');
+            const ownerFilter = document.getElementById('ownerFilter');
+            const dateFilter = document.getElementById('dateFilter');
+
+            function filterBusinesses() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedOwner = ownerFilter.value;
+                const selectedDate = dateFilter.value;
+
+                document.querySelectorAll('#businessBody tr').forEach(row => {
+                    const name = row.cells[0].textContent.toLowerCase();
+                    const description = row.cells[2].textContent.toLowerCase();
+                    const ownerId = row.dataset.ownerId;
+                    const createdDate = row.dataset.createdDate;
+
+                    const matchesSearch = name.includes(searchTerm) || description.includes(searchTerm);
+                    const matchesOwner = !selectedOwner || ownerId === selectedOwner;
+                    const matchesDate = !selectedDate || createdDate === selectedDate;
+
+                    row.style.display = (matchesSearch && matchesOwner && matchesDate) ? '' : 'none';
+                });
+            }
+
+            searchInput.addEventListener('input', filterBusinesses);
+            ownerFilter.addEventListener('change', filterBusinesses);
+            dateFilter.addEventListener('change', filterBusinesses);
         });
+
+        function resetFilters() {
+            window.location.reload(true);
+        }
+
         document.getElementById('branchSearchInput').addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             document.querySelectorAll('#branchBody tr').forEach(row => {
@@ -326,7 +395,8 @@ $businessResult = $conn->query($businessQuery);
                     </div>
                 `;
                     branchContent.innerHTML = html;
-
+                    document.getElementById('branchTab').style.display = 'block';
+                    document.getElementById('businessTab').style.display = 'none';
                     // Switch to branch tab and hide business list
                     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
                     document.querySelector('[data-tab="branchlist"]').classList.add('active');
