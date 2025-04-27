@@ -27,14 +27,15 @@ if (isset($_GET['logout'])) {
 }
 ?>
 
-<div class="d-flex flex-column flex-shrink-0 p-3 bg-light collapsed" id="sidebar"
-    style="width: 80px; height: 100vh; transition: all 0.3s ease;">
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-light" id="sidebar"
+    style="width: 280px; height: 100vh; transition: all 0.3s ease;">
     <div class="d-flex align-items-center mb-5">
         <div id="sidebarLogo">
             <img src="../assets/logo.png" style="height: 25px;">
         </div>
         <div id="sidebarLogo"><span class="fs-4 mr-5 ms-1"><b>Manager</b></span></div>
-        <button class="btn btn-outline-dark" id="sidebarToggle" style="height: 40px; transition: 0.45s;">
+        <button class="btn btn-outline-dark" id="sidebarToggle"
+            style="height: 40px; transition: 0.45s; margin-left: 3.5rem;">
             <i class="fa-solid fa-bars"></i>
         </button>
     </div>

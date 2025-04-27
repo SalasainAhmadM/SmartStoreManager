@@ -148,10 +148,10 @@ $sales_result->data_seek(0);
             font-size: 16px;
         }
 
-        .d-flex.align-items-center {
+        /* .d-flex.align-items-center {
             flex-direction: column;
             align-items: stretch !important;
-        }
+        } */
 
         #searchInput,
         #addBranchSaleBtn,

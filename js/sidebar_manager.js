@@ -1,43 +1,68 @@
-document.getElementById('sidebarToggle').addEventListener('click', function() {
-    const sidebar = document.getElementById('sidebar');
-    const sidebarMenu = document.getElementById('sidebarMenu');
-    const sidebarLinks = sidebarMenu.querySelectorAll('.nav-link');
-    const logo = document.getElementById('sidebarLogo');
-    const userName = document.getElementById('userName');
-    const toggleButton = document.getElementById('sidebarToggle');
+const sidebar = document.getElementById('sidebar');
+const sidebarMenu = document.getElementById('sidebarMenu');
+const sidebarLinks = sidebarMenu.querySelectorAll('.nav-link');
+const logo = document.getElementById('sidebarLogo');
+const userName = document.getElementById('userName');
+const toggleButton = document.getElementById('sidebarToggle');
 
-    sidebar.classList.toggle('collapsed');
-    
-    if (sidebar.classList.contains('collapsed')) {
-        sidebar.style.width = '80px';
-        sidebarMenu.style.display = 'block';
+// Toggle button click
+toggleButton.addEventListener('click', function() {
+    // Only allow toggle if screen width is <= 768px
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('collapsed');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.style.width = '80px';
+            sidebarMenu.style.display = 'block';
 
-        // Hide text but keep icons visible in the nav links
-        sidebarLinks.forEach(link => {
-            const text = link.querySelector('span');
-            if (text) text.style.display = 'none';  // Hide the text
-        });
+            // Hide text but keep icons visible
+            sidebarLinks.forEach(link => {
+                const text = link.querySelector('span');
+                if (text) text.style.display = 'none';
+            });
 
-        // Hide logo and user name
-        if (logo) logo.style.display = 'none';
-        if (userName) userName.style.display = 'none';
+            if (logo) logo.style.display = 'none';
+            if (userName) userName.style.display = 'none';
 
-        // Adjust margin-left of the toggle button when sidebar is collapsed
-        toggleButton.style.marginLeft = '0';  // Set margin-left to 0
-    } else {
+            toggleButton.style.marginLeft = '0';
+        } else {
+            sidebar.style.width = '280px';
+            sidebarMenu.style.display = 'block';
+
+            sidebarLinks.forEach(link => {
+                const text = link.querySelector('span');
+                if (text) text.style.display = 'inline';
+            });
+
+            if (logo) logo.style.display = 'block';
+            if (userName) userName.style.display = 'block';
+
+            toggleButton.style.marginLeft = '3.25rem';
+        }
+    }
+});
+
+// Auto open sidebar on wider screens
+function adjustSidebar() {
+    if (window.innerWidth > 768) {
+        sidebar.classList.remove('collapsed');
         sidebar.style.width = '280px';
         sidebarMenu.style.display = 'block';
 
-        // Show text again
         sidebarLinks.forEach(link => {
             const text = link.querySelector('span');
-            if (text) text.style.display = 'inline';  // Show the text
+            if (text) text.style.display = 'inline';
         });
 
-        // Show logo and user name
         if (logo) logo.style.display = 'block';
         if (userName) userName.style.display = 'block';
 
-        toggleButton.style.marginLeft = '3.25rem';  // Reset to original margin
+        toggleButton.style.marginLeft = '3.25rem';
     }
-});
+}
+
+// Run adjustSidebar on page load
+window.addEventListener('load', adjustSidebar);
+
+// Run adjustSidebar when window resizes
+window.addEventListener('resize', adjustSidebar);

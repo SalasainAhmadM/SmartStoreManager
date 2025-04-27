@@ -775,94 +775,105 @@ $salesJson = json_encode($salesData);
 $expensesJson = json_encode($expenseData);
 
 // 10
+// 10
+$selectedBusiness = $_GET['business'] ?? 'all';
+$selectedBranch = $_GET['branch'] ?? 'all';
+
 // Fetch total assets of the business
 $assetQuery = "
     SELECT 
         SUM(CAST(asset AS DECIMAL(10, 2))) AS total_assets
     FROM business
-    WHERE owner_id = ?";
+    WHERE owner_id = ?
+";
 
 $stmt = $conn->prepare($assetQuery);
 $stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $assetResult = $stmt->get_result();
 $totalAssets = $assetResult->fetch_assoc()['total_assets'] ?? 0; // Default to 0 if no assets found
-// Fetch total monthly expenses for the owner
+
+// Build dynamic expenses query
 $expenseQuery = "
     SELECT 
         month, 
-        COALESCE(SUM(amount), 0) AS total_expenses
+        COALESCE(SUM(CAST(amount AS DECIMAL(10,2))), 0) AS total_expenses
     FROM expenses
     WHERE owner_id = ?
-    GROUP BY month
-    ORDER BY month ASC";
+";
 
+$params = [$owner_id];
+$types = "i";
+
+if ($selectedBusiness !== 'all' && $selectedBranch === 'all') {
+    // Filter expenses for business and all its branches
+    $expenseQuery .= " AND (
+        (category = 'business' AND category_id = ?)
+        OR 
+        (category = 'branch' AND category_id IN (
+            SELECT id FROM branch WHERE business_id = ?
+        ))
+    )";
+    $params[] = $selectedBusiness;
+    $params[] = $selectedBusiness;
+    $types .= "ii"; // two integers
+} elseif ($selectedBranch !== 'all') {
+    // Filter only by branch
+    $expenseQuery .= " AND category = 'branch' AND category_id = ?";
+    $params[] = $selectedBranch;
+    $types .= "i";
+}
+// else: no filter, show all expenses
+
+$expenseQuery .= " GROUP BY month ORDER BY month ASC";
+
+// Prepare and bind
 $stmt = $conn->prepare($expenseQuery);
-$stmt->bind_param("i", $owner_id);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
+// Initialize
 $expenseData = [];
 $thresholds = [];
 $breachMonths = [];
 $positiveMonths = [];
 
-// Initialize expense data for all months (1-12) with 0
+// Initialize all months to 0
 for ($month = 1; $month <= 12; $month++) {
     $expenseData[$month] = 0;
 }
 
-// Fetch and process the result
+// Fetch and process
+$previousMonthExpense = null;
+
 while ($row = $result->fetch_assoc()) {
     $month = $row['month'];
     $totalExpense = $row['total_expenses'];
 
-    // Set dynamic threshold (e.g., 80% of the total monthly expenses)
-    $threshold = $totalExpense * 0.8;
-    $thresholds[$month] = $threshold;
-
     $expenseData[$month] = $totalExpense;
 
-    if ($totalExpense > $threshold) {
+    $thresholds[$month] = $totalExpense * 0.8;
+
+    if ($totalExpense > $totalAssets) {
         $breachMonths[] = $month;
     } else {
         $positiveMonths[] = $month;
     }
-}
-// Fetch and process the result
-$previousMonthExpense = null;
-$positiveMonths = [];
-$breachMonths = [];
 
-while ($row = $result->fetch_assoc()) {
-    $month = $row['month'];
-    $totalExpense = $row['total_expenses'];
-
-    // Set dynamic threshold (e.g., 80% of the total monthly expenses)
-    $threshold = $totalExpense * 0.8;
-    $thresholds[$month] = $threshold;
-
-    $expenseData[$month] = $totalExpense;
-
-    // Check if expenses exceed the total assets
-    if ($totalExpense > $totalAssets) {
-        $breachMonths[] = $month; // Add to breach months if expenses exceed assets
-    } else {
-        $positiveMonths[] = $month; // Add to positive months if expenses are within assets
-    }
-
-    // Check if expenses are lower than the previous month
     if ($previousMonthExpense !== null && $totalExpense < $previousMonthExpense) {
-        $positiveMonths[] = $month; // Add to positive months if lower than previous month
+        $positiveMonths[] = $month;
     }
 
-    $previousMonthExpense = $totalExpense; // Update previous month's expense
+    $previousMonthExpense = $totalExpense;
 }
+
 // Convert data to JSON
 $expensesJson = json_encode($expenseData);
 $thresholdsJson = json_encode($thresholds);
 $breachMonthsJson = json_encode($breachMonths);
 $positiveMonthsJson = json_encode($positiveMonths);
+
 
 // Get customer demographics data
 
@@ -999,6 +1010,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
 </head>
 <style>
+    .dashboard-body {
+        position: fixed;
+    }
+
     .chart-container {
         position: relative;
         height: 430px;
@@ -3004,73 +3019,90 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         function updateTrend(selectedBusiness, selectedBranch) {
                             const url = `index.php?business=${selectedBusiness}&branch=${selectedBranch}#trend-section`;
                             window.location.href = url;
-
                         }
-
 
                         function loadTrendCharts(selectedBusiness = 'all', selectedBranch = 'all') {
                             fetch(`../endpoints/chart/trendAnalysis.php?business=${selectedBusiness}&branch=${selectedBranch}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    const filteredData = filterLastTwoMonths(data);
-                                    renderSeasonalTrends(filteredData);
-                                    renderGrowthRates(filteredData);
+                                    const orderedData = ensureMonthOrder(data);
+                                    renderSeasonalTrends(orderedData);
+                                    renderGrowthRates(orderedData);
                                 })
                                 .catch(error => console.error('Error loading trend charts:', error));
                         }
 
+                        function ensureMonthOrder(data) {
+                            // Ensure data is sorted chronologically and contains both months
+                            const months = [
+                                dateToMonthKey(new Date().getFullYear(), new Date().getMonth() - 1), // Previous month
+                                dateToMonthKey(new Date().getFullYear(), new Date().getMonth())       // Current month
+                            ];
+
+                            return months.map(month => {
+                                const found = data.find(d => d.month === month) || {
+                                    month: month,
+                                    sales: 0,
+                                    expenses: 0,
+                                    profit: 0
+                                };
+                                return {
+                                    ...found,
+                                    month: month // Ensure correct month format
+                                };
+                            });
+                        }
+
+                        function dateToMonthKey(year, month) {
+                            return `${year}-${String(month + 1).padStart(2, '0')}`;
+                        }
+
                         function renderSeasonalTrends(data) {
                             const ctx = document.getElementById('seasonalTrendsChart').getContext('2d');
-
                             if (window.seasonalChart) window.seasonalChart.destroy();
 
                             window.seasonalChart = new Chart(ctx, {
                                 type: 'line',
-                                data: {
-                                    labels: data.map(d => formatMonth(d.month)),
-                                    datasets: [
-                                        {
-                                            label: 'Sales',
-                                            data: data.map(d => d.sales),
-                                            borderColor: 'rgb(75, 192, 192)',
-                                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                            fill: true,
-                                            tension: 0.4
-                                        },
-                                        {
-                                            label: 'Expenses',
-                                            data: data.map(d => d.expenses),
-                                            borderColor: 'rgb(255, 99, 132)',
-                                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                            fill: true,
-                                            tension: 0.4
-                                        }
-                                    ]
-                                },
+                                data: createSeasonalChartData(data),
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
                                     scales: {
                                         y: {
                                             beginAtZero: true,
-                                            ticks: {
-                                                callback: value => '₱' + value.toLocaleString()
-                                            },
-                                            title: {
-                                                display: true,
-                                                text: 'Amount (₱)'
-                                            }
+                                            ticks: { callback: value => '₱' + value.toLocaleString() },
+                                            title: { display: true, text: 'Amount (₱)' }
                                         }
                                     },
                                     plugins: {
                                         tooltip: {
-                                            callbacks: {
-                                                label: context => `${context.dataset.label}: ₱${context.raw.toLocaleString()}`
-                                            }
+                                            callbacks: { label: context => `${context.dataset.label}: ₱${context.raw.toLocaleString()}` }
                                         }
                                     }
                                 }
                             });
+                        }
+
+                        function createSeasonalChartData(data) {
+                            return {
+                                labels: data.map(d => formatMonth(d.month)),
+                                datasets: [
+                                    createDataset('Sales', 'rgb(75, 192, 192)', data.map(d => d.sales)),
+                                    createDataset('Expenses', 'rgb(255, 99, 132)', data.map(d => d.expenses))
+                                ]
+                            };
+                        }
+
+                        function createDataset(label, borderColor, data) {
+                            return {
+                                label: label,
+                                data: data,
+                                borderColor: borderColor,
+                                backgroundColor: `${borderColor}20`,
+                                fill: true,
+                                tension: 0.4,
+                                spanGaps: true // Connect lines even with missing data
+                            };
                         }
 
                         function renderGrowthRates(data) {
@@ -3081,55 +3113,45 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                             window.growthChart = new Chart(ctx, {
                                 type: 'line',
-                                data: {
-                                    labels: growthRates.map(d => formatMonth(d.month)),
-                                    datasets: [
-                                        {
-                                            label: 'Sales Growth',
-                                            data: growthRates.map(d => d.salesGrowth),
-                                            borderColor: 'rgb(75, 192, 192)',
-                                            tension: 0.4,
-                                            fill: false
-                                        },
-                                        {
-                                            label: 'Expenses Growth',
-                                            data: growthRates.map(d => d.expensesGrowth),
-                                            borderColor: 'rgb(255, 99, 132)',
-                                            tension: 0.4,
-                                            fill: false
-                                        },
-                                        {
-                                            label: 'Profit Growth',
-                                            data: growthRates.map(d => d.profitGrowth),
-                                            borderColor: 'rgb(153, 102, 255)',
-                                            tension: 0.4,
-                                            fill: false
-                                        }
-                                    ]
-                                },
+                                data: createGrowthChartData(growthRates),
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
                                     scales: {
                                         y: {
-                                            ticks: {
-                                                callback: value => value.toFixed(1) + '%'
-                                            },
-                                            title: {
-                                                display: true,
-                                                text: 'Growth Rate (%)'
-                                            }
+                                            ticks: { callback: value => value.toFixed(1) + '%' },
+                                            title: { display: true, text: 'Growth Rate (%)' }
                                         }
                                     },
                                     plugins: {
                                         tooltip: {
-                                            callbacks: {
-                                                label: context => `${context.dataset.label}: ${context.raw.toFixed(1)}%`
-                                            }
+                                            callbacks: { label: context => `${context.dataset.label}: ${context.raw.toFixed(1)}%` }
                                         }
                                     }
                                 }
                             });
+                        }
+
+                        function createGrowthChartData(growthRates) {
+                            return {
+                                labels: growthRates.map(d => formatMonth(d.month)),
+                                datasets: [
+                                    createGrowthDataset('Sales Growth', 'rgb(75, 192, 192)', growthRates.map(d => d.salesGrowth)),
+                                    createGrowthDataset('Expenses Growth', 'rgb(255, 99, 132)', growthRates.map(d => d.expensesGrowth)),
+                                    createGrowthDataset('Profit Growth', 'rgb(153, 102, 255)', growthRates.map(d => d.profitGrowth))
+                                ]
+                            };
+                        }
+
+                        function createGrowthDataset(label, borderColor, data) {
+                            return {
+                                label: label,
+                                data: data,
+                                borderColor: borderColor,
+                                tension: 0.4,
+                                fill: false,
+                                spanGaps: true
+                            };
                         }
 
                         function formatMonth(monthString) {
@@ -3144,7 +3166,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
                                 const previous = data[index - 1];
                                 const safeDivide = (currentVal, prevVal) =>
-                                    prevVal === 0 ? 0 : ((currentVal - prevVal) / prevVal) * 100;
+                                    prevVal === 0 ? (currentVal === 0 ? 0 : 100) : ((currentVal - prevVal) / prevVal) * 100;
 
                                 return {
                                     month: current.month,
@@ -3155,20 +3177,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             });
                         }
 
-                        function filterLastTwoMonths(data) {
-                            if (data.length === 0) return [];
-
-                            data.sort((a, b) => new Date(a.month) - new Date(b.month));
-
-                            return data.slice(-2);
-                        }
-
                         // Initialize charts
                         document.addEventListener('DOMContentLoaded', function () {
                             const urlParams = new URLSearchParams(window.location.search);
                             const selectedBusiness = urlParams.get('business') || 'all';
                             const selectedBranch = urlParams.get('branch') || 'all';
-
                             loadTrendCharts(selectedBusiness, selectedBranch);
                         });
 
@@ -3825,9 +3838,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
         document.addEventListener("DOMContentLoaded", function () {
             // Parse JSON data from PHP
             const expenseData = JSON.parse('<?php echo $expensesJson; ?>');
-            const thresholds = JSON.parse('<?php echo $thresholdsJson; ?>');
-            const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?>');
-            const positiveMonths = JSON.parse('<?php echo $positiveMonthsJson; ?>');
+            const thresholds = JSON.parse('<?php echo $thresholdsJson; ?> ');
+            const breachMonths = JSON.parse('<?php echo $breachMonthsJson; ?> ');
+            const positiveMonths = JSON.parse('<?php echo $positiveMonthsJson; ?> ');
             const totalAssets = <?php echo $totalAssets; ?>; // Fetch total assets from PHP
 
             // Convert month numbers to month names
@@ -3845,22 +3858,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
             new Chart(document.getElementById("expenseThresholdChart"), {
                 type: "bar",
                 data: {
-                    labels: labels, // Now it shows Month Names
-                    datasets: [{
-                        label: "Monthly Expenses",
-                        data: expenses,
-                        backgroundColor: expenses.map((value, index) =>
-                            value > totalAssets ? "red" : "blue" // Red if expenses exceed assets, blue otherwise
-                        )
-                    },
-                    {
-                        label: "Total Assets",
-                        data: Array(labels.length).fill(totalAssets), // Draw a horizontal line for total assets
-                        type: "line",
-                        borderColor: "green",
-                        borderWidth: 2,
-                        fill: false
-                    }]
+                    labels: labels, // Month Names
+                    datasets: [
+                        {
+                            label: "Monthly Expenses",
+                            data: expenses,
+                            backgroundColor: expenses.map((value, index) =>
+                                value > totalAssets ? "red" : "blue" // Red if expenses exceed assets, blue otherwise
+                            )
+                        },
+                        {
+                            label: "Total Assets",
+                            data: Array(labels.length).fill(totalAssets), // Horizontal line
+                            type: "line",
+                            borderColor: "green",
+                            borderWidth: 2,
+                            fill: false
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -3874,32 +3889,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
             // Generate Alerts
             const breachList = document.getElementById("breachList");
-            breachList.innerHTML = ""; // Clear any existing content
+            breachList.innerHTML = ""; // Clear previous content
 
             Object.keys(expenseData).forEach(month => {
                 const monthName = monthNames[month - 1];
                 const totalExpense = expenseData[month];
 
-                // Skip months with no expense data (0 or null)
+                // Skip months with no expense data
                 if (!totalExpense || totalExpense === 0) {
-                    return; // Skip this month
+                    return;
                 }
+
+                const listItem = document.createElement("li");
 
                 if (totalExpense < totalAssets) {
                     // Low Expenses Alert
-                    const listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-success";
                     listItem.textContent = `✅ Low Expenses in ${monthName}`;
-                    breachList.appendChild(listItem);
                 } else if (totalExpense > totalAssets) {
                     // High Expenses Alert
-                    const listItem = document.createElement("li");
                     listItem.className = "list-group-item list-group-item-danger";
                     listItem.textContent = `⚠️ High Expenses in ${monthName}`;
-                    breachList.appendChild(listItem);
                 }
+
+                breachList.appendChild(listItem);
             });
         });
+
     </script>
     <script>
         // Prepare data for all charts
