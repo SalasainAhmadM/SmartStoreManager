@@ -456,13 +456,29 @@ WHERE b.owner_id = ? AND s.date = ?
                                 </form>
                                 <!-- Date Filter Button for Sales Report -->
                                 <div class="position-absolute top-0 end-0 mt-2 me-2">
-                                    <button class="btn btn-success" id="filterDateButton">
-                                        <i class="fas fa-calendar-alt me-2"></i> Filter by Date
-                                    </button>
-                                    <button class="btn btn-danger" id="resetButton" onclick="resetFilter()">
-                                        <i class="fas fa-times-circle me-2"></i> Reset Filter
-                                    </button>
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                        <select class="form-select" id="businessFilter" style="width: auto;">
+                                            <!-- Options populated dynamically -->
+                                        </select>
+
+                                        <select class="form-select" id="periodFilter" style="width: auto;">
+                                            <option value="all">All Time</option>
+                                            <option value="day">Today</option>
+                                            <option value="week">This Week</option>
+                                            <option value="month">This Month</option>
+
+                                        </select>
+
+                                        <button class="btn btn-success" id="filterDateButton">
+                                            <i class="fas fa-calendar-alt me-2"></i> Filter by Date
+                                        </button>
+
+                                        <button class="btn btn-danger" id="resetButton" onclick="resetFilter()">
+                                            <i class="fas fa-times-circle me-2"></i> Reset Filter
+                                        </button>
+                                    </div>
                                 </div>
+
 
                             </div>
 

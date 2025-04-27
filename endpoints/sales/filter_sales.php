@@ -6,20 +6,62 @@ validateSession('owner');
 
 header('Content-Type: application/json');
 
-// Set timezone
-date_default_timezone_set('Asia/Manila');
-
-// Use today's date if no date is provided
-$data = json_decode(file_get_contents('php://input'), true);
-$date = $data['date'] ?? date("Y-m-d");
-
 $owner_id = $_SESSION['user_id'];
+$data = json_decode(file_get_contents('php://input'), true);
 
-// Fetch sales for the specified date
+$business = $data['business'] ?? 'all';
+$period = $data['period'] ?? 'all';
+
+// Determine business/branch filter
+$businessFilter = '';
+$params = [$owner_id];
+$types = 'i';
+
+if ($business !== 'all') {
+    list($type, $id) = explode('_', $business);
+    if ($type === 'business') {
+        $businessFilter = " AND b.id = ?";
+        $params[] = $id;
+        $types .= 'i';
+    } else if ($type === 'branch') {
+        $businessFilter = " AND br.id = ?";
+        $params[] = $id;
+        $types .= 'i';
+    }
+}
+
+// Determine date range
+$dateFilter = '';
+$today = new DateTime('now', new DateTimeZone('Asia/Manila'));
+switch ($period) {
+    case 'day':
+        $dateToUse = isset($data['date']) ? $data['date'] : $today->format('Y-m-d');
+        $dateFilter = " AND s.date = ?";
+        $params[] = $dateToUse;
+        $types .= 's';
+        break;
+    case 'week':
+        $start = $today->modify('Monday this week')->format('Y-m-d');
+        $end = $today->modify('Sunday this week')->format('Y-m-d');
+        $dateFilter = " AND s.date BETWEEN ? AND ?";
+        array_push($params, $start, $end);
+        $types .= 'ss';
+        break;
+    case 'month':
+        $start = $today->modify('first day of this month')->format('Y-m-d');
+        $end = $today->modify('last day of this month')->format('Y-m-d');
+        $dateFilter = " AND s.date BETWEEN ? AND ?";
+        array_push($params, $start, $end);
+        $types .= 'ss';
+        break;
+    case 'all':
+        // No date filter
+        break;
+}
+
 $query = "
     SELECT 
         p.name AS product_name,
-        p.price AS product_price,
         s.quantity,
         s.total_sales,
         CASE 
@@ -31,17 +73,23 @@ $query = "
     JOIN products p ON s.product_id = p.id
     JOIN business b ON p.business_id = b.id
     LEFT JOIN branch br ON s.branch_id = br.id
-    WHERE b.owner_id = ? AND s.date = ?
+    WHERE b.owner_id = ? 
+    $businessFilter 
+    $dateFilter
+    ORDER BY s.date DESC
 ";
+
 $stmt = $conn->prepare($query);
-$stmt->bind_param("is", $owner_id, $date);
+if ($types)
+    $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-$sales_data = [];
+$sales = [];
 while ($row = $result->fetch_assoc()) {
-    $sales_data[] = $row;
+    $sales[] = $row;
 }
 
-echo json_encode(['success' => true, 'sales' => $sales_data]);
+echo json_encode(['success' => true, 'sales' => $sales]);
 exit;
+?>

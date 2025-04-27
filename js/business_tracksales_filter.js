@@ -1,15 +1,3 @@
-// Reset Filter function
-function resetFilter() {
-  const rows = document.querySelectorAll("#salesLogTable tbody tr");
-  rows.forEach((row) => {
-    row.style.display = ""; // Show all rows
-  });
-  document.getElementById("saleSearchBar").value = ""; // Optional: reset search bar
-
-  // Fetch sales for today's date
-  const today = getCurrentDateInManila(); // Get today's date in Manila timezone
-  fetchSalesByDate(today); // Fetch and display sales for today's date
-}
 
 // Convert date from YYYY-MM-DD to MM/DD/YYYY format
 function formatDateToMMDDYYYY(date) {
@@ -19,6 +7,8 @@ function formatDateToMMDDYYYY(date) {
   const year = dateObj.getFullYear();
   return `${month}/${day}/${year}`;
 }
+
+let selectedDate = null;
 
 // Event listener for the filter date button
 document.getElementById("filterDateButton").addEventListener("click", function () {
@@ -46,11 +36,20 @@ document.getElementById("filterDateButton").addEventListener("click", function (
     },
   }).then((result) => {
     if (result.isConfirmed && result.value) {
-      const selectedDate = result.value;
-      fetchSalesByDate(selectedDate); // Fetch and display sales for the selected date
+      selectedDate = result.value;
+      document.getElementById('periodFilter').value = 'day'; // Set period to 'day'
+      applyFilters();
     }
   });
 });
+
+// Reset filter function
+function resetFilter() {
+  document.getElementById('businessFilter').value = 'all';
+  document.getElementById('periodFilter').value = 'all';
+  selectedDate = getCurrentDateInManila(); // Reset to today's date
+  applyFilters();
+}
 
 // Function to fetch and display sales data by date
 function fetchSalesByDate(date) {
@@ -123,4 +122,95 @@ function formatDate(date) {
 document.addEventListener("DOMContentLoaded", () => {
   const today = getCurrentDateInManila(); // Get today's date in Manila timezone
   fetchSalesByDate(today);
+  selectedDate = getCurrentDateInManila();
+  populateBusinessFilter();
+  applyFilters();
 });
+
+function populateBusinessFilter() {
+  fetch('../endpoints/sales/get_businesses_and_branches.php')
+    .then(response => response.json())
+    .then(data => {
+      const businessFilter = document.getElementById('businessFilter');
+      businessFilter.innerHTML = '<option value="all">All Businesses</option>'; 
+      data.forEach(item => {
+        if (item.branch_id) {
+          const option = document.createElement('option');
+          option.value = `branch_${item.branch_id}`;
+          option.textContent = `${item.business_name} - ${item.branch_location}`;
+          businessFilter.appendChild(option);
+        } else {
+          const option = document.createElement('option');
+          option.value = `business_${item.business_id}`;
+          option.textContent = item.business_name;
+          businessFilter.appendChild(option);
+        }
+      });
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', populateBusinessFilter);
+
+document.getElementById('businessFilter').addEventListener('change', applyFilters);
+document.getElementById('periodFilter').addEventListener('change', applyFilters);
+
+function applyFilters() {
+  const business = document.getElementById('businessFilter').value;
+  const period = document.getElementById('periodFilter').value;
+  const date = selectedDate;
+
+  const requestData = { business, period };
+  if (period === 'day' && date) {
+    requestData.date = date;
+  }
+
+  fetch('../endpoints/sales/filter_sales.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestData),
+  })
+  .then(response => response.json())
+  .then(data => {
+    const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
+    tableBody.innerHTML = '';
+
+    // Formatter for currency
+    const currencyFormatter = new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 2,
+    });
+
+    if (!data.sales || data.sales.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center">
+            ${date ? `No Sales for ${formatDate(date)}` : 'No sales found'}
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    data.sales.forEach(sale => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${sale.product_name}</td>
+          <td>${sale.business_or_branch_name}</td>
+          <td>${sale.quantity}</td>
+          <td>${currencyFormatter.format(sale.total_sales)}</td>
+          <td>${formatDate(sale.date)}</td>
+        </tr>
+      `;
+    });
+  })
+  .catch(error => {
+  });
+}
+
+// Initial load
+applyFilters();
