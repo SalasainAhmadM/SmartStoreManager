@@ -137,7 +137,7 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
 
                             <div class="scrollable-table mt-3" id="ownerlist">
                                 <table class="table" id="ownersTable">
-                                    <thead class="table-dark position-sticky top-0">
+                                    <thead class="table-dark position-sticky top-0" style="z-index: 100;">
                                         <tr>
                                             <th>Profile</th>
                                             <th>Name</th>
@@ -157,7 +157,7 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                                 $statusClass = '';
                                                 if ($owner['is_approved'] == 0) {
                                                     $status = 'Pending Approval';
-                                                    $statusClass = 'bg-warning text-dark';
+                                                    $statusClass = 'text-danger fw-bold';
                                                 } else if ($owner['is_verified'] == 0) {
                                                     $status = 'Unverified';
                                                     $statusClass = 'bg-info text-white';
@@ -166,6 +166,7 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                                     $statusClass = 'bg-success text-white';
                                                 }
                                                 ?>
+
                                                 <tr>
                                                     <td>
                                                         <img src="../assets/profiles/<?= $owner['image'] ? htmlspecialchars($owner['image']) : 'profile.png' ?>"
@@ -183,9 +184,11 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                                     <td><?= !empty($owner['contact_number']) ? htmlspecialchars($owner['contact_number']) : 'N/A' ?>
                                                     </td>
                                                     <td>
-                                                        <span class="status-badge <?= $statusClass ?>">
-                                                            <?= $status ?>
-                                                        </span>
+                                                        <div>
+                                                            <span class="status-badge <?= $statusClass ?>">
+                                                                <?= $status ?>
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                     <td><?= !empty($owner['created_at']) ? date('M d, Y h:i A', strtotime($owner['created_at'])) : 'N/A' ?>
                                                     </td>
@@ -200,17 +203,27 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
                                                         <?php endif; ?>
                                                     </td>
                                                     <td>
-                                                        <?php if ($owner['is_approved'] == 0): ?>
-                                                            <button class="btn btn-sm btn-success approve-btn"
-                                                                data-owner-id="<?= $owner['id'] ?>">
-                                                                <i class="fas fa-check"></i> Approve
+                                                        <div class="d-flex gap-2">
+                                                            <?php if ($owner['is_approved'] == 0): ?>
+                                                                <button
+                                                                    class="btn btn-sm btn-success approve-btn d-flex align-items-center gap-1"
+                                                                    data-owner-id="<?= $owner['id'] ?>">
+                                                                    Approve <i class="fas fa-check"></i>
+                                                                </button>
+                                                            <?php else: ?>
+                                                                <button class="btn btn-sm btn-secondary" disabled>
+                                                                    Approved
+                                                                </button>
+                                                            <?php endif; ?>
+
+                                                            <button class="btn btn-sm btn-danger delete-owner-btn"
+                                                                data-owner-id="<?= $owner['id'] ?>"
+                                                                data-owner-name="<?= htmlspecialchars($owner['first_name'] . ' ' . $owner['last_name']) ?>">
+                                                                <i class="fas fa-trash"></i>
                                                             </button>
-                                                        <?php else: ?>
-                                                            <button class="btn btn-sm btn-secondary" disabled>
-                                                                Approved
-                                                            </button>
-                                                        <?php endif; ?>
+                                                        </div>
                                                     </td>
+
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php else: ?>
@@ -421,6 +434,56 @@ $owners = $result->fetch_all(MYSQLI_ASSOC);
             printWindow.print();
             printWindow.close();
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Delete owner functionality
+            document.querySelectorAll('.delete-owner-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const ownerId = this.dataset.ownerId;
+                    const ownerName = this.dataset.ownerName;
+
+                    Swal.fire({
+                        title: 'Confirm Delete',
+                        html: `Are you sure you want to delete <strong>${ownerName}</strong>'s account?<br>
+                      This action cannot be undone!`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`deleteOwner.php?id=${ownerId}`, {
+                                method: 'DELETE'
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire(
+                                            'Deleted!',
+                                            'Owner account has been deleted.',
+                                            'success'
+                                        ).then(() => window.location.reload());
+                                    } else {
+                                        Swal.fire(
+                                            'Error!',
+                                            data.message || 'Failed to delete owner account.',
+                                            'error'
+                                        );
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.fire(
+                                        'Error!',
+                                        'An error occurred while processing your request.',
+                                        'error'
+                                    );
+                                });
+                        }
+                    });
+                });
+            });
+        });
     </script>
 
 </body>
