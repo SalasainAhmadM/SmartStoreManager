@@ -22,11 +22,29 @@ $stmt->bind_param("i", $owner_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-$data = [];
+$businesses = [];
+
+// Group by business first
 while ($row = $result->fetch_assoc()) {
-    $data[] = $row;
+    $business_id = $row['business_id'];
+    if (!isset($businesses[$business_id])) {
+        $businesses[$business_id] = [
+            'business_id' => $row['business_id'],
+            'business_name' => $row['business_name'],
+            'branches' => []
+        ];
+    }
+    if (!empty($row['branch_id'])) {
+        $businesses[$business_id]['branches'][] = [
+            'branch_id' => $row['branch_id'],
+            'branch_location' => $row['branch_location']
+        ];
+    }
 }
 
-echo json_encode($data);
+// Reformat into simple array
+$output = array_values($businesses);
+
+echo json_encode($output);
 exit;
 ?>

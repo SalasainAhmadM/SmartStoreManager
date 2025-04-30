@@ -211,6 +211,7 @@ $ownersResult = $conn->query($ownersQuery);
                                             <th>Business Name</th>
                                             <th>Owner Name</th>
                                             <th>Description</th>
+                                            <th>Permit</th>
                                             <th>Status</th>
                                             <th>Location</th>
                                             <th>Created At</th>
@@ -218,7 +219,6 @@ $ownersResult = $conn->query($ownersQuery);
                                     </thead>
                                     <tbody id="businessBody">
                                         <?php
-                                        // Reset pointer for business result
                                         $businessResult->data_seek(0);
                                         while ($business = $businessResult->fetch_assoc()):
                                             $firstName = htmlspecialchars($business['first_name']);
@@ -234,21 +234,53 @@ $ownersResult = $conn->query($ownersQuery);
                                                 <td><?= $ownerFullName ?></td>
                                                 <td><?= htmlspecialchars($business['description']) ?></td>
                                                 <td>
+                                                    <?php if (!empty($business['business_permit'])): ?>
+                                                        <?php
+                                                        $permitPath = '../assets/permits/' . htmlspecialchars($business['business_permit']);
+                                                        $fileExtension = strtolower(pathinfo($business['business_permit'], PATHINFO_EXTENSION));
+                                                        ?>
+                                                        <?php if (in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                                                            <img src="<?= $permitPath ?>" class="thumbnail-img-permit"
+                                                                data-full="<?= $permitPath ?>" title="Click to view"
+                                                                style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;"
+                                                                onclick="event.stopPropagation(); openPermitModal('<?= $permitPath ?>')">
+                                                        <?php elseif ($fileExtension === 'pdf'): ?>
+                                                            <a href="<?= $permitPath ?>" target="_blank"
+                                                                class="btn btn-primary btn-sm"
+                                                                onclick="event.stopPropagation();">View PDF</a>
+                                                        <?php else: ?>
+                                                            Unsupported file
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        N/A
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
                                                     <?php if ($business['is_approved']): ?>
                                                         <span class="badge bg-success">Approved</span>
                                                     <?php else: ?>
-                                                        <button class="btn btn-warning btn-sm"
-                                                            onclick="event.stopPropagation(); approveBusiness(<?= $business['id'] ?>)">
-                                                            Pending Approval
-                                                        </button>
+                                                        <div class="d-flex">
+                                                            <button class="btn btn-warning btn-sm me-2"
+                                                                onclick="event.stopPropagation(); approveBusiness(<?= $business['id'] ?>)">
+                                                                Pending Approval
+                                                            </button>
+                                                            <button class="btn btn-danger btn-sm" title="Reject Business"
+                                                                onclick="event.stopPropagation(); deleteBusiness(event, <?= $business['id'] ?>)">
+                                                                Reject
+                                                            </button>
+                                                        </div>
                                                     <?php endif; ?>
                                                 </td>
+
                                                 <td><?= htmlspecialchars($business['location']) ?></td>
                                                 <td><?= date('M d, Y h:i A', strtotime($business['created_at'])) ?></td>
+
+
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
+
                                 <button class="btn btn-primary mt-2 mb-5"
                                     onclick="printContent('businesslist', 'Business List Report')">
                                     <i class="fas fa-print me-2"></i> Generate Report (Business List)
@@ -269,8 +301,74 @@ $ownersResult = $conn->query($ownersQuery);
             </div>
         </div>
     </div>
+    <!-- Permit Modal -->
+    <div class="modal fade" id="permitModal" tabindex="-1" aria-labelledby="permitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="permitModalLabel">Business Permit Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalPermitImage" src="" class="img-fluid" alt="Permit Image">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // Open permit modal (for image)
+        function openPermitModal(imageSrc) {
+            document.getElementById('modalPermitImage').src = imageSrc;
+            new bootstrap.Modal(document.getElementById('permitModal')).show();
+        }
+
+        function deleteBusiness(event, businessId) {
+            event.stopPropagation(); // Extra protection to prevent row click
+
+            Swal.fire({
+                title: 'Reject Business?',
+                text: 'Are you sure you want to reject this business?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, reject it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`../endpoints/business/deleteBusiness.php?id=${businessId}`, {
+                        method: 'DELETE'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Rejected!',
+                                    'Business has been rejected and an email notification was sent.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    data.message || 'Failed to delete business.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire(
+                                'Error!',
+                                'An unexpected error occurred.',
+                                'error'
+                            );
+                        });
+                }
+            });
+        }
+
 
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('businessSearchInput');
@@ -367,6 +465,7 @@ $ownersResult = $conn->query($ownersQuery);
                                     <tr>
                                         <th>Location</th>
                                         <th>Status</th>
+                                        <th>Permits</th>
                                         <th>Created At</th>
                                     </tr>
                                 </thead>
@@ -375,7 +474,28 @@ $ownersResult = $conn->query($ownersQuery);
                             data.branches.map(branch => `
                                             <tr>
                                                 <td>${branch.location}</td>
-                                                <td>${branch.is_approved ? '<span class="badge bg-success">Approved</span>' : `<button class="btn btn-warning btn-sm" onclick="approveBranch(${branch.id}, ${data.business.id})">Pending Approval</button>`}</td>
+                                                <td>${branch.is_approved
+                                    ? '<span class="badge bg-success">Approved</span>'
+                                    : `
+        <button class="btn btn-warning btn-sm" onclick="approveBranch(${branch.id}, ${data.business.id})">
+            Pending Approval
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="rejectBranch(${branch.id}, ${data.business.id})">
+            Reject
+        </button>
+    `}</td>
+
+                                                <td>
+    ${branch.business_permit
+                                    ? (branch.business_permit.endsWith('.pdf')
+                                        ? `<a href="../assets/branch_permits/${branch.business_permit}" target="_blank" class="btn btn-primary btn-sm" onclick="event.stopPropagation();">View PDF</a>`
+                                        : `<img src="../assets/branch_permits/${branch.business_permit}" class="thumbnail-img-permit" data-full="../assets/branch_permits/${branch.business_permit}" title="Click to view"
+                    style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;" onclick="event.stopPropagation(); openPermitModal('../assets/branch_permits/${branch.business_permit}')">`
+                                    )
+                                    : 'N/A'
+                                }
+</td>
+
                                                 <td>${formatDate(branch.created_at)}</td>
                                             </tr>
                                         `).join('') :
@@ -695,6 +815,39 @@ $ownersResult = $conn->query($ownersQuery);
             printWindow.print();
             location.reload();
         }
+
+        function rejectBranch(branchId, businessId) {
+            Swal.fire({
+                title: 'Reject Branch?',
+                text: 'Are you sure you want to reject this branch?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, reject it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`../endpoints/branch/reject.php?id=${branchId}`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Rejected!', 'Branch has been rejected.', 'success')
+                                    .then(() => {
+                                        location.reload();
+                                    });
+                            } else {
+                                Swal.fire('Error', data.message || 'Failed to reject branch', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'An error occurred while rejecting.', 'error');
+                        });
+                }
+            });
+        }
+
     </script>
 
     <script src="../js/sidebar_admin.js"></script>

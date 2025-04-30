@@ -41,15 +41,15 @@ switch ($period) {
         $types .= 's';
         break;
     case 'week':
-        $start = $today->modify('Monday this week')->format('Y-m-d');
-        $end = $today->modify('Sunday this week')->format('Y-m-d');
+        $start = (clone $today)->modify('Monday this week')->format('Y-m-d');
+        $end = (clone $today)->modify('Sunday this week')->format('Y-m-d');
         $dateFilter = " AND s.date BETWEEN ? AND ?";
         array_push($params, $start, $end);
         $types .= 'ss';
         break;
     case 'month':
-        $start = $today->modify('first day of this month')->format('Y-m-d');
-        $end = $today->modify('last day of this month')->format('Y-m-d');
+        $start = (clone $today)->modify('first day of this month')->format('Y-m-d');
+        $end = (clone $today)->modify('last day of this month')->format('Y-m-d');
         $dateFilter = " AND s.date BETWEEN ? AND ?";
         array_push($params, $start, $end);
         $types .= 'ss';
@@ -58,6 +58,7 @@ switch ($period) {
         // No date filter
         break;
 }
+
 
 $query = "
     SELECT 

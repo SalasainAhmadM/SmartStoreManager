@@ -52,54 +52,54 @@ function resetFilter() {
 }
 
 // Function to fetch and display sales data by date
-function fetchSalesByDate(date) {
-  fetch("../endpoints/sales/filter_sales.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ date }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
-      tableBody.innerHTML = "";
+// function fetchSalesByDate(date) {
+//   fetch("../endpoints/sales/filter_sales.php", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ date }),
+//   })
+//     .then((response) => response.json())
+//     .then((data) => {
+//       const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
+//       tableBody.innerHTML = "";
 
-      // Formatter for PHP currency with desired format
-      const currencyFormatter = new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP",
-        minimumFractionDigits: 2,
-      });
+//       // Formatter for PHP currency with desired format
+//       const currencyFormatter = new Intl.NumberFormat("en-PH", {
+//         style: "currency",
+//         currency: "PHP",
+//         minimumFractionDigits: 2,
+//       });
 
-      // Fallback if no sales data exists
-      if (!data.sales || data.sales.length === 0) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="5" class="text-center">No Sales for ${formatDate(date)}</td>
-          </tr>
-        `;
-        return;
-      }
+//       // Fallback if no sales data exists
+//       if (!data.sales || data.sales.length === 0) {
+//         tableBody.innerHTML = `
+//           <tr>
+//             <td colspan="5" class="text-center">No Sales for ${formatDate(date)}</td>
+//           </tr>
+//         `;
+//         return;
+//       }
 
-      // Populate the table with sales data
-      data.sales.forEach((sale) => {
-        tableBody.innerHTML += `
-          <tr>
-            <td>${sale.product_name}</td>
-            <td>${sale.business_or_branch_name}</td>
-            <td>${sale.quantity}</td>
-            <td>${currencyFormatter.format(sale.total_sales)}</td>
-            <td>${formatDateToMMDDYYYY(sale.date)}</td>
-          </tr>
-        `;
-      });
-    })
-    .catch((error) => {
-      console.error("Error fetching sales data:", error);
-      Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
-    });
-}
+//       // Populate the table with sales data
+//       data.sales.forEach((sale) => {
+//         tableBody.innerHTML += `
+//           <tr>
+//             <td>${sale.product_name}</td>
+//             <td>${sale.business_or_branch_name}</td>
+//             <td>${sale.quantity}</td>
+//             <td>${currencyFormatter.format(sale.total_sales)}</td>
+//             <td>${formatDateToMMDDYYYY(sale.date)}</td>
+//           </tr>
+//         `;
+//       });
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching sales data:", error);
+//       Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
+//     });
+// }
 
 // Utility to get the current date in Manila timezone
 function getCurrentDateInManila() {
@@ -133,28 +133,92 @@ function populateBusinessFilter() {
     .then(data => {
       const businessFilter = document.getElementById('businessFilter');
       businessFilter.innerHTML = '<option value="all">All Businesses</option>'; 
-      data.forEach(item => {
-        if (item.branch_id) {
-          const option = document.createElement('option');
-          option.value = `branch_${item.branch_id}`;
-          option.textContent = `${item.business_name} - ${item.branch_location}`;
-          businessFilter.appendChild(option);
-        } else {
-          const option = document.createElement('option');
-          option.value = `business_${item.business_id}`;
-          option.textContent = item.business_name;
-          businessFilter.appendChild(option);
+
+      data.forEach(business => {
+        const { business_id, business_name, branches } = business;
+
+        // Add the main business
+        const businessOption = document.createElement('option');
+        businessOption.value = `business_${business_id}`;
+        businessOption.textContent = business_name;
+        businessFilter.appendChild(businessOption);
+
+        // Add its branches if any
+        if (branches.length > 0) {
+          branches.forEach(branch => {
+            const branchOption = document.createElement('option');
+            branchOption.value = `branch_${branch.branch_id}`;
+            branchOption.textContent = `${business_name} - ${branch.branch_location}`;
+            businessFilter.appendChild(branchOption);
+          });
         }
       });
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => console.error('Error fetching businesses:', error));
 }
 
-// Call on page load
-document.addEventListener('DOMContentLoaded', populateBusinessFilter);
 
 document.getElementById('businessFilter').addEventListener('change', applyFilters);
 document.getElementById('periodFilter').addEventListener('change', applyFilters);
+
+let currentPage = 1;
+const rowsPerPage = 20;
+let salesData = []; // store all sales temporarily
+
+function renderTablePage(page) {
+  const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
+  tableBody.innerHTML = '';
+
+  const start = (page - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageSales = salesData.slice(start, end);
+
+  if (pageSales.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center">No sales data available</td>
+      </tr>
+    `;
+  } else {
+    pageSales.forEach((sale) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${sale.product_name}</td>
+          <td>${sale.business_or_branch_name}</td>
+          <td>${sale.quantity}</td>
+          <td>${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 2 }).format(sale.total_sales)}</td>
+          <td>${formatDateToMMDDYYYY(sale.date)}</td>
+        </tr>
+      `;
+    });
+  }
+
+  // Update pagination buttons
+  document.getElementById("prevPage").disabled = (currentPage === 1);
+  document.getElementById("nextPage").disabled = (end >= salesData.length);
+
+  // Update page info
+  document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${Math.ceil(salesData.length / rowsPerPage)}`;
+}
+
+// Modify fetch functions to use pagination
+function fetchSalesByDate(date) {
+  fetch("../endpoints/sales/filter_sales.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      salesData = data.sales || [];
+      currentPage = 1;
+      renderTablePage(currentPage);
+    })
+    .catch((error) => {
+      console.error("Error fetching sales data:", error);
+      Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
+    });
+}
 
 function applyFilters() {
   const business = document.getElementById('businessFilter').value;
@@ -168,49 +232,34 @@ function applyFilters() {
 
   fetch('../endpoints/sales/filter_sales.php', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestData),
   })
   .then(response => response.json())
   .then(data => {
-    const tableBody = document.getElementById("salesLogTable").getElementsByTagName("tbody")[0];
-    tableBody.innerHTML = '';
-
-    // Formatter for currency
-    const currencyFormatter = new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-      minimumFractionDigits: 2,
-    });
-
-    if (!data.sales || data.sales.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="5" class="text-center">
-            ${date ? `No Sales for ${formatDate(date)}` : 'No sales found'}
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    data.sales.forEach(sale => {
-      tableBody.innerHTML += `
-        <tr>
-          <td>${sale.product_name}</td>
-          <td>${sale.business_or_branch_name}</td>
-          <td>${sale.quantity}</td>
-          <td>${currencyFormatter.format(sale.total_sales)}</td>
-          <td>${formatDate(sale.date)}</td>
-        </tr>
-      `;
-    });
+    salesData = data.sales || [];
+    currentPage = 1;
+    renderTablePage(currentPage);
   })
   .catch(error => {
+    console.error("Error applying filters:", error);
   });
 }
+
+// Pagination Button Events
+document.getElementById("prevPage").addEventListener("click", () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderTablePage(currentPage);
+  }
+});
+
+document.getElementById("nextPage").addEventListener("click", () => {
+  if ((currentPage * rowsPerPage) < salesData.length) {
+    currentPage++;
+    renderTablePage(currentPage);
+  }
+});
 
 // Initial load
 applyFilters();

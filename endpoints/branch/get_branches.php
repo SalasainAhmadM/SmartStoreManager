@@ -44,6 +44,7 @@ try {
         'business' => [
             'name' => htmlspecialchars($business['name']),
             'description' => htmlspecialchars($business['description']),
+            'business_permit' => htmlspecialchars($business['business_permit']),
             'location' => htmlspecialchars($business['location']),
             'is_approved' => (bool) $business['is_approved'],
             'created_at' => date('M d, Y h:i A', strtotime($business['created_at']))
