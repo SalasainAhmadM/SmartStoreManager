@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $stmt->close();
 
     // Insert products
-    $stmt = $conn->prepare("INSERT INTO products (name, description, price, size, type, business_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO products (name, description, price, size, type, business_id, unregistered) VALUES (?, ?, ?, ?, ?, ?, 1)");
     foreach ($products as $product) {
         $stmt->bind_param("sssssi", $product['name'], $product['description'], $product['price'], $product['size'], $product['type'], $business_id);
         $stmt->execute();

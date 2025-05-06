@@ -13,7 +13,9 @@ use PHPMailer\PHPMailer\Exception;
 validateSession('admin');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $branchId = $_GET['id'] ?? null;
+    $data = json_decode(file_get_contents("php://input"), true);
+    $branchId = $data['branchId'] ?? null;
+    $feedback = trim($data['feedback'] ?? '');
 
     if (!$branchId) {
         echo json_encode(['success' => false, 'message' => 'Invalid branch ID']);
@@ -23,76 +25,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $conn->begin_transaction();
 
-        // Get owner email and branch details before rejection
-        $stmt = $conn->prepare("SELECT o.email, b.location, b.business_id FROM branch b JOIN business bu ON b.business_id = bu.id JOIN owner o ON bu.owner_id = o.id WHERE b.id = ?");
+        // Get branch info
+        $stmt = $conn->prepare("SELECT location, business_id FROM branch WHERE id = ?");
         $stmt->bind_param("i", $branchId);
         $stmt->execute();
-        $stmt->bind_result($ownerEmail, $branchLocation, $businessId);
+        $stmt->bind_result($branchName, $businessId);
         if (!$stmt->fetch()) {
-            throw new Exception('Branch or owner not found.');
+            throw new Exception('Branch not found');
         }
         $stmt->close();
 
-        // Reject the branch
+        // Get business name and owner ID
+        $stmt = $conn->prepare("SELECT name, owner_id FROM business WHERE id = ?");
+        $stmt->bind_param("i", $businessId);
+        $stmt->execute();
+        $stmt->bind_result($businessName, $ownerId);
+        if (!$stmt->fetch()) {
+            throw new Exception('Business not found');
+        }
+        $stmt->close();
+
+        // Get owner email
+        $stmt = $conn->prepare("SELECT email FROM owner WHERE id = ?");
+        $stmt->bind_param("i", $ownerId);
+        $stmt->execute();
+        $stmt->bind_result($ownerEmail);
+        if (!$stmt->fetch()) {
+            throw new Exception('Owner not found');
+        }
+        $stmt->close();
+
+        // Delete the branch
         $stmt = $conn->prepare("DELETE FROM branch WHERE id = ?");
         $stmt->bind_param("i", $branchId);
         $stmt->execute();
+        $stmt->close();
 
         $conn->commit();
 
-        // Get business name
-        $stmt = $conn->prepare("SELECT name FROM business WHERE id = ?");
-        $stmt->bind_param("i", $businessId);
-        $stmt->execute();
-        $stmt->bind_result($businessName);
-        $stmt->fetch();
-        $stmt->close();
+        // Send rejection email
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'slythelang@gmail.com';
+        $mail->Password = 'febhdvuapwmtagdt';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->SMTPDebug = 0;
 
-        // Send email notification
-        $emailStatus = ['sent' => false, 'error' => ''];
-        try {
-            $mail = new PHPMailer(true);
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'slythelang@gmail.com';
-            $mail->Password = 'febhdvuapwmtagdt';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            $mail->SMTPDebug = 0;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
-            $mail->SMTPOptions = [
-                'ssl' => [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                ]
-            ];
+        $mail->setFrom('slythelang@gmail.com', 'Smart Store Manager');
+        $mail->addAddress($ownerEmail);
+        $mail->isHTML(true);
+        $mail->Subject = 'Branch Rejected';
 
-            $mail->setFrom('slythelang@gmail.com', 'Smart Store Manager');
-            $mail->addAddress($ownerEmail);
+        $mail->Body = "
+            <h3>Your branch <strong>{$branchName}</strong> from <strong>{$businessName}</strong> has been rejected.</h3>
+            " . ($feedback ? "<p><strong>Reason:</strong> {$feedback}</p>" : "") . "
+            <p>If you think this was a mistake, please contact our support team immediately.</p>
+        ";
 
-            $mail->isHTML(true);
-            $mail->Subject = 'Branch Rejected';
-            $mail->Body = "
-                <h3>Your branch located at <strong>{$branchLocation}</strong> for the business <strong>{$businessName}</strong> has been rejected.</h3>
-                <p>If you think this was a mistake, please contact our support team immediately.</p>
-            ";
-            $mail->AltBody = "Your branch located at {$branchLocation} for the business {$businessName} has been rejected. Contact support if this was a mistake.";
+        $mail->AltBody = "Your branch '{$branchName}' from '{$businessName}' was rejected." . ($feedback ? " Reason: {$feedback}" : '');
 
-            $mail->send();
-            $emailStatus['sent'] = true;
-        } catch (Exception $e) {
-            $emailStatus['error'] = $e->getMessage();
-            error_log('Email Error: ' . $e->getMessage());
-        }
+        $mail->send();
 
-        echo json_encode([
-            'success' => true,
-            'email_status' => $emailStatus
-        ]);
+        echo json_encode(['success' => true]);
     } catch (Exception $e) {
         $conn->rollback();
+        error_log('Branch rejection error: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
     }
 } else {

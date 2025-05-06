@@ -15,7 +15,10 @@ $firstName = $data['firstName'];
 $middleName = $data['middleName'];
 $lastName = $data['lastName'];
 $phone = $data['phone'];
-$address = $data['address'];
+$city = $data['city'];
+$barangay = $data['barangay'];
+$province = $data['province'];
+$region = $data['region'];
 $password = password_hash($data['password'], PASSWORD_BCRYPT);
 $ownerId = $data['ownerId'];
 
@@ -44,11 +47,11 @@ if ($checkUsernameResult->num_rows > 0) {
 }
 
 // Insert into manager table
-$query = "INSERT INTO manager (email, user_name, first_name, middle_name, last_name, contact_number, address, password, owner_id) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$query = "INSERT INTO manager (email, user_name, first_name, middle_name, last_name, contact_number, barangay, city, province, region, password, owner_id) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ssssssssi", $email, $username, $firstName, $middleName, $lastName, $phone, $address, $password, $ownerId);
+$stmt->bind_param("sssssssssssi", $email, $username, $firstName, $middleName, $lastName, $phone, $barangay, $city, $province, $region, $password, $ownerId);
 
 if ($stmt->execute()) {
 

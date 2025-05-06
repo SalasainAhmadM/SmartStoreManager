@@ -300,6 +300,7 @@ $owner_id = $_SESSION['user_id'];
                 title: 'Add Custom Expense Type',
                 html: `
                 <div>
+                <label for="expense=type" class="form-label">Expense Type Name <span style="color:red">*</span></label>
                     <input type="text" id="expenseTypeName" class="form-control mb-2" placeholder="Expense Type Name">
                 </div>
             `,

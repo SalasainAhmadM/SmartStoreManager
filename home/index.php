@@ -127,62 +127,167 @@
       Swal.fire({
         title: 'Complete Your Profile',
         html: `
-        <form id="profileForm">
-            <div class="form-group mb-3">
-                <input type="text" id="first-name" class="form-control" placeholder="First Name" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="middle-name" class="form-control" placeholder="Middle Name" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="last-name" class="form-control" placeholder="Last Name" required>
-            </div>
-            <div class="form-group mb-3">
-                <select id="gender" class="form-control" required>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group mb-3">
-                <input type="number" id="age" class="form-control" placeholder="Age" min="18" max="100" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="date" id="birthday" placeholder="Birthday"  class="form-control" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="tel" id="contact-number" class="form-control" placeholder="Contact Number" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="barangay" class="form-control" placeholder="Barangay" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="city" class="form-control" placeholder="City" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="region" class="form-control" placeholder="Region" required>
-            </div>
-            <div class="form-group mb-3">
-                <input type="text" id="country" class="form-control" placeholder="Country" required>
-            </div>
-            <div class="form-group mb-3">
-                <label for="profile-image">Profile Image (Optional)</label>
-                <input type="file" id="profile-image" class="form-control" accept="image/*">
-            </div>
-            <div class="form-group mb-3">
-                <label for="valid-id">Valid ID (Required)</label>
-                <input type="file" id="valid-id" class="form-control" accept="image/*" required>
-                <small class="text-muted">Upload a clear photo of your government-issued ID</small>
-            </div>
-        </form>
-    `,
+    <form id="profileForm">
+    <div class="mb-3 text-center">
+        <label for="first-name" class="form-label">First Name <span style="color:red">*</span></label>
+        <input type="text" id="first-name" placeholder="First Name" class="form-control" required>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="middle-name" class="form-label">Middle Name <span style="color:red">*</span></label>
+        <input type="text" id="middle-name" placeholder="Middle Name" class="form-control" required>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="last-name" class="form-label">Last Name <span style="color:red">*</span></label>
+        <input type="text" id="last-name" placeholder="Last Name" class="form-control" required>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="gender" class="form-label">Gender <span style="color:red">*</span></label>
+        <select id="gender" class="form-control" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="age" class="form-label">Age <span style="color:red">*</span></label>
+        <input type="number" id="age" placeholder="Age" class="form-control" min="18" max="100" required>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="birthday" class="form-label">Birthday <span style="color:red">*</span></label>
+        <input type="date" id="birthday" class="form-control" required>
+    </div>
+    <div class="mb-3 text-center">
+        <label for="contact-number" class="form-label">Contact Number <span style="color:red">*</span></label>
+        <input type="tel" id="contact-number" placeholder="Contact Number" class="form-control" required>
+    </div>
+
+    <!-- Dynamic Address Fields -->
+    <div class="mb-3 text-center">
+  <label for="country" class="form-label">Country <span style="color:red">*</span></label>
+  <input type="text" id="country" value="Philippines" class="form-control" required>
+</div>
+
+     <div class="mb-2">
+    <label>Region <span style="color:red">*</span></label>
+    <select id="region" class="form-control">
+        <option value="">Select Region</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Province <span style="color:red">*</span></label>
+    <select id="province" class="form-control">
+        <option value="">Select Province</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>City / Municipality <span style="color:red">*</span></label>
+    <select id="city" class="form-control">
+        <option value="">Select City/Municipality</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Barangay <span style="color:red">*</span></label>
+    <select id="barangay" class="form-control">
+        <option value="">Select Barangay</option>
+    </select>
+</div>
+
+
+    <div class="mb-3 text-center">
+        <label for="profile-image" class="form-label">Profile Image (Optional)</label>
+        <input type="file" id="profile-image" class="form-control" accept="image/*">
+    </div>
+
+    <div class="mb-3 text-center">
+        <label for="valid-id" class="form-label">Valid ID <span style="color:red">*</span></label>
+        <input type="file" id="valid-id" class="form-control" accept="image/*" required>
+        <small class="text-muted">Upload a clear photo of your government-issued ID</small>
+    </div>
+
+</form>
+
+`
+        ,
         focusConfirm: false,
         confirmButtonText: 'Save Profile',
         showCancelButton: true,
         cancelButtonText: 'Cancel',
+        didOpen: () => {
+          // Fetch and populate region dropdown
+          fetch('../json/refregion.json')
+            .then(res => res.json())
+            .then(data => {
+              const regionSelect = document.getElementById('region');
+              data.RECORDS.forEach(region => {
+                const opt = document.createElement('option');
+                opt.value = region.regCode;
+                opt.textContent = region.regDesc;
+                regionSelect.appendChild(opt);
+              });
+            });
+
+          // Handle region → province
+          document.getElementById('region').addEventListener('change', function () {
+            const regCode = this.value;
+            const provinceSelect = document.getElementById('province');
+            provinceSelect.innerHTML = '<option value="">Select Province</option>';
+            document.getElementById('city').innerHTML = '<option value="">Select City/Municipality</option>';
+            document.getElementById('barangay').innerHTML = '<option value="">Select Barangay</option>';
+
+            fetch('../json/refprovince.json')
+              .then(res => res.json())
+              .then(data => {
+                data.RECORDS.filter(p => p.regCode === regCode).forEach(province => {
+                  const opt = document.createElement('option');
+                  opt.value = province.provCode;
+                  opt.textContent = province.provDesc;
+                  provinceSelect.appendChild(opt);
+                });
+              });
+          });
+
+          // Handle province → city
+          document.getElementById('province').addEventListener('change', function () {
+            const provCode = this.value;
+            const citySelect = document.getElementById('city');
+            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+            document.getElementById('barangay').innerHTML = '<option value="">Select Barangay</option>';
+
+            fetch('../json/refcitymun.json')
+              .then(res => res.json())
+              .then(data => {
+                data.RECORDS.filter(c => c.provCode === provCode).forEach(city => {
+                  const opt = document.createElement('option');
+                  opt.value = city.citymunCode;
+                  opt.textContent = city.citymunDesc;
+                  citySelect.appendChild(opt);
+                });
+              });
+          });
+
+          // Handle city → barangay
+          document.getElementById('city').addEventListener('change', function () {
+            const cityCode = this.value;
+            const brgySelect = document.getElementById('barangay');
+            brgySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+            fetch('../json/refbrgy.json')
+              .then(res => res.json())
+              .then(data => {
+                data.RECORDS.filter(b => b.citymunCode === cityCode).forEach(brgy => {
+                  const opt = document.createElement('option');
+                  opt.value = brgy.brgyDesc;
+                  opt.textContent = brgy.brgyDesc;
+                  brgySelect.appendChild(opt);
+                });
+              });
+          });
+        },
         preConfirm: () => {
-          // Validate form before submission
           const form = document.getElementById('profileForm');
           if (!form.checkValidity()) {
             Swal.showValidationMessage('Please fill all required fields correctly');
@@ -198,8 +303,9 @@
             birthday: document.getElementById('birthday').value,
             contactNumber: document.getElementById('contact-number').value.trim(),
             barangay: document.getElementById('barangay').value.trim(),
-            city: document.getElementById('city').value.trim(),
-            region: document.getElementById('region').value.trim(),
+            city: document.getElementById('city').options[document.getElementById('city').selectedIndex].text,
+            province: document.getElementById('province').options[document.getElementById('province').selectedIndex].text,
+            region: document.getElementById('region').options[document.getElementById('region').selectedIndex].text,
             country: document.getElementById('country').value.trim(),
             profileImage: document.getElementById('profile-image').files[0],
             validId: document.getElementById('valid-id').files[0]
@@ -209,7 +315,6 @@
         if (result.isConfirmed && result.value) {
           const formData = result.value;
 
-          // Show loading indicator
           Swal.fire({
             title: 'Saving Profile...',
             allowOutsideClick: false,
@@ -218,7 +323,6 @@
             }
           });
 
-          // Prepare FormData for submission
           const submitData = new FormData();
           submitData.append('action', 'complete_profile');
           submitData.append('owner_id', ownerId);
@@ -231,29 +335,23 @@
           submitData.append('contact_number', formData.contactNumber);
           submitData.append('barangay', formData.barangay);
           submitData.append('city', formData.city);
+          submitData.append('province', formData.province);
           submitData.append('region', formData.region);
           submitData.append('country', formData.country);
-
-          if (formData.profileImage) {
-            submitData.append('profile_image', formData.profileImage);
-          }
+          if (formData.profileImage) submitData.append('profile_image', formData.profileImage);
           submitData.append('valid_id', formData.validId);
 
-          // Update your fetch request with better error handling
           fetch('./profile_details.php', {
             method: 'POST',
             body: submitData
           })
             .then(response => {
               if (!response.ok) {
-                // If response is not OK, try to get error details
                 return response.text().then(text => {
                   try {
-                    // Try to parse as JSON first
                     const json = JSON.parse(text);
                     throw new Error(json.message || 'Server error');
-                  } catch (e) {
-                    // If not JSON, use raw text
+                  } catch {
                     throw new Error(text || 'Network response was not ok');
                   }
                 });
@@ -270,16 +368,11 @@
                   icon: 'success',
                   confirmButtonText: 'Login Now'
                 }).then(() => {
-                  // Clear URL parameters
                   const cleanUrl = window.location.origin + window.location.pathname;
                   window.history.replaceState({}, document.title, cleanUrl);
-
-                  // Trigger login modal instead of redirecting
                   if (typeof showLoginModal === 'function') {
                     showLoginModal();
                   } else {
-                    console.error('showLoginModal function is not defined');
-                    // Fallback to redirect if login modal function doesn't exist
                     window.location.href = 'index.php';
                   }
                 });

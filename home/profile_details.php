@@ -22,7 +22,7 @@ if (!$ownerId) {
 }
 
 // Required fields
-$requiredFields = ["first_name", "middle_name", "last_name", "gender", "age", "birthday", "contact_number", "barangay", "city", "region", "country"];
+$requiredFields = ["first_name", "middle_name", "last_name", "gender", "age", "birthday", "contact_number", "barangay", "city", "province", "region", "country"];
 foreach ($requiredFields as $field) {
     if (empty($_POST[$field])) {
         echo json_encode(["status" => "error", "message" => ucfirst(str_replace("_", " ", $field)) . " is required"]);
@@ -57,13 +57,13 @@ if (!$validIdName) {
 $stmt = $conn->prepare("
     UPDATE owner 
     SET first_name = ?, middle_name = ?, last_name = ?, gender = ?, age = ?, birthday = ?, 
-        contact_number = ?, barangay = ?, city = ?, region = ?, country = ?, valid_id = ?, 
+        contact_number = ?, barangay = ?, city = ?, province = ?, region = ?, country = ?, valid_id = ?, 
         image = IFNULL(?, image)
     WHERE id = ?
 ");
 
 $stmt->bind_param(
-    "ssssissssssssi",
+    "ssssisssssssssi",
     $_POST["first_name"],
     $_POST["middle_name"],
     $_POST["last_name"],
@@ -73,6 +73,7 @@ $stmt->bind_param(
     $_POST["contact_number"],
     $_POST["barangay"],
     $_POST["city"],
+    $_POST["province"],
     $_POST["region"],
     $_POST["country"],
     $validIdName,

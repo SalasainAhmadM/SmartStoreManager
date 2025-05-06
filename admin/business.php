@@ -324,11 +324,14 @@ $ownersResult = $conn->query($ownersQuery);
         }
 
         function deleteBusiness(event, businessId) {
-            event.stopPropagation(); // Extra protection to prevent row click
+            event.stopPropagation();
 
             Swal.fire({
                 title: 'Reject Business?',
-                text: 'Are you sure you want to reject this business?',
+                html: `
+            <p>Are you sure you want to reject this business?</p>
+            <textarea id="rejectionFeedback" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
+        `,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -336,8 +339,17 @@ $ownersResult = $conn->query($ownersQuery);
                 confirmButtonText: 'Yes, reject it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`../endpoints/business/deleteBusiness.php?id=${businessId}`, {
-                        method: 'DELETE'
+                    const feedback = document.getElementById('rejectionFeedback').value;
+
+                    fetch(`../endpoints/business/deleteBusiness.php`, {
+                        method: 'POST', // Use POST to send body data
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            businessId: businessId,
+                            feedback: feedback
+                        })
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -368,6 +380,7 @@ $ownersResult = $conn->query($ownersQuery);
                 }
             });
         }
+
 
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -819,7 +832,10 @@ $ownersResult = $conn->query($ownersQuery);
         function rejectBranch(branchId, businessId) {
             Swal.fire({
                 title: 'Reject Branch?',
-                text: 'Are you sure you want to reject this branch?',
+                html: `
+            <p>Are you sure you want to reject this branch?</p>
+            <textarea id="rejectionFeedback" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
+        `,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -827,22 +843,30 @@ $ownersResult = $conn->query($ownersQuery);
                 confirmButtonText: 'Yes, reject it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`../endpoints/branch/reject.php?id=${branchId}`, {
-                        method: 'POST'
+                    const feedback = document.getElementById('rejectionFeedback').value;
+
+                    fetch(`../endpoints/branch/reject.php`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            branchId,
+                            feedback
+                        })
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire('Rejected!', 'Branch has been rejected.', 'success')
-                                    .then(() => {
-                                        location.reload();
-                                    });
+                                Swal.fire('Rejected!', 'Branch has been rejected and the owner has been notified.', 'success')
+                                    .then(() => location.reload());
                             } else {
-                                Swal.fire('Error', data.message || 'Failed to reject branch', 'error');
+                                Swal.fire('Error', data.message || 'Failed to reject branch.', 'error');
                             }
                         })
                         .catch(error => {
-                            Swal.fire('Error', 'An error occurred while rejecting.', 'error');
+                            console.error('Error:', error);
+                            Swal.fire('Error', 'An unexpected error occurred.', 'error');
                         });
                 }
             });

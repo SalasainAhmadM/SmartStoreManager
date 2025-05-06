@@ -4,11 +4,11 @@ function showLoginModal() {
         html: `
             <form id="loginForm">
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email or Username</label>
+                    <label for="email" class="form-label">Email or Username<span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="email" placeholder="Enter your email or username" required>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Password<span style="color:red">*</span></label>
                     <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
                 </div>
                 <div class="mt-2 text-center">
@@ -83,7 +83,7 @@ function showForgotPasswordModal() {
         html: `
             <form id="forgotPasswordForm">
                 <div class="mb-3">
-                    <label for="resetEmail" class="form-label">Email</label>
+                    <label for="resetEmail" class="form-label">Email<span style="color:red">*</span></label>
                     <input type="email" class="form-control" id="resetEmail" placeholder="Enter your registered email" required>
                 </div>
             </form>
@@ -151,19 +151,19 @@ function showRegisterModal() {
         html: `
             <form id="registerForm">
                 <div class="mb-3">
-                    <label for="userName" class="form-label">Username</label>
+                    <label for="userName" class="form-label">Username<span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="userName" placeholder="Enter your username" required>
                 </div>
                 <div class="mb-3">
-                    <label for="regEmail" class="form-label">Email</label>
+                    <label for="regEmail" class="form-label">Email<span style="color:red">*</span></label>
                     <input type="email" class="form-control" id="regEmail" placeholder="Enter your email" required>
                 </div>
                 <div class="mb-3">
-                    <label for="regPassword" class="form-label">Password</label>
+                    <label for="regPassword" class="form-label">Password<span style="color:red">*</span></label>
                     <input type="password" class="form-control" id="regPassword" placeholder="Create a password" required>
                 </div>
                 <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <label for="confirmPassword" class="form-label">Confirm Password<span style="color:red">*</span></label>
                     <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
                 </div>
             </form>

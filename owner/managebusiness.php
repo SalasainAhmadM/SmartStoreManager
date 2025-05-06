@@ -175,6 +175,11 @@ $stmt->close();
 
     <?php include '../components/owner_sidebar.php'; ?>
     <style>
+        .swal-wide {
+            width: 90% !important;
+            max-width: 1200px !important;
+        }
+
         .notification-badge {
             position: absolute;
             right: 20px;
@@ -604,7 +609,6 @@ $stmt->close();
                                                 <td class="business-name">
                                                     <?php echo htmlspecialchars($business['name'] ?? ''); ?>
                                                 </td>
-                                                </td>
                                                 <td><?php echo htmlspecialchars($business['description'] ?? ''); ?>
                                                 <td><?php echo htmlspecialchars($business['asset'] ?? ''); ?>
                                                 <td><?php echo $business['roi_status']; ?></td>
@@ -846,8 +850,6 @@ $stmt->close();
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Description <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
-                                                        <!-- <th>Status <button class="btn text-white"><i
-                                                                    class="fas fa-sort"></i></button></th> -->
                                                         <th>Created At <button class="btn text-white"><i
                                                                     class="fas fa-sort"></i></button></th>
                                                         <th>Updated At <button class="btn text-white"><i
@@ -867,19 +869,27 @@ $stmt->close();
                                                                 <td><?php echo htmlspecialchars($product['size']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['price']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['description']); ?></td>
-                                                                <!-- <td><?php echo htmlspecialchars($product['status']); ?></td> -->
                                                                 <td><?php echo htmlspecialchars($product['created_at']); ?></td>
                                                                 <td><?php echo htmlspecialchars($product['updated_at']); ?></td>
+
                                                                 <td class="text-center">
                                                                     <a href="#" class="text-primary me-3"
                                                                         onclick="editProduct(<?php echo $product['id']; ?>)">
                                                                         <i class="fas fa-edit"></i>
                                                                     </a>
-                                                                    <a href="#" class="text-danger"
-                                                                        onclick="deleteProduct(<?php echo $product['id']; ?>)">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </a>
+                                                                    <?php if ($product['unregistered'] == 1): ?>
+                                                                        <a href="#" class="text-warning"
+                                                                            onclick="confirmUnregisteredProduct(<?php echo $product['id']; ?>)">
+                                                                            <i class="fas fa-check-circle"></i>
+                                                                        </a>
+                                                                    <?php else: ?>
+                                                                        <a href="#" class="text-danger"
+                                                                            onclick="deleteProduct(<?php echo $product['id']; ?>)">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </a>
+                                                                    <?php endif; ?>
                                                                 </td>
+
                                                             </tr>
                                                         <?php endforeach; ?>
                                                     <?php else: ?>
@@ -1112,28 +1122,122 @@ $stmt->close();
             Swal.fire({
                 title: 'Add New Business',
                 html: `
-            <div>
-                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
-                <textarea type="text" id="business-description" class="form-control mb-2" placeholder="Business Description"></textarea>
-                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
-                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
-                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location" required>
-                <div class="mt-3">
-                    <label for="business-permit" class="form-label">Business Permit (Image/PDF)</label>
-                    <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
-                    <small class="text-muted">Upload a clear image or PDF of your business permit (max 5MB)</small>
-                </div>
-            </div>
-        `,
+    <div>
+        <label>Business Name <span style="color:red">*</span></label>
+        <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
+
+        <label>Business Description <span style="color:red">*</span></label>
+        <textarea type="text" id="business-description" class="form-control mb-2" placeholder="Business Description"></textarea>
+
+        <label>Asset Size <span style="color:red">*</span></label>
+        <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
+
+        <label>Number of Employees <span style="color:red">*</span></label>
+        <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
+
+       <div class="mb-2">
+    <label>Region <span style="color:red">*</span></label>
+    <select id="region" class="form-control">
+        <option value="">Select Region</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Province <span style="color:red">*</span></label>
+    <select id="province" class="form-control">
+        <option value="">Select Province</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>City / Municipality <span style="color:red">*</span></label>
+    <select id="city" class="form-control">
+        <option value="">Select City/Municipality</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Barangay <span style="color:red">*</span></label>
+    <select id="barangay" class="form-control">
+        <option value="">Select Barangay</option>
+    </select>
+</div>
+
+
+        <div class="mt-3">
+            <label for="business-permit" class="form-label">Business Permit (Image/PDF) <span style="color:red">*</span></label>
+            <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
+            <small class="text-muted">Upload a clear image or PDF of your business permit (max 5MB)</small>
+        </div>
+    </div>
+`,
+                didOpen: () => {
+                    $.getJSON('../json/refprovince.json', d => provinceData = d.RECORDS);
+                    $.getJSON('../json/refcitymun.json', d => citymunData = d.RECORDS);
+                    $.getJSON('../json/refbrgy.json', d => barangayData = d.RECORDS);
+
+                    loadRegions();
+
+                    // Region change
+                    $('#region').on('change', function () {
+                        loadProvinces(this.value);
+                        $('#city, #barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // Province change
+                    $('#province').on('change', function () {
+                        loadCities(this.value);
+                        $('#barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // City change
+                    $('#city').on('change', function () {
+                        loadBarangays(this.value);
+                    });
+                    let regionData = [], provinceData = [], citymunData = [], barangayData = [];
+
+                    function loadRegions() {
+                        $.getJSON('../json/refregion.json', function (data) {
+                            regionData = data.RECORDS;
+                            $('#region').append(regionData.map(r => `<option value="${r.regCode}">${r.regDesc}</option>`));
+                        });
+                    }
+
+                    function loadProvinces(regionCode) {
+                        $('#province').empty().append('<option value="">Select Province</option>');
+                        const provinces = provinceData.filter(p => p.regCode === regionCode);
+                        $('#province').append(provinces.map(p => `<option value="${p.provCode}">${p.provDesc}</option>`));
+                    }
+
+                    function loadCities(provCode) {
+                        $('#city').empty().append('<option value="">Select City/Municipality</option>');
+                        const cities = citymunData.filter(c => c.provCode === provCode);
+                        $('#city').append(cities.map(c => `<option value="${c.citymunCode}">${c.citymunDesc}</option>`));
+                    }
+
+                    function loadBarangays(citymunCode) {
+                        $('#barangay').empty().append('<option value="">Select Barangay</option>');
+                        const brgys = barangayData.filter(b => b.citymunCode === citymunCode);
+                        $('#barangay').append(brgys.map(b => `<option value="${b.brgyCode}">${b.brgyDesc}</option>`));
+                    }
+
+                },
                 confirmButtonText: 'Add Business',
                 showCancelButton: true,
                 preConfirm: () => {
+                    const regionText = $('#region option:selected').text();
+                    const provinceText = $('#province option:selected').text();
+                    const cityText = $('#city option:selected').text();
+                    const barangayText = $('#barangay option:selected').text();
+
+                    const fullAddress = `${barangayText}, ${cityText}, ${provinceText}, ${regionText}`;
+
                     const data = {
                         name: $('#business-name').val().trim(),
                         description: $('#business-description').val().trim(),
                         asset: parseInt($('#business-asset').val(), 10),
                         employeeCount: parseInt($('#employee-count').val(), 10),
-                        location: $('#business-location').val().trim(),
+                        location: fullAddress,
                         owner_id: ownerId,
                     };
 
@@ -1162,6 +1266,7 @@ $stmt->close();
                         Swal.showValidationMessage('File size must be less than 5MB');
                         return false;
                     }
+
 
                     // Create FormData for file upload
                     const formData = new FormData();
@@ -1200,16 +1305,17 @@ $stmt->close();
                 const name = row.find('td:eq(0)').text();
                 const description = row.find('td:eq(1)').text();
                 const asset = row.find('td:eq(2)').text();
-                const employees = row.find('td:eq(3)').text();
-                const location = row.find('td:eq(4)').text();
+                const employees = row.find('td:eq(4)').text();
+                const location = row.find('td:eq(5)').text();
 
                 Swal.fire({
                     title: 'Edit Business',
                     html: `
-                <input type="text" id="edit-name" class="form-control mb-2" placeholder="Name" value="${name}">
+                <input type="text" id="edit-name" class="form-control mb-2" style="text-align: left;" placeholder="Name" value="${name.trim()}">
+
                 <textarea type="text" id="edit-description" class="form-control mb-2" placeholder="Description">${description}</textarea>
-                <input type="number" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
-                <input type="number" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
+                <input type="text" id="edit-asset" class="form-control mb-2" placeholder="Asset" value="${asset}">
+                <input type="text" id="edit-employees" class="form-control mb-2" placeholder="Employees" value="${employees}">
                 <input type="text" id="edit-location" class="form-control mb-2" placeholder="Location" value="${location}">
                 <div class="mt-3">
                     <label for="edit-business-permit" class="form-label">Change Business Permit (Image/PDF)</label>
@@ -1327,20 +1433,105 @@ $stmt->close();
             Swal.fire({
                 title: 'Add Branch',
                 html: `
-            <div>
-                <input id="branch-location" class="form-control mb-2" placeholder="Branch Location" required>
-                <div class="mt-3">
-                    <label for="branch-permit" class="form-label">Branch Business Permit (Image/PDF)</label>
-                    <input type="file" id="branch-permit" class="form-control" accept="image/*,.pdf" required>
-                    <small class="text-muted">Upload a clear image or PDF of your branch business permit (max 5MB)</small>
-                </div>
-            </div>
-        `,
+    <div>
+          <div class="mb-2">
+          <label><strong>Branch Location</strong> <span style="color:red">*</span></label>
+
+    <select id="region" class="form-control">
+        <option value="">Select Region</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Province <span style="color:red">*</span></label>
+    <select id="province" class="form-control">
+        <option value="">Select Province</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>City / Municipality <span style="color:red">*</span></label>
+    <select id="city" class="form-control">
+        <option value="">Select City/Municipality</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Barangay <span style="color:red">*</span></label>
+    <select id="barangay" class="form-control">
+        <option value="">Select Barangay</option>
+    </select>
+</div>
+
+        <div class="mt-3">
+            <label for="branch-permit" class="form-label">Branch Business Permit (Image/PDF) <span style="color:red">*</span></label>
+            <input type="file" id="branch-permit" class="form-control" accept="image/*,.pdf" required>
+            <small class="text-muted">Upload a clear image or PDF of your branch business permit (max 5MB)</small>
+        </div>
+    </div>
+`,
+                didOpen: () => {
+                    $.getJSON('../json/refprovince.json', d => provinceData = d.RECORDS);
+                    $.getJSON('../json/refcitymun.json', d => citymunData = d.RECORDS);
+                    $.getJSON('../json/refbrgy.json', d => barangayData = d.RECORDS);
+
+                    loadRegions();
+
+                    // Region change
+                    $('#region').on('change', function () {
+                        loadProvinces(this.value);
+                        $('#city, #barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // Province change
+                    $('#province').on('change', function () {
+                        loadCities(this.value);
+                        $('#barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // City change
+                    $('#city').on('change', function () {
+                        loadBarangays(this.value);
+                    });
+                    let regionData = [], provinceData = [], citymunData = [], barangayData = [];
+
+                    function loadRegions() {
+                        $.getJSON('../json/refregion.json', function (data) {
+                            regionData = data.RECORDS;
+                            $('#region').append(regionData.map(r => `<option value="${r.regCode}">${r.regDesc}</option>`));
+                        });
+                    }
+
+                    function loadProvinces(regionCode) {
+                        $('#province').empty().append('<option value="">Select Province</option>');
+                        const provinces = provinceData.filter(p => p.regCode === regionCode);
+                        $('#province').append(provinces.map(p => `<option value="${p.provCode}">${p.provDesc}</option>`));
+                    }
+
+                    function loadCities(provCode) {
+                        $('#city').empty().append('<option value="">Select City/Municipality</option>');
+                        const cities = citymunData.filter(c => c.provCode === provCode);
+                        $('#city').append(cities.map(c => `<option value="${c.citymunCode}">${c.citymunDesc}</option>`));
+                    }
+
+                    function loadBarangays(citymunCode) {
+                        $('#barangay').empty().append('<option value="">Select Barangay</option>');
+                        const brgys = barangayData.filter(b => b.citymunCode === citymunCode);
+                        $('#barangay').append(brgys.map(b => `<option value="${b.brgyCode}">${b.brgyDesc}</option>`));
+                    }
+
+                },
                 confirmButtonText: 'Add Branch',
                 focusConfirm: false,
                 showCancelButton: true,
                 preConfirm: () => {
-                    const location = document.getElementById('branch-location').value.trim();
+                    const regionText = $('#region option:selected').text();
+                    const provinceText = $('#province option:selected').text();
+                    const cityText = $('#city option:selected').text();
+                    const barangayText = $('#barangay option:selected').text();
+
+                    const fullAddress = `${barangayText}, ${cityText}, ${provinceText}, ${regionText}`;
+                    const location = fullAddress;
                     const permitFile = document.getElementById('branch-permit').files[0];
 
                     if (!location || !permitFile) {
@@ -1502,9 +1693,93 @@ $stmt->close();
 
 
         // Add Product
+        //         function addProduct(businessId) {
+        //             const productTypesOptions = <?php echo json_encode($product_types); ?>; // Pass PHP array to JavaScript
+        //             const sizeOptions = <?php echo json_encode($size_options); ?>; // Pass size options to JavaScript
+
+        //             const typeOptions = productTypesOptions.map(type => `<option value="${type}">${type}</option>`).join('');
+        //             const sizeDropdown = Object.keys(sizeOptions).map(category => {
+        //                 const sizes = sizeOptions[category].map(size => `<option value="${size}">${size}</option>`).join('');
+        //                 return `<optgroup label="${category}">${sizes}</optgroup>`;
+        //             }).join('');
+
+        //             Swal.fire({
+        //                 title: 'Add Product',
+        //                 html: `
+        //     <label>Product Name <span style="color:red">*</span></label>
+        //     <input id="product-name" class="form-control mb-2" placeholder="Product Name">
+
+        //     <label>Product Type <span style="color:red">*</span></label>
+        //     <select id="product-type" class="form-control mb-2">
+        //         <option value="">Select Type</option>
+        //         ${typeOptions}
+        //     </select>
+
+        //     <input id="product-type-custom" class="form-control mb-2" placeholder="Or specify a new type (optional)">
+
+        //     <label>Product Size <span style="color:red">*</span></label>
+        //     <select id="product-size" class="form-control mb-2">
+        //         <option value="">Select Size</option>
+        //         ${sizeDropdown}
+        //     </select>
+
+        //     <input id="product-size-custom" class="form-control mb-2" placeholder="Or specify a new size (optional)">
+
+        //     <label>Product Price <span style="color:red">*</span></label>
+        //     <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
+
+        //     <label>Product Description <span style="color:red">*</span></label>
+        //     <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
+        // `,
+
+        //                 showCancelButton: true,
+        //                 confirmButtonText: 'Add Product',
+        //                 preConfirm: () => {
+        //                     const name = document.getElementById('product-name').value;
+        //                     const type = document.getElementById('product-type').value || document.getElementById('product-type-custom').value; // Use custom type if selected
+        //                     const size = document.getElementById('product-size').value || document.getElementById('product-size-custom').value; // Use custom size if selected
+        //                     const price = document.getElementById('product-price').value;
+        //                     const description = document.getElementById('product-description').value;
+
+        //                     if (!name || !type || !size || !price || !description) {
+        //                         Swal.showValidationMessage('Please fill out all fields');
+        //                     }
+
+        //                     return {
+        //                         business_id: businessId,
+        //                         name,
+        //                         type,
+        //                         size,
+        //                         price,
+        //                         description
+        //                     };
+        //                 }
+        //             }).then(result => {
+        //                 if (result.isConfirmed) {
+        //                     fetch('../endpoints/product/add_product.php', {
+        //                         method: 'POST',
+        //                         headers: {
+        //                             'Content-Type': 'application/json'
+        //                         },
+        //                         body: JSON.stringify(result.value)
+        //                     })
+        //                         .then(response => response.json())
+        //                         .then(data => {
+        //                             if (data.success) {
+        //                                 Swal.fire('Success', 'Product added successfully!', 'success').then(() => {
+        //                                     location.reload();
+        //                                 });
+        //                             } else {
+        //                                 Swal.fire('Error', data.message, 'error');
+        //                             }
+        //                         })
+        //                         .catch(error => Swal.fire('Error', 'An error occurred.', 'error'));
+        //                 }
+        //             });
+        //         }
         function addProduct(businessId) {
-            const productTypesOptions = <?php echo json_encode($product_types); ?>; // Pass PHP array to JavaScript
-            const sizeOptions = <?php echo json_encode($size_options); ?>; // Pass size options to JavaScript
+            const productTypesOptions = <?php echo json_encode($product_types); ?>;
+            const sizeOptions = <?php echo json_encode($size_options); ?>;
 
             const typeOptions = productTypesOptions.map(type => `<option value="${type}">${type}</option>`).join('');
             const sizeDropdown = Object.keys(sizeOptions).map(category => {
@@ -1512,68 +1787,117 @@ $stmt->close();
                 return `<optgroup label="${category}">${sizes}</optgroup>`;
             }).join('');
 
-            Swal.fire({
-                title: 'Add Product',
-                html: `
-                                <input id="product-name" class="form-control mb-2" placeholder="Product Name">
-                                    <select id="product-type" class="form-control mb-2">
-                                        <option value="">Select Type</option>
-                                        ${typeOptions}
-                                    </select>
-                                    <input id="product-type-custom" class="form-control mb-2" placeholder="Or specify a new type (optional)">
-                                        <select id="product-size" class="form-control mb-2">
-                                            <option value="">Select Size</option>
-                                            ${sizeDropdown}
-                                        </select>
-                                        <input id="product-size-custom" class="form-control mb-2" placeholder="Or specify a new size (optional)">
-                                            <input id="product-price" type="number" class="form-control mb-2" placeholder="Product Price">
-                                                <textarea id="product-description" class="form-control mb-2" placeholder="Product Description"></textarea>
-                                                `,
-                showCancelButton: true,
-                confirmButtonText: 'Add Product',
-                preConfirm: () => {
-                    const name = document.getElementById('product-name').value;
-                    const type = document.getElementById('product-type').value || document.getElementById('product-type-custom').value; // Use custom type if selected
-                    const size = document.getElementById('product-size').value || document.getElementById('product-size-custom').value; // Use custom size if selected
-                    const price = document.getElementById('product-price').value;
-                    const description = document.getElementById('product-description').value;
+            let productIndex = 0;
 
-                    if (!name || !type || !size || !price || !description) {
-                        Swal.showValidationMessage('Please fill out all fields');
+            const getProductRow = (index, isLast) => `
+    <div class="product-entry d-flex align-items-end gap-2 mb-2 flex-wrap border p-2 rounded" data-index="${index}" style="background:#f9f9f9;">
+        <div class="flex-fill">
+            <label>Product Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="Name" data-name="name">
+        </div>
+        <div class="flex-fill">
+            <label>Product Type <span style="color:red">*</span></label>
+            <select class="form-control" data-name="type">
+                <option value="">Select Type</option>
+                ${typeOptions}
+            </select>
+            <input class="form-control mt-1" placeholder="Or custom type" data-name="type-custom">
+        </div>
+        <div class="flex-fill">
+            <label>Product Size <span style="color:red">*</span></label>
+            <select class="form-control" data-name="size">
+                <option value="">Select Size</option>
+                ${sizeDropdown}
+            </select>
+            <input class="form-control mt-1" placeholder="Or custom size" data-name="size-custom">
+        </div>
+        <div class="flex-fill">
+            <label>Price <span style="color:red">*</span></label>
+            <input type="number" class="form-control" placeholder="Price" data-name="price">
+        </div>
+        <div class="flex-fill">
+            <label>Description <span style="color:red">*</span></label>
+            <textarea class="form-control" placeholder="Description" data-name="description"></textarea>
+        </div>
+        <div class="d-flex align-items-end mb-2">
+            ${isLast ? `<button type="button" class="btn btn-success btn-sm add-product-btn" title="Add another product">+</button>` : ''}
+        </div>
+    </div>`;
+
+            const renderForm = () => {
+                const container = document.getElementById('product-forms');
+                const entries = Array.from(container.children);
+                container.innerHTML = '';
+                entries.forEach((entry, i) => {
+                    const index = parseInt(entry.getAttribute('data-index'));
+                    container.innerHTML += getProductRow(index, i === entries.length - 1);
+                });
+                attachAddButtons();
+            };
+
+            const attachAddButtons = () => {
+                document.querySelectorAll('.add-product-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        productIndex++;
+                        const container = document.getElementById('product-forms');
+                        container.insertAdjacentHTML('beforeend', getProductRow(productIndex, true));
+                        renderForm(); // Re-render to move the "+" to the latest row only
+                    });
+                });
+            };
+
+            Swal.fire({
+                title: 'Add Multiple Products',
+                html: `<div id="product-forms">${getProductRow(productIndex, true)}</div>`,
+                customClass: { popup: 'swal-wide' }, // Optional wider modal
+                confirmButtonText: 'Submit All',
+                showCancelButton: true,
+                didOpen: () => attachAddButtons(),
+                preConfirm: () => {
+                    const entries = Array.from(document.querySelectorAll('.product-entry'));
+                    const products = [];
+
+                    for (const entry of entries) {
+                        const get = (selector) => entry.querySelector(`[data-name="${selector}"]`)?.value.trim();
+                        const name = get('name');
+                        const type = get('type') || get('type-custom');
+                        const size = get('size') || get('size-custom');
+                        const price = get('price');
+                        const description = get('description');
+
+                        if (!name || !type || !size || !price || !description) {
+                            Swal.showValidationMessage('All fields are required for each product.');
+                            return false;
+                        }
+
+                        products.push({
+                            business_id: businessId,
+                            name, type, size, price, description
+                        });
                     }
 
-                    return {
-                        business_id: businessId,
-                        name,
-                        type,
-                        size,
-                        price,
-                        description
-                    };
+                    return products;
                 }
             }).then(result => {
                 if (result.isConfirmed) {
                     fetch('../endpoints/product/add_product.php', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(result.value)
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ products: result.value })
                     })
-                        .then(response => response.json())
+                        .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire('Success', 'Product added successfully!', 'success').then(() => {
-                                    location.reload();
-                                });
+                                Swal.fire('Success', `${data.count} product(s) added.`, 'success').then(() => location.reload());
                             } else {
-                                Swal.fire('Error', data.message, 'error');
+                                Swal.fire('Error', data.message || 'Failed to add products.', 'error');
                             }
                         })
-                        .catch(error => Swal.fire('Error', 'An error occurred.', 'error'));
+                        .catch(err => Swal.fire('Error', 'Server error.', 'error'));
                 }
             });
         }
+
 
         // Edit Product
         function editProduct(productId) {
@@ -2267,6 +2591,60 @@ $stmt->close();
                 setTimeout(showBranchApprovalAlert, 50);
             });
         });
+
+        const zamboangaCityBarangays = [
+            "Ayala", "Baliwasan", "Boalan", "Bolong", "Buenavista",
+            "Canelar", "Divisoria", "Guiwan", "Lunzuran", "Pasonanca",
+            "Putik", "San Jose Gusu", "Santa Maria", "Tetuan", "Tugbungan",
+            "Taluksangay", "Vitali", "Zambowood"
+
+        ];
+
+        const barangayDropdown = document.getElementById("barangay");
+
+        window.addEventListener("DOMContentLoaded", () => {
+            zamboangaCityBarangays.forEach(barangay => {
+                const option = document.createElement("option");
+                option.value = barangay;
+                option.textContent = barangay;
+                barangayDropdown.appendChild(option);
+            });
+        });
+
+        function confirmUnregisteredProduct(productId) {
+            Swal.fire({
+                title: 'Confirm Product?',
+                text: 'This will mark the product as registered.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX to update unregistered to 0
+                    fetch('../endpoints/product/update_unregistered_status.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id: productId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Confirmed!', 'The product is now registered.', 'success')
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', 'Something went wrong.', 'error');
+                            }
+                        });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Trigger the delete function instead
+                    deleteProduct(productId);
+                }
+            });
+        }
     </script>
 
 

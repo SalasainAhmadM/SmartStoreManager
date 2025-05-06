@@ -495,7 +495,8 @@ while ($row = $result->fetch_assoc()) {
                                                     <td><?= htmlspecialchars($manager['email']) ?></td>
                                                     <td><?= htmlspecialchars($manager['user_name']) ?></td>
                                                     <td><?= htmlspecialchars($manager['contact_number']) ?></td>
-                                                    <td><?= htmlspecialchars($manager['address']) ?></td>
+                                                    <td><?= htmlspecialchars($manager['barangay'] . "," . $manager['city'] . "," . $manager['province'] . "," . $manager['region']) ?>
+                                                    </td>
                                                     <td class="text-center">
                                                         <a href="#" class="text-primary me-3 edit-manager"
                                                             data-id="<?= $manager['id'] ?>"
@@ -904,18 +905,144 @@ while ($row = $result->fetch_assoc()) {
             Swal.fire({
                 title: 'Create Manager',
                 html: `
-                                                        <input id="manager-email" class="form-control mb-2" placeholder="Email" type="email">
-                                                            <input id="manager-username" class="form-control mb-2" placeholder="Username">
-                                                                <input id="manager-firstname" class="form-control mb-2" placeholder="First Name">
-                                                                    <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name">
-                                                                        <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name">
-                                                                            <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number">
-                                                                                <input id="manager-address" class="form-control mb-2" placeholder="Address">
-                                                                                    <input id="manager-password" class="form-control mb-2" placeholder="Password" type="password">
-                                                                                        `,
+        <div class="mb-2">
+            <label for="manager-email" class="form-label text-center w-100">Email <span style="color:red">*</span></label>
+            <input id="manager-email" class="form-control" placeholder="Email" type="email">
+        </div>
+
+        <div class="mb-2">
+            <label for="manager-username" class="form-label text-center w-100">Username <span style="color:red">*</span></label>
+            <input id="manager-username" class="form-control" placeholder="Username">
+        </div>
+
+        <div class="mb-2">
+            <label for="manager-firstname" class="form-label text-center w-100">First Name <span style="color:red">*</span></label>
+            <input id="manager-firstname" class="form-control" placeholder="First Name">
+        </div>
+
+        <div class="mb-2">
+            <label for="manager-middlename" class="form-label text-center w-100">Middle Name</label>
+            <input id="manager-middlename" class="form-control" placeholder="Middle Name">
+        </div>
+
+        <div class="mb-2">
+            <label for="manager-lastname" class="form-label text-center w-100">Last Name <span style="color:red">*</span></label>
+            <input id="manager-lastname" class="form-control" placeholder="Last Name">
+        </div>
+
+        <div class="mb-2">
+            <label for="manager-phone" class="form-label text-center w-100">Contact Number <span style="color:red">*</span></label>
+            <input id="manager-phone" class="form-control" placeholder="Contact Number">
+        </div>
+
+        <div class="mb-2">
+    <label>Region <span style="color:red">*</span></label>
+    <select id="manager-region" class="form-control">
+        <option value="">Select Region</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Province <span style="color:red">*</span></label>
+    <select id="manager-province" class="form-control">
+        <option value="">Select Province</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>City / Municipality <span style="color:red">*</span></label>
+    <select id="manager-city" class="form-control">
+        <option value="">Select City/Municipality</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Barangay <span style="color:red">*</span></label>
+    <select id="manager-barangay" class="form-control">
+        <option value="">Select Barangay</option>
+    </select>
+</div>
+
+        <div class="mb-2">
+            <label for="manager-password" class="form-label text-center w-100">Password <span style="color:red">*</span></label>
+            <input id="manager-password" class="form-control" placeholder="Password" type="password">
+        </div>
+    `,
                 confirmButtonText: 'Create',
                 showCancelButton: true,
-                cancelButtonText: 'Cancel',
+                cancelButtonText: 'Cancel'
+                ,
+                didOpen: () => {
+                    // Fetch and populate region dropdown
+                    fetch('../json/refregion.json')
+                        .then(res => res.json())
+                        .then(data => {
+                            const regionSelect = document.getElementById('manager-region');
+                            data.RECORDS.forEach(region => {
+                                const opt = document.createElement('option');
+                                opt.value = region.regCode;
+                                opt.textContent = region.regDesc;
+                                regionSelect.appendChild(opt);
+                            });
+                        });
+
+                    // Handle region → province
+                    document.getElementById('manager-region').addEventListener('change', function () {
+                        const regCode = this.value;
+                        const provinceSelect = document.getElementById('manager-province');
+                        provinceSelect.innerHTML = '<option value="">Select Province</option>';
+                        document.getElementById('manager-city').innerHTML = '<option value="">Select City/Municipality</option>';
+                        document.getElementById('manager-barangay').innerHTML = '<option value="">Select Barangay</option>';
+
+                        fetch('../json/refprovince.json')
+                            .then(res => res.json())
+                            .then(data => {
+                                data.RECORDS.filter(p => p.regCode === regCode).forEach(province => {
+                                    const opt = document.createElement('option');
+                                    opt.value = province.provCode;
+                                    opt.textContent = province.provDesc;
+                                    provinceSelect.appendChild(opt);
+                                });
+                            });
+                    });
+
+                    // Handle province → city
+                    document.getElementById('manager-province').addEventListener('change', function () {
+                        const provCode = this.value;
+                        const citySelect = document.getElementById('manager-city');
+                        citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                        document.getElementById('manager-barangay').innerHTML = '<option value="">Select Barangay</option>';
+
+                        fetch('../json/refcitymun.json')
+                            .then(res => res.json())
+                            .then(data => {
+                                data.RECORDS.filter(c => c.provCode === provCode).forEach(city => {
+                                    const opt = document.createElement('option');
+                                    opt.value = city.citymunCode;
+                                    opt.textContent = city.citymunDesc;
+                                    citySelect.appendChild(opt);
+                                });
+                            });
+                    });
+
+                    // Handle city → barangay
+                    document.getElementById('manager-city').addEventListener('change', function () {
+                        const cityCode = this.value;
+                        const brgySelect = document.getElementById('manager-barangay');
+                        brgySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                        fetch('../json/refbrgy.json')
+                            .then(res => res.json())
+                            .then(data => {
+                                data.RECORDS.filter(b => b.citymunCode === cityCode).forEach(brgy => {
+                                    const opt = document.createElement('option');
+                                    opt.value = brgy.brgyDesc;
+                                    opt.textContent = brgy.brgyDesc;
+                                    brgySelect.appendChild(opt);
+                                });
+                            });
+                    });
+                },
                 preConfirm: () => {
                     const email = document.getElementById('manager-email').value;
                     const username = document.getElementById('manager-username').value;
@@ -923,10 +1050,13 @@ while ($row = $result->fetch_assoc()) {
                     const middleName = document.getElementById('manager-middlename').value;
                     const lastName = document.getElementById('manager-lastname').value;
                     const phone = document.getElementById('manager-phone').value;
-                    const address = document.getElementById('manager-address').value;
+                    const region = document.getElementById('manager-region').selectedOptions[0].textContent;
+                    const province = document.getElementById('manager-province').selectedOptions[0].textContent;
+                    const city = document.getElementById('manager-city').selectedOptions[0].textContent;
+                    const barangay = document.getElementById('manager-barangay').selectedOptions[0].textContent;
                     const password = document.getElementById('manager-password').value;
 
-                    if (!email || !username || !firstName || !lastName || !phone || !address || !password) {
+                    if (!email || !username || !firstName || !lastName || !phone || !password) {
                         Swal.showValidationMessage('All fields are required');
                     }
 
@@ -937,7 +1067,10 @@ while ($row = $result->fetch_assoc()) {
                         middleName,
                         lastName,
                         phone,
-                        address,
+                        barangay,
+                        city,
+                        province,
+                        region,
                         password,
                         ownerId
                     };
@@ -986,11 +1119,108 @@ while ($row = $result->fetch_assoc()) {
                     <input id="manager-middlename" class="form-control mb-2" placeholder="Middle Name" value="${managerDetails.middle_name}">
                     <input id="manager-lastname" class="form-control mb-2" placeholder="Last Name" value="${managerDetails.last_name}">
                     <input id="manager-phone" class="form-control mb-2" placeholder="Contact Number" value="${managerDetails.contact_number}">
-                    <input id="manager-address" class="form-control mb-2" placeholder="Address" value="${managerDetails.address}">
+                    <select id="manager-region" class="form-control mb-2">
+    <option value="">Select Region</option>
+</select>
+<select id="manager-province" class="form-control mb-2">
+    <option value="">Select Province</option>
+</select>
+<select id="manager-city" class="form-control mb-2">
+    <option value="">Select City/Municipality</option>
+</select>
+<select id="manager-barangay" class="form-control mb-2">
+    <option value="">Select Barangay</option>
+</select>
+
                 `,
                         confirmButtonText: 'Update',
                         showCancelButton: true,
                         cancelButtonText: 'Cancel',
+                        didOpen: () => {
+                            const regionSelect = document.getElementById('manager-region');
+                            const provinceSelect = document.getElementById('manager-province');
+                            const citySelect = document.getElementById('manager-city');
+                            const barangaySelect = document.getElementById('manager-barangay');
+
+                            const selectedRegion = managerDetails.region;
+                            const selectedProvince = managerDetails.province;
+                            const selectedCity = managerDetails.city;
+                            const selectedBarangay = managerDetails.barangay;
+
+                            fetch('../json/refregion.json')
+                                .then(res => res.json())
+                                .then(data => {
+                                    data.RECORDS.forEach(region => {
+                                        const opt = document.createElement('option');
+                                        opt.value = region.regCode;
+                                        opt.textContent = region.regDesc;
+                                        if (region.regDesc === selectedRegion) opt.selected = true;
+                                        regionSelect.appendChild(opt);
+                                    });
+
+                                    // Trigger change to populate province
+                                    regionSelect.dispatchEvent(new Event('change'));
+                                });
+
+                            regionSelect.addEventListener('change', () => {
+                                const regCode = regionSelect.value;
+                                provinceSelect.innerHTML = '<option value="">Select Province</option>';
+                                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                                fetch('../json/refprovince.json')
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        data.RECORDS.filter(p => p.regCode === regCode).forEach(province => {
+                                            const opt = document.createElement('option');
+                                            opt.value = province.provCode;
+                                            opt.textContent = province.provDesc;
+                                            if (province.provDesc === selectedProvince) opt.selected = true;
+                                            provinceSelect.appendChild(opt);
+                                        });
+
+                                        provinceSelect.dispatchEvent(new Event('change'));
+                                    });
+                            });
+
+                            provinceSelect.addEventListener('change', () => {
+                                const provCode = provinceSelect.value;
+                                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                                fetch('../json/refcitymun.json')
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        data.RECORDS.filter(c => c.provCode === provCode).forEach(city => {
+                                            const opt = document.createElement('option');
+                                            opt.value = city.citymunCode;
+                                            opt.textContent = city.citymunDesc;
+                                            if (city.citymunDesc === selectedCity) opt.selected = true;
+                                            citySelect.appendChild(opt);
+                                        });
+
+                                        citySelect.dispatchEvent(new Event('change'));
+                                    });
+                            });
+
+                            citySelect.addEventListener('change', () => {
+                                const cityCode = citySelect.value;
+                                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                                fetch('../json/refbrgy.json')
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        data.RECORDS.filter(b => b.citymunCode === cityCode).forEach(brgy => {
+                                            const opt = document.createElement('option');
+                                            opt.value = brgy.brgyDesc;
+                                            opt.textContent = brgy.brgyDesc;
+                                            if (brgy.brgyDesc === selectedBarangay) opt.selected = true;
+                                            barangaySelect.appendChild(opt);
+                                        });
+                                    });
+                            });
+                        }
+                        ,
                         preConfirm: () => {
                             const email = document.getElementById('manager-email').value;
                             const username = document.getElementById('manager-username').value;
@@ -998,9 +1228,13 @@ while ($row = $result->fetch_assoc()) {
                             const middleName = document.getElementById('manager-middlename').value;
                             const lastName = document.getElementById('manager-lastname').value;
                             const phone = document.getElementById('manager-phone').value;
-                            const address = document.getElementById('manager-address').value;
+                            const region = document.getElementById('manager-region').selectedOptions[0].textContent;
+                            const province = document.getElementById('manager-province').selectedOptions[0].textContent;
+                            const city = document.getElementById('manager-city').selectedOptions[0].textContent;
+                            const barangay = document.getElementById('manager-barangay').selectedOptions[0].textContent;
 
-                            if (!email || !username || !firstName || !lastName || !phone || !address) {
+
+                            if (!email || !username || !firstName || !lastName || !phone) {
                                 Swal.showValidationMessage('All fields are required');
                             }
 
@@ -1012,7 +1246,10 @@ while ($row = $result->fetch_assoc()) {
                                 middleName,
                                 lastName,
                                 phone,
-                                address
+                                city,
+                                province,
+                                barangay,
+                                region
                             };
                         }
                     }).then((result) => {

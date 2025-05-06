@@ -402,58 +402,81 @@ while ($row = $sales_result->fetch_assoc()) {
                 totalSalesCell.textContent = document.getElementById('totalSalesCell').textContent;
             }
 
+            // Get current date and time for the report heading
+            const currentDate = new Date().toLocaleDateString();
+            const currentTime = new Date().toLocaleTimeString();
+            const businessName = "<?php echo htmlspecialchars($assigned_name); ?>"; // Replace with PHP to dynamically insert the business name
+
             // Create a new window for printing
             const printWindow = window.open('', '_blank', 'width=800,height=600');
             printWindow.document.open();
             printWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Sales Report</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 20px;
-                }
-                h1 {
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                table, th, td {
-                    border: 1px solid black;
-                }
-                th, td {
-                    padding: 10px;
-                    text-align: left;
-                }
-                thead {
-                    background-color: #333;
-                    color: #fff;
-                }
-                tfoot {
-                    background-color: #f1f1f1;
-                    font-weight: bold;
-                }
-                button, .btn, .fas.fa-sort {
-                    display: none; /* Hide sort icons and buttons in print */
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Sales Report</h1>
-            ${table.outerHTML}
-        </body>
-        </html>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sales Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                color: #333;
+            }
+            h1 {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .report-heading {
+                text-align: center;
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+            .report-details {
+                margin-bottom: 15px;
+                text-align: center;
+                font-size: 14px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            table, th, td {
+                border: 1px solid black;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+            }
+            thead {
+                background-color: #333;
+                color: #fff;
+            }
+            tfoot {
+                background-color: #f1f1f1;
+                font-weight: bold;
+            }
+            button, .btn, .fas.fa-sort {
+                display: none; /* Hide sort icons and buttons in print */
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Sales Report</h1>
+        <div class="report-heading">
+            <p><strong>Business:</strong> ${businessName}</p>
+            <p><strong>Report Date:</strong> ${currentDate} | <strong>Time:</strong> ${currentTime}</p>
+            <p><strong>Report Details:</strong> Sales data for the business</p>
+        </div>
+        ${table.outerHTML}
+    </body>
+    </html>
     `);
             printWindow.document.close();
             printWindow.print();
         }
+
     </script>
 
 </body>

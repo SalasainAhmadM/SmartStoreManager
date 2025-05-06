@@ -79,7 +79,8 @@ $profileImage = !empty($manager['image']) ? htmlspecialchars($manager['image']) 
                             </div>
                             <div class="form-group">
                                 <i class="fas fa-home"></i>
-                                <span id="address_display"><b><?= $manager['address']; ?></b></span>
+                                <span
+                                    id="address_display"><b><?= $manager['barangay'] . ',' . $manager['city'] . ',' . $manager['province'] . ',' . $manager['region']; ?></b></span>
                                 <a type="button" class="text-primary me-3 fas fa-edit" onclick="editAddress()"></a>
                             </div>
                             <div class="form-group">

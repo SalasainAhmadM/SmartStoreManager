@@ -151,26 +151,43 @@ document.getElementById('addExpenseBtn').addEventListener('click', async functio
     Swal.fire({
         title: 'Add Expenses',
         html: `
-            <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
-            <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
-            <select id="expenseType" class="swal2-input">
-                ${expenseTypesOptions}
-            </select>
-            <select id="expenseMonth" class="swal2-input">
-                <option value="1" ${currentMonth == 1 ? 'selected' : ''}>January</option>
-                <option value="2" ${currentMonth == 2 ? 'selected' : ''}>February</option>
-                <option value="3" ${currentMonth == 3 ? 'selected' : ''}>March</option>
-                <option value="4" ${currentMonth == 4 ? 'selected' : ''}>April</option>
-                <option value="5" ${currentMonth == 5 ? 'selected' : ''}>May</option>
-                <option value="6" ${currentMonth == 6 ? 'selected' : ''}>June</option>
-                <option value="7" ${currentMonth == 7 ? 'selected' : ''}>July</option>
-                <option value="8" ${currentMonth == 8 ? 'selected' : ''}>August</option>
-                <option value="9" ${currentMonth == 9 ? 'selected' : ''}>September</option>
-                <option value="10" ${currentMonth == 10 ? 'selected' : ''}>October</option>
-                <option value="11" ${currentMonth == 11 ? 'selected' : ''}>November</option>
-                <option value="12" ${currentMonth == 12 ? 'selected' : ''}>December</option>
-            </select>
-        `,
+    <div class="mb-">
+        <label for="expenseDescription" class="form-label text-center w-100">Description <span style="color:red">*</span></label>
+        <input type="text" id="expenseDescription" class="swal2-input" placeholder="Description">
+    </div>
+
+    <div class="mb-2">
+        <label for="expenseAmount" class="form-label text-center w-100">Amount <span style="color:red">*</span></label>
+        <input type="number" id="expenseAmount" class="swal2-input" placeholder="Amount">
+    </div>
+
+    <div class="mb-2">
+        <label for="expenseType" class="form-label text-center w-100">Expense Type <span style="color:red">*</span></label>
+        <select id="expenseType" class="swal2-input">
+            ${expenseTypesOptions}
+        </select>
+    </div>
+
+    <div class="mb-2">
+        <label for="expenseMonth" class="form-label text-center w-100">Month <span style="color:red">*</span></label>
+        <select id="expenseMonth" class="swal2-input">
+            <option value="1" ${currentMonth == 1 ? 'selected' : ''}>January</option>
+            <option value="2" ${currentMonth == 2 ? 'selected' : ''}>February</option>
+            <option value="3" ${currentMonth == 3 ? 'selected' : ''}>March</option>
+            <option value="4" ${currentMonth == 4 ? 'selected' : ''}>April</option>
+            <option value="5" ${currentMonth == 5 ? 'selected' : ''}>May</option>
+            <option value="6" ${currentMonth == 6 ? 'selected' : ''}>June</option>
+            <option value="7" ${currentMonth == 7 ? 'selected' : ''}>July</option>
+            <option value="8" ${currentMonth == 8 ? 'selected' : ''}>August</option>
+            <option value="9" ${currentMonth == 9 ? 'selected' : ''}>September</option>
+            <option value="10" ${currentMonth == 10 ? 'selected' : ''}>October</option>
+            <option value="11" ${currentMonth == 11 ? 'selected' : ''}>November</option>
+            <option value="12" ${currentMonth == 12 ? 'selected' : ''}>December</option>
+        </select>
+    </div>
+`
+,
+    
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Add Expense',

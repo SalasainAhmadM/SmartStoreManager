@@ -211,39 +211,141 @@ function editPhone() {
 
 
 function editAddress() {
-    const address = document.getElementById('address_display').textContent.trim();
-
     Swal.fire({
         title: 'Edit Address',
-        html: `<textarea style='width: 300px' id="address" class="swal2-textarea" placeholder="Enter address">${address}</textarea>`,
+        html: `
+            <div class="mb-2 text-start">
+                <label>Region <span style="color:red">*</span></label>
+                <select id="region" class="form-control">
+                    <option value="">Select Region</option>
+                </select>
+            </div>
+
+            <div class="mb-2 text-start">
+                <label>Province <span style="color:red">*</span></label>
+                <select id="province" class="form-control">
+                    <option value="">Select Province</option>
+                </select>
+            </div>
+
+            <div class="mb-2 text-start">
+                <label>City / Municipality <span style="color:red">*</span></label>
+                <select id="city" class="form-control">
+                    <option value="">Select City/Municipality</option>
+                </select>
+            </div>
+
+            <div class="mb-2 text-start">
+                <label>Barangay <span style="color:red">*</span></label>
+                <select id="barangay" class="form-control">
+                    <option value="">Select Barangay</option>
+                </select>
+            </div>
+        `,
         showCancelButton: true,
         confirmButtonText: 'Save',
-        preConfirm: () => {
-            const address = document.getElementById('address').value.trim();
+        willOpen: () => {
+            const regionSelect = document.getElementById('region');
+            const provinceSelect = document.getElementById('province');
+            const citySelect = document.getElementById('city');
+            const barangaySelect = document.getElementById('barangay');
 
-            if (!address) {
-                Swal.showValidationMessage('Address is required!');
+            // Load regions
+            fetch('../json/refregion.json')
+                .then(res => res.json())
+                .then(data => {
+                    data.RECORDS.forEach(region => {
+                        const opt = document.createElement('option');
+                        opt.value = region.regCode;
+                        opt.textContent = region.regDesc;
+                        regionSelect.appendChild(opt);
+                    });
+                });
+
+            regionSelect.addEventListener('change', () => {
+                provinceSelect.innerHTML = '<option value="">Select Province</option>';
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                fetch('../json/refprovince.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.RECORDS.filter(p => p.regCode === regionSelect.value)
+                            .forEach(province => {
+                                const opt = document.createElement('option');
+                                opt.value = province.provCode;
+                                opt.textContent = province.provDesc;
+                                provinceSelect.appendChild(opt);
+                            });
+                    });
+            });
+
+            provinceSelect.addEventListener('change', () => {
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                fetch('../json/refcitymun.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.RECORDS.filter(c => c.provCode === provinceSelect.value)
+                            .forEach(city => {
+                                const opt = document.createElement('option');
+                                opt.value = city.citymunCode;
+                                opt.textContent = city.citymunDesc;
+                                citySelect.appendChild(opt);
+                            });
+                    });
+            });
+
+            citySelect.addEventListener('change', () => {
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+                fetch('../json/refbrgy.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.RECORDS.filter(b => b.citymunCode === citySelect.value)
+                            .forEach(brgy => {
+                                const opt = document.createElement('option');
+                                opt.value = brgy.brgyDesc;
+                                opt.textContent = brgy.brgyDesc;
+                                barangaySelect.appendChild(opt);
+                            });
+                    });
+            });
+        },
+        preConfirm: () => {
+            const region = document.getElementById('region');
+            const province = document.getElementById('province');
+            const city = document.getElementById('city');
+            const barangay = document.getElementById('barangay');
+
+            if (!region.value || !province.value || !city.value || !barangay.value) {
+                Swal.showValidationMessage('Please complete all address fields!');
+                return false;
             }
 
-            return { address };
+            return {
+                region: region.options[region.selectedIndex].text,
+                province: province.options[province.selectedIndex].text,
+                city: city.options[city.selectedIndex].text,
+                barangay: barangay.options[barangay.selectedIndex].text
+            };
         }
-    }).then((result) => {
+    }).then(result => {
         if (result.isConfirmed) {
-            const { address } = result.value;
+            const { region, province, city, barangay } = result.value;
 
-            fetch('../endpoints/profile/update_profile_manager.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ field: 'address', value: address }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.status === 'success') {
-                        document.getElementById('address_display').textContent = address;
-                        Swal.fire('Saved!', 'Your address has been updated.', 'success');
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
+            // Send all fields in one request or multiple
+            Promise.all([
+                updateProfileField('region', region),
+                updateProfileField('province', province),
+                updateProfileField('city', city),
+                updateProfileField('barangay', barangay),
+            ])
+                .then(() => {
+                    document.getElementById('address_display').innerHTML =
+                        `<b>${barangay}, ${city}, ${province}, ${region}</b>`;
+                    Swal.fire('Saved!', 'Your address has been updated.', 'success');
                 })
                 .catch(() => {
                     Swal.fire('Error!', 'Failed to update your address.', 'error');
@@ -251,6 +353,7 @@ function editAddress() {
         }
     });
 }
+
 
 function editGender() {
     const gender = document.getElementById('gender_display').textContent.trim();

@@ -3461,33 +3461,176 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
 
         function triggerAddBusinessModal(ownerId) {
             Swal.fire({
-                title: 'Add New Business',
+                title: 'Add Business',
                 html: `
             <div>
-                <input type="text" id="business-name" class="form-control mb-2" placeholder="Business Name" required>
-                <input type="text" id="business-description" class="form-control mb-2" placeholder="Business Description">
-                <input type="number" id="business-asset" class="form-control mb-2" placeholder="Asset Size" required>
-                <input type="number" id="employee-count" class="form-control mb-2" placeholder="Number of Employees" required>
-                <input type="text" id="business-location" class="form-control mb-2" placeholder="Location" required>
+                <label class="form-label">Business Name <span style="color:red">*</span></label>
+                <input type="text" id="business-name" class="form-control mb-2" placeholder="Enter business name" required>
+
+                <label class="form-label">Business Description</label>
+                <input type="text" id="business-description" class="form-control mb-2" placeholder="Optional">
+
+                <label class="form-label">Asset Size <span style="color:red">*</span></label>
+                <input type="number" id="business-asset" class="form-control mb-2" placeholder="e.g. 100000" required>
+
+                <label class="form-label">Number of Employees <span style="color:red">*</span></label>
+                <input type="number" id="employee-count" class="form-control mb-2" placeholder="e.g. 10" required>
+
+                 <div class="mb-2">
+    <label>Region <span style="color:red">*</span></label>
+    <select id="region" class="form-control">
+        <option value="">Select Region</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Province <span style="color:red">*</span></label>
+    <select id="province" class="form-control">
+        <option value="">Select Province</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>City / Municipality <span style="color:red">*</span></label>
+    <select id="city" class="form-control">
+        <option value="">Select City/Municipality</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label>Barangay <span style="color:red">*</span></label>
+    <select id="barangay" class="form-control">
+        <option value="">Select Barangay</option>
+    </select>
+</div>
+
+
                 <div class="mt-3">
-                    <label for="business-permit" class="form-label">Business Permit (Image/PDF)</label>
+                    <label class="form-label">Business Permit (Image/PDF) <span style="color:red">*</span></label>
                     <input type="file" id="business-permit" class="form-control" accept="image/*,.pdf" required>
                     <small class="text-muted">Upload a clear image or PDF of your business permit</small>
                 </div>
             </div>
-        `,
+        `, didOpen: () => {
+                    $.getJSON('../json/refprovince.json', d => provinceData = d.RECORDS);
+                    $.getJSON('../json/refcitymun.json', d => citymunData = d.RECORDS);
+                    $.getJSON('../json/refbrgy.json', d => barangayData = d.RECORDS);
+
+                    loadRegions();
+
+                    // Region change
+                    $('#region').on('change', function () {
+                        loadProvinces(this.value);
+                        $('#city, #barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // Province change
+                    $('#province').on('change', function () {
+                        loadCities(this.value);
+                        $('#barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // City change
+                    $('#city').on('change', function () {
+                        loadBarangays(this.value);
+                    });
+                    let regionData = [], provinceData = [], citymunData = [], barangayData = [];
+
+                    function loadRegions() {
+                        $.getJSON('../json/refregion.json', function (data) {
+                            regionData = data.RECORDS;
+                            $('#region').append(regionData.map(r => `<option value="${r.regCode}">${r.regDesc}</option>`));
+                        });
+                    }
+
+                    function loadProvinces(regionCode) {
+                        $('#province').empty().append('<option value="">Select Province</option>');
+                        const provinces = provinceData.filter(p => p.regCode === regionCode);
+                        $('#province').append(provinces.map(p => `<option value="${p.provCode}">${p.provDesc}</option>`));
+                    }
+
+                    function loadCities(provCode) {
+                        $('#city').empty().append('<option value="">Select City/Municipality</option>');
+                        const cities = citymunData.filter(c => c.provCode === provCode);
+                        $('#city').append(cities.map(c => `<option value="${c.citymunCode}">${c.citymunDesc}</option>`));
+                    }
+
+                    function loadBarangays(citymunCode) {
+                        $('#barangay').empty().append('<option value="">Select Barangay</option>');
+                        const brgys = barangayData.filter(b => b.citymunCode === citymunCode);
+                        $('#barangay').append(brgys.map(b => `<option value="${b.brgyCode}">${b.brgyDesc}</option>`));
+                    }
+
+                }, didOpen: () => {
+                    $.getJSON('../json/refprovince.json', d => provinceData = d.RECORDS);
+                    $.getJSON('../json/refcitymun.json', d => citymunData = d.RECORDS);
+                    $.getJSON('../json/refbrgy.json', d => barangayData = d.RECORDS);
+
+                    loadRegions();
+
+                    // Region change
+                    $('#region').on('change', function () {
+                        loadProvinces(this.value);
+                        $('#city, #barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // Province change
+                    $('#province').on('change', function () {
+                        loadCities(this.value);
+                        $('#barangay').empty().append('<option value="">Select</option>');
+                    });
+
+                    // City change
+                    $('#city').on('change', function () {
+                        loadBarangays(this.value);
+                    });
+                    let regionData = [], provinceData = [], citymunData = [], barangayData = [];
+
+                    function loadRegions() {
+                        $.getJSON('../json/refregion.json', function (data) {
+                            regionData = data.RECORDS;
+                            $('#region').append(regionData.map(r => `<option value="${r.regCode}">${r.regDesc}</option>`));
+                        });
+                    }
+
+                    function loadProvinces(regionCode) {
+                        $('#province').empty().append('<option value="">Select Province</option>');
+                        const provinces = provinceData.filter(p => p.regCode === regionCode);
+                        $('#province').append(provinces.map(p => `<option value="${p.provCode}">${p.provDesc}</option>`));
+                    }
+
+                    function loadCities(provCode) {
+                        $('#city').empty().append('<option value="">Select City/Municipality</option>');
+                        const cities = citymunData.filter(c => c.provCode === provCode);
+                        $('#city').append(cities.map(c => `<option value="${c.citymunCode}">${c.citymunDesc}</option>`));
+                    }
+
+                    function loadBarangays(citymunCode) {
+                        $('#barangay').empty().append('<option value="">Select Barangay</option>');
+                        const brgys = barangayData.filter(b => b.citymunCode === citymunCode);
+                        $('#barangay').append(brgys.map(b => `<option value="${b.brgyCode}">${b.brgyDesc}</option>`));
+                    }
+
+                },
                 confirmButtonText: 'Add Business',
                 showCancelButton: true,
                 cancelButtonText: 'Skip',
                 preConfirm: () => {
+                    const regionText = $('#region option:selected').text();
+                    const provinceText = $('#province option:selected').text();
+                    const cityText = $('#city option:selected').text();
+                    const barangayText = $('#barangay option:selected').text();
+
+                    const fullAddress = `${barangayText}, ${cityText}, ${provinceText}, ${regionText}`;
+
                     const businessName = document.getElementById('business-name').value.trim();
                     const businessAsset = document.getElementById('business-asset').value.trim();
                     const employeeCount = document.getElementById('employee-count').value.trim();
-                    const location = document.getElementById('business-location').value.trim();
+                    const location = fullAddress;
                     const permitFile = document.getElementById('business-permit').files[0];
 
                     if (!businessName || !businessAsset || !employeeCount || !location || !permitFile) {
-                        Swal.showValidationMessage('Please fill in all required fields and upload business permit');
+                        Swal.showValidationMessage('Please fill in all required fields and upload the business permit.');
                         return false;
                     }
 
@@ -3533,7 +3676,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                             console.error(err);
                         });
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    // Skip business creation
                     fetch('../endpoints/business/skip_business_prompt.php', {
                         method: 'POST',
                         headers: {
@@ -3542,10 +3684,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetchFilteredData') {
                         body: JSON.stringify({
                             owner_id: ownerId || <?= json_encode($_SESSION['user_id']); ?>
                         })
-                    })
+                    });
                 }
             });
         }
+
     </script>
 
 

@@ -12,8 +12,11 @@ use PHPMailer\PHPMailer\Exception;
 
 validateSession('admin');
 
-if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    $businessId = $_GET['id'] ?? null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $businessId = $data['businessId'] ?? null;
+    $feedback = trim($data['feedback'] ?? '');
+
 
     if (!$businessId) {
         echo json_encode(['success' => false, 'message' => 'Invalid business ID']);
@@ -67,10 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
             $mail->isHTML(true);
             $mail->Subject = 'Business Rejected';
             $mail->Body = "
-                <h3>Your business <strong>{$businessName}</strong> has been rejected.</h3>
-                <p>If you think this was a mistake, please contact our support team immediately.</p>
-            ";
-            $mail->AltBody = 'Your business has been deleted.';
+    <h3>Your business <strong>{$businessName}</strong> has been rejected.</h3>
+    " . ($feedback ? "<p><strong>Reason:</strong> {$feedback}</p>" : "") . "
+    <p>If you think this was a mistake, please contact our support team immediately.</p>
+";
+
+            $mail->AltBody = 'Your business has been rejected.' . ($feedback ? " Reason: $feedback" : '');
+
 
             $mail->send();
             $emailStatus['sent'] = true;

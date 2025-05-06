@@ -217,19 +217,19 @@ document.getElementById("addSaleButton").addEventListener("click", function () {
                 Swal.fire({
                     title: "Add Sales",
                     html: `
-                        <label for="branchSelect">Branch</label>
+                        <label for="branchSelect">Branch<span style="color:red">*</span></label>
                         <select id="branchSelect" class="form-control mb-2">${branchOptions}</select>
 
-                        <label for="productSelect">Product</label>
+                        <label for="productSelect">Product<span style="color:red">*</span></label>
                         <select id="productSelect" class="form-control mb-2">${productOptions}</select>
 
-                        <label for="amountSold">Amount Sold</label>
+                        <label for="amountSold">Amount Sold<span style="color:red">*</span></label>
                         <input type="number" id="amountSold" class="form-control mb-2" min="1" placeholder="Enter amount sold">
 
-                        <label for="totalSales">Total Sales</label>
+                        <label for="totalSales">Total Sales<span style="color:red">*</span></label>
                         <input type="text" id="totalSales" class="form-control mb-2" readonly placeholder="₱0">
 
-                        <label for="saleDate">Sales Date</label>
+                        <label for="saleDate">Sales Date<span style="color:red">*</span></label>
                         <input type="date" id="saleDate" class="form-control mb-2" value="${today}" readonly>
                     `,
                     didOpen: () => {
