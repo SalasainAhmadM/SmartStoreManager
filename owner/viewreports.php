@@ -12,25 +12,25 @@ function fetchBusinessOverview($owner_id)
     global $conn;
 
     $query = "
-        SELECT b.id AS business_id, b.name AS business_name,
-            SUM(DISTINCT CASE 
-                WHEN e.category = 'business' AND e.category_id = b.id THEN e.amount
-                ELSE 0
-            END) +
-            SUM(DISTINCT CASE 
-                WHEN e.category = 'branch' AND e.category_id = br.id THEN e.amount
-                ELSE 0
-            END) AS total_expenses
+        SELECT 
+            b.id AS business_id,
+            b.name AS business_name,
+            COALESCE((
+                SELECT SUM(amount) 
+                FROM expenses 
+                WHERE category = 'business' AND category_id = b.id
+            ), 0) AS business_expenses,
+            COALESCE((
+                SELECT SUM(e.amount)
+                FROM branch br
+                JOIN expenses e ON e.category = 'branch' AND e.category_id = br.id
+                WHERE br.business_id = b.id
+            ), 0) AS branch_expenses
         FROM business b
-        LEFT JOIN branch br ON b.id = br.business_id
-        LEFT JOIN products p ON p.business_id = b.id
-        LEFT JOIN expenses e ON (e.category = 'business' AND e.category_id = b.id)
-                            OR (e.category = 'branch' AND e.category_id = br.id)
         WHERE b.owner_id = ?
-        GROUP BY b.id, b.name
+        GROUP BY b.id
     ";
 
-    // Prepare and execute the query
     if ($stmt = $conn->prepare($query)) {
         $stmt->bind_param("i", $owner_id);
         $stmt->execute();
@@ -38,6 +38,7 @@ function fetchBusinessOverview($owner_id)
 
         $businesses = [];
         while ($row = $result->fetch_assoc()) {
+            $row['total_expenses'] = $row['business_expenses'] + $row['branch_expenses'];
             $businesses[] = $row;
         }
 
@@ -47,6 +48,8 @@ function fetchBusinessOverview($owner_id)
         return false;
     }
 }
+
+
 
 function fetchSalesData($owner_id)
 {
@@ -272,10 +275,10 @@ $salesData = fetchSalesData($owner_id);
                                         echo "<td>₱" . number_format($total_sales, 2) . "</td>";
                                         echo "<td>₱" . number_format($total_expenses, 2) . "</td>";
                                         echo "<td><button class='swal2-print-btn view-branches' 
-            data-business-id='" . $business['business_id'] . "' 
-            onclick=\"fetchAndShowBranchDetails(" . $business['business_id'] . ")\">
-            View Branches
-        </button></td>";
+                data-business-id='" . $business['business_id'] . "' 
+                onclick=\"fetchAndShowBranchDetails(" . $business['business_id'] . ")\">
+                View Branches
+            </button></td>";
                                         echo "</tr>";
                                     }
                                 } else {

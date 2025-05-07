@@ -226,7 +226,7 @@ function fetchSalesByDate(date) {
     })
     .catch((error) => {
       console.error("Error fetching sales data:", error);
-      Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
+      // Swal.fire("Error", "Failed to fetch sales data. Please try again later.", "error");
     });
 }
 
@@ -282,6 +282,7 @@ function confirmSale(salesId) {
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: 'Yes, confirm it',
+    cancelButtonText: 'Cancel'
   }).then((result) => {
     if (result.isConfirmed) {
       fetch('../endpoints/sales/confirm_sale.php', {
@@ -302,6 +303,42 @@ function confirmSale(salesId) {
           console.error(err);
           Swal.fire('Error', 'Something went wrong.', 'error');
         });
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      deleteSale(salesId); 
+    }
+  });
+}
+
+function deleteSale(salesId) {
+  Swal.fire({
+    title: 'Delete Sale',
+    text: 'Are you sure you want to permanently delete this sale?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../endpoints/sales/delete_sale.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sales_id: salesId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire('Deleted!', 'Sale has been removed.', 'success');
+            fetchSalesByDate(); // Refresh the table
+          } else {
+            Swal.fire('Error', data.message || 'Failed to delete sale.', 'error');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          Swal.fire('Error', 'Something went wrong.', 'error');
+        });
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      Swal.fire('Cancelled', 'Sale was not deleted.', 'info');
     }
   });
 }
