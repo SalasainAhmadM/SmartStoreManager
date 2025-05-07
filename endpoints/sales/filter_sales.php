@@ -62,6 +62,7 @@ switch ($period) {
 
 $query = "
     SELECT 
+        s.id AS sales_id,
         p.name AS product_name,
         s.quantity,
         s.total_sales,
@@ -69,7 +70,8 @@ $query = "
             WHEN s.type = 'branch' THEN br.location
             ELSE b.name
         END AS business_or_branch_name,
-        s.date
+        s.date,
+         s.unregistered
     FROM sales s
     JOIN products p ON s.product_id = p.id
     JOIN business b ON p.business_id = b.id
@@ -77,7 +79,7 @@ $query = "
     WHERE b.owner_id = ? 
     $businessFilter 
     $dateFilter
-    ORDER BY s.date DESC
+     ORDER BY s.unregistered DESC, s.date DESC
 ";
 
 $stmt = $conn->prepare($query);

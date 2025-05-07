@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Prepare the SQL statement for inserting sales data
     $stmt = $conn->prepare("
-        INSERT INTO sales (quantity, total_sales, date, product_id, branch_id, type)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO sales (quantity, total_sales, date, product_id, branch_id, type, unregistered)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
     ");
 
     if (!$stmt) {

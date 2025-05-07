@@ -181,13 +181,22 @@ function renderTablePage(page) {
     `;
   } else {
     pageSales.forEach((sale) => {
+      const showConfirmIcon = sale.unregistered === 1;
+      const confirmIconHTML = showConfirmIcon
+        ? `<i class="fas fa-check-circle text-success cursor-pointer ms-2" title="Confirm" onclick="confirmSale(${sale.sales_id})"></i>`
+        : '';
+
       tableBody.innerHTML += `
         <tr>
           <td>${sale.product_name}</td>
           <td>${sale.business_or_branch_name}</td>
           <td>${sale.quantity}</td>
           <td>${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 2 }).format(sale.total_sales)}</td>
-          <td>${formatDateToMMDDYYYY(sale.date)}</td>
+          <td>
+            <div class="d-flex align-items-center">
+              <span>${formatDateToMMDDYYYY(sale.date)}</span>${confirmIconHTML}
+            </div>
+          </td>
         </tr>
       `;
     });
@@ -200,6 +209,7 @@ function renderTablePage(page) {
   // Update page info
   document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${Math.ceil(salesData.length / rowsPerPage)}`;
 }
+
 
 // Modify fetch functions to use pagination
 function fetchSalesByDate(date) {
@@ -263,3 +273,35 @@ document.getElementById("nextPage").addEventListener("click", () => {
 
 // Initial load
 applyFilters();
+
+
+function confirmSale(salesId) {
+  Swal.fire({
+    title: 'Confirm Sale',
+    text: 'Are you sure you want to mark this sale as registered?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, confirm it',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../endpoints/sales/confirm_sale.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sales_id: salesId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire('Confirmed!', 'Sale has been updated.', 'success');
+            fetchSalesByDate(); // Refresh the table
+          } else {
+            Swal.fire('Error', data.message || 'Failed to confirm sale.', 'error');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          Swal.fire('Error', 'Something went wrong.', 'error');
+        });
+    }
+  });
+}

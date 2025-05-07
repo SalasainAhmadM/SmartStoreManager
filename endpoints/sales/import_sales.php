@@ -32,7 +32,8 @@ $query = "
         `created_at`, 
         `product_id`, 
         `branch_id`, 
-        `type`
+        `type`,
+        `unregistered`
     ) VALUES (
         ?, 
         ?, 
@@ -40,7 +41,8 @@ $query = "
         NOW(), 
         ?, 
         ?, 
-        ?
+        ?,
+        1
     )
 ";
 
